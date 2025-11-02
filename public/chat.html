@@ -32,7 +32,7 @@ function add(t,who='bot'){const d=document.createElement('div');d.className='msg
 async function ask(q){
   add(q,'you'); inp.value='';
   try{
-    const r = await fetch('../api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q})});
+    const r = await fetch('/.netlify/functions/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q})});
     const data = await r.json(); add(data.reply || '…','bot');
   }catch{ add('Ty vole… něco se pokazilo. Zkus to znova.','bot'); }
 }
