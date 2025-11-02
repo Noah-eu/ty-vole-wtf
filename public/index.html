@@ -35,19 +35,20 @@
 
   /* === MEGA BACKGROUND WORDMARK (celá obrazovka) === */
   .bg-wordmark{
-    position:fixed; inset:0; display:grid; place-items:center; pointer-events:none; z-index:0;
-    overflow:hidden;
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center; 
+    pointer-events:none; z-index:0; overflow:hidden; padding:2vh 2vw;
   }
   .bg-wordmark span{
     font-weight:900; white-space:nowrap;
-    font-size:20vw;               /* velikost podle šířky viewportu */
-    letter-spacing:-0.5vw;        /* záporné mezery pro těsnější písmena */
-    word-spacing:0.5vw;
+    font-size:15vh;               /* výška podle viewportu */
+    letter-spacing:-0.3vw;        /* těsnější písmena */
+    word-spacing:1vw;
     color:#ffc0e0;                /* světlejší růžová */
     opacity:.16;
     text-shadow:0 14px 70px rgba(255,192,224,.45);
-    transform:translateY(0) rotate(0deg) scaleX(1.2) scaleY(3.5); /* velmi úzká a extrémně vysoká písmena */
+    transform:scaleX(0.6) scaleY(2.8); /* úzká a vysoká písmena */
     user-select:none;
+    max-width:100%; max-height:100%;
   }
 
   .wrap{width:min(980px,100%); position:relative; z-index:1;}
@@ -235,56 +236,64 @@ async function setQuoteTyped(text, push=true){
 const CZ2GZ_PHRASES = [
   [/(cítím|citim)\s+se\s+(hodně|hodne)\s+trapn(ě|e)/gi, 'cítím se mega cringe'],
   [/(cítím|citim)\s+se\s+trapn(ě|e)/gi, 'cítím se cringe'],
-  [/(bez\s+(srandy|keců|kecu))/gi, 'no cap'],
+  [/bez\s+(srandy|keců|kecu)/gi, 'no cap'],
   [/to\s+je\s+(pravda|real)/gi, 'no cap'],
-  [/to\s+je\s+lež/gi, 'cap']
+  [/to\s+je\s+lež/gi, 'cap'],
+  [/skill\s+issue/gi, 'skill issue']
 ];
 
 const CZ2GZ_WORDS = [
-  [/\btrapn([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'cringe'],
-  [/\bdivn([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'skibidi'],
-  [/\bhodn(ě|e)\b/gi, 'mega'],
-  [/\bdost\b/gi, 'lowkey'],
-  [/\bopravdu\b/gi, 'fr'],
-  [/\bv(á|a)žn(ě|e)\b/gi, 'fr'],
-  [/\bupř(í|i)mn(ě|e)\b/gi, 'ngl'],
-  [/\bcharism(a|y|u|ou)?\b/gi, 'rizz'],
-  [/\bdrb(y|ů|ám|ami)?\b/gi, 'tea'],
-  [/\btoxick([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'toxic'],
-  [/\bautentick([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'based'],
-  [/\bdobr([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'valid'],
-  [/\b(vý|vy)born([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'bussin'],
-  [/\bsuper\b/gi, 'fire'],
-  [/\bněco\s+dobr(ý|é|ého)\b/gi, 'something valid']
+  [/skill\s+issue/gi, 'skill issue'],
+  [/trapn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'cringe'],
+  [/divn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'skibidi'],
+  [/hodn(ě|e)/gi, 'mega'],
+  [/dost/gi, 'lowkey'],
+  [/opravdu/gi, 'fr'],
+  [/v(á|a)žn(ě|e)/gi, 'fr'],
+  [/upř(í|i)mn(ě|e)/gi, 'ngl'],
+  [/charism(a|y|u|ou|e|ě)/gi, 'rizz'],
+  [/drb(y|ů|ám|ami|a)/gi, 'tea'],
+  [/toxick(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'toxic'],
+  [/autentick(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'based'],
+  [/dobr(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'valid'],
+  [/(vý|vy)born(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'bussin'],
+  [/super/gi, 'fire'],
+  [/něco\s+dobr(ý|é|ého)/gi, 'something valid'],
+  [/ale/gi, 'ale'],
+  [/fixnuteln(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'fixnutelný'],
+  [/pushnout/gi, 'pushnout']
 ];
 
 const GZ2CZ_WORDS = [
-  [/\bno cap\b/gi, 'fakt, bez keců'],
+  [/no\s+cap/gi, 'fakt, bez keců'],
   [/\bcap\b/gi, 'lež'],
-  [/\bskibidi\b/gi, 'divné'],
-  [/\bbussin['"]?\b/gi, 'výborné'],
-  [/\brizz\b/gi, 'charisma'],
-  [/\bbased\b/gi, 'autentické'],
-  [/\bslay\b/gi, 'perfektní'],
-  [/\bcringe\b/gi, 'trapné'],
-  [/\bvibe(s)?\b/gi, 'nálada'],
-  [/\btoxic\b/gi, 'toxické'],
+  [/skill\s+issue/gi, 'problém se schopnostmi'],
+  [/skibidi/gi, 'divné'],
+  [/bussin['"]?/gi, 'výborné'],
+  [/rizz/gi, 'charisma'],
+  [/based/gi, 'autentické'],
+  [/slay/gi, 'perfektní'],
+  [/cringe/gi, 'trapné'],
+  [/vibe(s)?/gi, 'nálada'],
+  [/toxic/gi, 'toxické'],
   [/\btea\b/gi, 'drby'],
-  [/\bdelulu\b/gi, 'mimo realitu'],
+  [/delulu/gi, 'mimo realitu'],
   [/\bfr\b/gi, 'vážně'],
   [/\bngl\b/gi, 'upřímně'],
   [/\bidk\b/gi, 'nevím'],
   [/\bimo\b/gi, 'podle mě'],
-  [/\blowkey\b/gi, 'trochu'],
-  [/\bhighkey\b/gi, 'hodně'],
+  [/lowkey/gi, 'trochu'],
+  [/highkey/gi, 'hodně'],
   [/\bmid\b/gi, 'průměrné'],
-  [/\bgoated\b/gi, 'legendární'],
-  [/\bkino\b/gi, 'filmové'],
-  [/\bheat\b/gi, 'žhavé'],
-  [/\bvalid\b/gi, 'dobré'],
-  [/\bdrip\b/gi, 'styl'],
-  [/\bmega\b/gi, 'hodně'],
-  [/\bfire\b/gi, 'super']
+  [/goated/gi, 'legendární'],
+  [/kino/gi, 'filmové'],
+  [/heat/gi, 'žhavé'],
+  [/valid/gi, 'dobré'],
+  [/drip/gi, 'styl'],
+  [/mega/gi, 'hodně'],
+  [/fire/gi, 'super'],
+  [/fixnuteln(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'opravitelné'],
+  [/pushnout/gi, 'poslat']
 ];
 
 function looksGenZ(s){
@@ -294,7 +303,8 @@ function looksGenZ(s){
 function applyReplacements(s, pairs){
   let out = s;
   for (const [re, to] of pairs){
-    out = out.replace(re, (m)=>{
+    // Globální nahrazení všech výskytů
+    out = out.replace(new RegExp(re.source, re.flags), (m)=>{
       // zachování první kapitalizace (jednoduše)
       if (m[0] === m[0].toUpperCase() && to.length) {
         return to[0].toUpperCase() + to.slice(1);
