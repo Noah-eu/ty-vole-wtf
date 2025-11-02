@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>TY VOLE .wtf — vibe generator</title>
-<meta name="description" content="Gen-Z hlášky, mem vibe a přechod do chatu.">
+<meta name="description" content="Gen-Z hlášky, přechod do chatu a překladač Gen-Z ↔ normální čeština.">
 <style>
   :root{
     --bg:#0b0b11; --ink:#f3f3f8; --muted:#a7a7b6; --line:#252536;
@@ -25,13 +25,15 @@
   .brand{display:flex;gap:10px;align-items:center;font-weight:900;letter-spacing:.02em}
   .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(90deg,var(--accent),var(--cyan));box-shadow:0 0 16px rgba(157,255,0,.7)}
   .brand span{opacity:.66}
-  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .chip{border:1px solid var(--line);color:var(--muted);background:rgba(255,255,255,.02);padding:8px 12px;border-radius:999px;font-size:13px}
+  .chip.btn{cursor:pointer;color:#0c0c10;background:linear-gradient(90deg,var(--accent),var(--cyan));border:0;font-weight:900}
 
   .card{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));padding:26px;box-shadow:0 22px 60px rgba(0,0,0,.38)}
   h1{margin:0 0 6px;font-size:clamp(28px,7vw,56px);line-height:1.1;letter-spacing:-.02em}
   .subtitle{color:var(--muted);font-weight:600;font-size:14px}
-  .quote{margin:18px 0 8px;font-weight:900;font-size:clamp(22px,4.5vw,40px);letter-spacing:-.015em}
+  .quote{margin:18px 0 6px;font-weight:900;font-size:clamp(22px,4.5vw,40px);letter-spacing:-.015em}
+  .trans{color:var(--muted);font-size:15px;margin-top:2px}
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
   button{appearance:none;border:0;cursor:pointer;font-weight:900;padding:12px 16px;border-radius:14px}
   .primary{color:#0c0c10;background:linear-gradient(90deg,var(--accent),var(--cyan))}
@@ -48,24 +50,43 @@
   .bubble a{color:var(--accent);font-weight:900;text-decoration:none}
   .hint{color:var(--muted);font-size:13px;margin-top:6px}
   @keyframes pop{from{transform:scale(.95);opacity:.5}to{transform:scale(1);opacity:1}}
+
+  /* Bottom sheet (translator) */
+  .sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none}
+  .sheet{position:fixed;left:0;right:0;bottom:0;max-height:70dvh;background:#11121a;border-top:1px solid var(--line);border-radius:18px 18px 0 0;transform:translateY(100%);transition:.2s ease-out}
+  .sheet.open{transform:translateY(0)}
+  .sheet-backdrop.show{display:block}
+  .sheet .head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .sheet .body{padding:14px 16px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  textarea{width:100%;min-height:120px;background:#0f1016;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px;font:15px/1.5 ui-sans-serif,system-ui}
+  .smallrow{display:flex;gap:8px;margin-top:8px}
 </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="brand"><div class="dot"></div><div>TY&nbsp;VOLE<span>.wtf</span></div></header>
-    <div class="chips">
-      <div class="chip">#skibidi</div><div class="chip">#rizz</div><div class="chip">#based</div><div class="chip">#drip</div>
-    </div>
+      <div class="brand"><div class="dot"></div><div>TY&nbsp;VOLE<span>.wtf</span></div></div>
+      <div class="chips">
+        <div class="chip">#skibidi</div><div class="chip">#rizz</div><div class="chip">#based</div><div class="chip">#drip</div>
+        <button id="btnSheet" class="chip btn">Překladač ↔</button>
+      </div>
+    </header>
 
     <div class="card">
       <div class="subtitle">Instant vibe generator</div>
       <div class="quote" id="quote">…načítám fresh hlášku…</div>
+      <div class="trans" id="quoteTranslated" style="display:none;"></div>
+
       <div class="row">
         <button id="next" class="primary">Další shot 🔥</button>
         <button id="copy" class="ghost">Zkopírovat odkaz</button>
         <button id="share" class="ghost tiny">Sdílet</button>
+        <label class="chip" style="cursor:pointer;">
+          <input id="chkAutoTrans" type="checkbox" style="vertical-align:middle;margin-right:6px;"> Zobrazovat překlad
+        </label>
       </div>
+
       <footer>
         <div class="mode">
           <span>Mood:</span>
@@ -82,51 +103,60 @@
     <div class="hint"><a href="/chat.html">Pojď pokecat →</a></div>
   </div>
 
+  <!-- Translator bottom sheet -->
+  <div class="sheet-backdrop" id="backdrop"></div>
+  <section class="sheet" id="sheet">
+    <div class="head">
+      <strong>Překladač Gen-Z ↔ normální</strong>
+      <div>
+        <button id="swap" class="ghost tiny">Vyměnit strany ↔</button>
+        <button id="closeSheet" class="ghost tiny">Zavřít</button>
+      </div>
+    </div>
+    <div class="body">
+      <div class="cols" id="cols">
+        <div>
+          <div class="subtitle">Normální → Gen-Z</div>
+          <textarea id="tNorm" placeholder="Napiš normálně…"></textarea>
+          <div class="smallrow">
+            <button id="bNorm2Genz" class="primary">Přeložit</button>
+            <button id="cGenzOut" class="ghost tiny">Kopírovat výsledek</button>
+          </div>
+        </div>
+        <div>
+          <div class="subtitle">Gen-Z → Normální</div>
+          <textarea id="tGenz" placeholder="Nebo Gen-Z…"></textarea>
+          <div class="smallrow">
+            <button id="bGenz2Norm" class="primary">Přeložit</button>
+            <button id="cNormOut" class="ghost tiny">Kopírovat výsledek</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 <script>
 let MODE = (localStorage.getItem('mode') || 'genz');
-const LAST = []; // anti-repeat buffer
+let AUTO = localStorage.getItem('autoTrans') === '1';
+const LAST = [];
 
 const S = { openers:[], tones_pos:[], tones_mid:[], tones_neg:[], verbs:[], nouns:[], actions:[], emotes:[], templates:[], quotes:[], teasers:[] };
-
 const pick = arr => arr[Math.floor(Math.random()*arr.length)];
-const uniquePick = (arr) => {
-  let tries = 0;
-  while (tries < 10) {
-    const v = pick(arr);
-    if (!LAST.includes(v)) return v;
-    tries++;
-  }
-  return pick(arr);
-};
+const uniquePick = (arr) => { let tries=0; while(tries<10){ const v=pick(arr); if(!LAST.includes(v)) return v; tries++; } return pick(arr); };
 
-async function loadLexicon(){
+async function loadAll(){
   try{
     const lex = await fetch('./config/lexicon.json').then(r=>r.json());
     Object.assign(S, lex);
     const cfg = await fetch('./config/app.json').then(r=>r.json()).catch(()=>({teaserLines:[]}));
     S.teasers = cfg.teaserLines || ["Mám i chat →","No cap, piš mi →","Pojď pokecat →"];
-  }catch(e){
-    // fallback mini-set
-    Object.assign(S, { openers:["Kámo…","Real talk:"], tones_pos:["based","fire"], tones_mid:["mid"], tones_neg:["L","scuffed"], verbs:["fixnout","shipnout"], nouns:["vibe","plan"], actions:["chill","focus"], emotes:["🔥","🧠"], templates:["{opener} {nouns} je {tones_mid}. Dej tomu {verbs}. {emote}"], quotes:["Bro, proč to laguje?","This ain’t it."] });
-    S.teasers = ["Pojď pokecat →"];
-  }
-}
-
-function render(text, push=true){
-  const el=document.getElementById('quote');
-  el.textContent=text;
-  if (LAST.push(text) > 10) LAST.shift();
-  const url=new URL(location.href);
-  url.searchParams.set('q', encodeURIComponent(text));
-  url.searchParams.set('mode', MODE);
-  history[push?'pushState':'replaceState'](null,'',url);
+  }catch{ Object.assign(S,{ openers:["Kámo…","Real talk:"], tones_pos:["based","fire"], tones_mid:["mid"], tones_neg:["L","scuffed"], verbs:["fixnout","shipnout"], nouns:["vibe","plan"], actions:["chill","focus"], emotes:["🔥","🧠"], templates:["{opener} {nouns} je {tones_mid}. Dej tomu {verbs}. {emote}"], quotes:["Bro, proč to laguje?","This ain’t it."]}); S.teasers=["Pojď pokecat →"]; }
 }
 
 function compose(){
-  if (Math.random() < 0.55 && S.templates.length){
+  if(Math.random()<.6 && S.templates.length){
     const tpl = uniquePick(S.templates);
-    const txt = tpl
-      .replace('{opener}', uniquePick(S.openers))
+    const txt = tpl.replace('{opener}', uniquePick(S.openers))
       .replace('{nouns}', uniquePick(S.nouns))
       .replace('{tones_pos}', uniquePick(S.tones_pos))
       .replace('{tones_mid}', uniquePick(S.tones_mid))
@@ -139,33 +169,77 @@ function compose(){
   return uniquePick(S.quotes);
 }
 
+function setQuote(text, push=true){
+  document.getElementById('quote').textContent = text;
+  if (LAST.push(text)>10) LAST.shift();
+  const url=new URL(location.href);
+  url.searchParams.set('q', encodeURIComponent(text));
+  url.searchParams.set('mode', MODE);
+  history[push?'pushState':'replaceState'](null,'',url);
+}
+
+async function translate(text, direction){
+  try{
+    const r = await fetch('/.netlify/functions/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text, direction})});
+    const j = await r.json(); if(j.translated) return j.translated;
+  }catch{}
+  return '';
+}
+
 function maybeBubble(){
   const bubble=document.getElementById('bubble');
   const bubbleText=document.getElementById('bubbleText');
-  if (LAST.length >= 2 && (LAST.length <= 6 ? Math.random()<.5 : Math.random()<.3)){
-    bubbleText.textContent = pick(S.teasers || ["Pojď pokecat →"]);
+  if(LAST.length>=2 && (LAST.length<=6 ? Math.random()<.5 : Math.random()<.3)){
+    bubbleText.textContent = pick(S.teasers);
     bubble.classList.add('show');
   }
 }
 
-async function init(){
-  await loadLexicon();
+async function showAutoTranslation(source){
+  const el = document.getElementById('quoteTranslated');
+  if(!AUTO){ el.style.display='none'; el.textContent=''; return; }
+  const out = await translate(source,'gz_to_normal');
+  if(out){ el.textContent = '↳ Překlad: ' + out; el.style.display='block'; }
+  else { el.style.display='none'; el.textContent=''; }
+}
 
-  const btnGenz=document.getElementById('btnGenz');
-  const btnSafe=document.getElementById('btnSafe');
-  const apply=()=>{ btnGenz.classList.toggle('active',MODE==='genz'); btnSafe.classList.toggle('active',MODE==='family_friendly'); };
-  btnGenz.onclick=()=>{MODE='genz';localStorage.setItem('mode',MODE);apply();};
-  btnSafe.onclick=()=>{MODE='family_friendly';localStorage.setItem('mode',MODE);apply();};
+async function init(){
+  await loadAll();
+
+  const btnG=document.getElementById('btnGenz');
+  const btnS=document.getElementById('btnSafe');
+  const apply=()=>{ btnG.classList.toggle('active',MODE==='genz'); btnS.classList.toggle('active',MODE==='family_friendly'); };
+  btnG.onclick=()=>{ MODE='genz'; localStorage.setItem('mode',MODE); apply(); };
+  btnS.onclick=()=>{ MODE='family_friendly'; localStorage.setItem('mode',MODE); apply(); };
+  apply();
+
+  const chk=document.getElementById('chkAutoTrans');
+  chk.checked = AUTO; chk.onchange = ()=>{ AUTO = chk.checked; localStorage.setItem('autoTrans', AUTO?'1':'0'); if(!AUTO){ document.getElementById('quoteTranslated').style.display='none'; } else { showAutoTranslation(document.getElementById('quote').textContent); } };
 
   const url = new URLSearchParams(location.search);
-  const q = url.get('q'); const m = url.get('mode');
-  if (m){ MODE=m; localStorage.setItem('mode',MODE); apply(); }
+  const q=url.get('q'); const m=url.get('mode'); if(m){ MODE=m; localStorage.setItem('mode',MODE); apply(); }
 
-  render(q ? decodeURIComponent(q) : compose(), false);
+  setQuote(q?decodeURIComponent(q):compose(), false);
+  if(AUTO) showAutoTranslation(document.getElementById('quote').textContent);
 
-  document.getElementById('next').onclick=()=>{ render(compose()); maybeBubble(); };
+  document.getElementById('next').onclick=async()=>{ setQuote(compose()); maybeBubble(); if(AUTO) showAutoTranslation(document.getElementById('quote').textContent); };
   document.getElementById('copy').onclick=async()=>{ await navigator.clipboard.writeText(location.href); const c=document.getElementById('copy'); c.textContent='Zkopírováno ✅'; setTimeout(()=>c.textContent='Zkopírovat odkaz',1100); };
-  document.getElementById('share').onclick=async()=>{ try{ if(navigator.share){ await navigator.share({title:'TY VOLE .wtf',text:document.getElementById('quote').textContent,url:location.href}); } else { await navigator.clipboard.writeText(location.href); } const s=document.getElementById('share'); s.textContent='Sdíleno ✅'; setTimeout(()=>s.textContent='Sdílet',1100);}catch(_){} };
+  document.getElementById('share').onclick=async()=>{ try{ if(navigator.share){ await navigator.share({title:'TY VOLE .wtf',text:document.getElementById('quote').textContent,url:location.href}); } else { await navigator.clipboard.writeText(location.href); } const s=document.getElementById('share'); s.textContent='Sdíleno ✅'; setTimeout(()=>s.textContent='Sdílet',1100);}catch{} };
+
+  // bottom sheet
+  const sheet=document.getElementById('sheet'), back=document.getElementById('backdrop');
+  const openSheet=()=>{sheet.classList.add('open');back.classList.add('show');};
+  const closeSheet=()=>{sheet.classList.remove('open');back.classList.remove('show');};
+  document.getElementById('btnSheet').onclick=openSheet;
+  document.getElementById('closeSheet').onclick=closeSheet; back.onclick=closeSheet;
+
+  // translator actions
+  const tNorm=document.getElementById('tNorm'), tGenz=document.getElementById('tGenz');
+  document.getElementById('bNorm2Genz').onclick=async()=>{ const res=await translate(tNorm.value,'normal_to_gz'); tGenz.value=res; };
+  document.getElementById('bGenz2Norm').onclick=async()=>{ const res=await translate(tGenz.value,'gz_to_normal'); tNorm.value=res; };
+  document.getElementById('cGenzOut').onclick=async()=>{ await navigator.clipboard.writeText(tGenz.value); };
+  document.getElementById('cNormOut').onclick=async()=>{ await navigator.clipboard.writeText(tNorm.value); };
+  document.getElementById('swap').onclick=()=>{ const A=tNorm.value; tNorm.value=tGenz.value; tGenz.value=A; };
 }
 init();
 </script>
