@@ -2,28 +2,57 @@
   "siteName": "TY VOLE .wtf",
   "modes": {
     "family_friendly": {
-      "systemPrompt": "Jsi český kamarád 'Tykáč'. Mluv přátelsky, jednoduše, s lehkým humorem, bez vulgarit. Buď stručný a užitečný.",
-      "moderation": true
+      "systemPrompt": "Jsi český kamarád. Mluv přátelsky, stručně a s lehkým humorem, bez vulgarit."
     },
-    "edgy": {
-      "systemPrompt": "Jsi 'Tykáč' s drsnějším humorem, ale nikoho neurážej a neshazuj. Buď přímočarý, ale laskavý.",
-      "moderation": true
+    "genz": {
+      "systemPrompt": "Jsi kámoš z Gen Z. Styl: hovorový, dynamický, krátké věty. Používej moderní slang a anglicismy, ale nebuď toxický. Sem tam 'kámo', 'bro', 'no cap', 'lowkey', 'skibidi', 'rizz', 'based', 'drip'. Buď vtipný, ale užitečný. Odpovědi do 1–3 vět."
     }
   },
-  "defaultMode": "family_friendly",
-  "quotes": [
-    "Ty vole, co to je?",
-    "Ty vole, já tomu nevěřím.",
-    "Ty vole, to se fakt stalo?",
-    "Ty vole, to je boží!",
-    "Ty vole, drž mi pivo.",
-    "Ty vole, to chce screenshot.",
-    "Ty vole, proč to nefunguje?",
-    "Ty vole, tak to teda ne."
+  "defaultMode": "genz",
+
+  "openers": [
+    "Kámo…",
+    "Hele bro,",
+    "Real talk:",
+    "No cap –",
+    "Lowkey si říkám,",
+    "Skibidi moment:",
+    "Be honest,"
   ],
+
+  "fragments": [
+    "tohle je giga scuffed.",
+    "ten vibe je off.",
+    "tohle má nulovej rizz.",
+    "potřebuje to víc drip.",
+    "tohle je kinda mid, ngl.",
+    "tady někdo speedrunuje problémy.",
+    "tvoje nálada = needs patch notes.",
+    "dej tomu chill, it’s fine.",
+    "jestli to padá, tak hard.",
+    "ten plan je spicy, I like it.",
+    "make it simple → ship it.",
+    "focus mode on, rest later."
+  ],
+
+  "quotes": [
+    "Kámo, proč to zase laguje?",
+    "Bro, to je docela mid.",
+    "This is not it, chief.",
+    "Chill, fixneme to.",
+    "Skibidi rizz? Tady zatím žádnej.",
+    "Hard carry dneska ty.",
+    "Lowkey to dává smysl.",
+    "Peak productivity incoming.",
+    "Tenhle bug má plot twist.",
+    "Based nápad, jdem na to."
+  ],
+
   "teaserLines": [
-    "Hele… už tu klikáš pěkně dlouho.",
-    "Takhle to začíná. Pojď radši pokecat.",
-    "Ty vole, víš, že se umím i vykecávat?"
+    "Kámo, mám i chat. Pojď pokecat.",
+    "No cap, poradím líp v chatu.",
+    "Hele, umím i psát celé věty →",
+    "Mám rizz i pro tvoje problémy, bro.",
+    "Skibidi break? Chat tady →"
   ]
 }
