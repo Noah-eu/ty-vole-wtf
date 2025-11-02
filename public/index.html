@@ -32,7 +32,7 @@
   .card{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));padding:26px;box-shadow:0 22px 60px rgba(0,0,0,.38)}
   h1{margin:0 0 6px;font-size:clamp(28px,7vw,56px);line-height:1.1;letter-spacing:-.02em}
   .subtitle{color:var(--muted);font-weight:600;font-size:14px}
-  .quote{margin:18px 0 6px;font-weight:900;font-size:clamp(22px,4.5vw,40px);letter-spacing:-.015em}
+  .quote{margin:18px 0 6px;font-weight:900;font-size:clamp(22px,4.5vw,40px);letter-spacing:-.015em; min-height:2.4em}
   .trans{color:var(--muted);font-size:15px;margin-top:2px}
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
   button{appearance:none;border:0;cursor:pointer;font-weight:900;padding:12px 16px;border-radius:14px}
@@ -69,7 +69,7 @@
       <div class="brand"><div class="dot"></div><div>TY&nbsp;VOLE<span>.wtf</span></div></div>
       <div class="chips">
         <div class="chip">#skibidi</div><div class="chip">#rizz</div><div class="chip">#based</div><div class="chip">#drip</div>
-        <button id="btnSheet" class="chip btn">Překladač (Gen-Z)</button>
+        <button id="btnSheet" class="chip btn">Skibidi překladač</button>
       </div>
     </header>
 
@@ -83,7 +83,7 @@
         <button id="copy" class="ghost" title="Zkopíruje URL s touhle hláškou">Zkopči link</button>
         <button id="share" class="ghost tiny" title="Sdílej do zpráv nebo appky">Pošli dál</button>
         <label class="chip" style="cursor:pointer;">
-          <input id="chkAutoTrans" type="checkbox" style="vertical-align:middle;margin-right:6px;"> Ukazuj překlad
+          <input id="chkAutoTrans" type="checkbox" style="vertical-align:middle;margin-right:6px;"> Dej překlad
         </label>
       </div>
 
@@ -99,8 +99,8 @@
   </div>
 
   <div class="bubble" id="bubble">
-    <div id="bubbleText">Kámo…</div>
-    <div class="hint"><a href="/chat.html">Pojď pokecat →</a></div>
+    <div id="bubbleText">Mám i chat, no cap →</div>
+    <div class="hint"><a href="/chat.html">Mám i chat, no cap →</a></div>
   </div>
 
   <!-- Translator bottom sheet -->
@@ -149,8 +149,18 @@ async function loadAll(){
     const lex = await fetch('./config/lexicon.json').then(r=>r.json());
     Object.assign(S, lex);
     const cfg = await fetch('./config/app.json').then(r=>r.json()).catch(()=>({teaserLines:[]}));
-    S.teasers = cfg.teaserLines || ["Mám i chat →","No cap, piš mi →","Pojď pokecat →"];
-  }catch{ Object.assign(S,{ openers:["Kámo…","Real talk:"], tones_pos:["based","fire"], tones_mid:["mid"], tones_neg:["L","scuffed"], verbs:["fixnout","shipnout"], nouns:["vibe","plan"], actions:["chill","focus"], emotes:["🔥","🧠"], templates:["{opener} {nouns} je {tones_mid}. Dej tomu {verbs}. {emote}"], quotes:["Bro, proč to laguje?","This ain’t it."]}); S.teasers=["Pojď pokecat →"]; }
+    S.teasers = cfg.teaserLines || ["Mám i chat, no cap →"];
+  }catch{
+    Object.assign(S,{
+      openers:["Kámo…","Real talk:"],
+      tones_pos:["based","fire"], tones_mid:["mid"], tones_neg:["L","scuffed"],
+      verbs:["fixnout","shipnout"], nouns:["vibe","plan"], actions:["chill","focus"],
+      emotes:["🔥","🧠"],
+      templates:["{opener} {nouns} je {tones_mid}. Dej tomu {verbs}. {emote}"],
+      quotes:["Bro, proč to laguje?","This ain’t it."]
+    });
+    S.teasers=["Mám i chat, no cap →"];
+  }
 }
 
 function compose(){
@@ -169,13 +179,28 @@ function compose(){
   return uniquePick(S.quotes);
 }
 
-function setQuote(text, push=true){
-  document.getElementById('quote').textContent = text;
+function setUrlState(text, push=true){
   if (LAST.push(text)>10) LAST.shift();
   const url=new URL(location.href);
   url.searchParams.set('q', encodeURIComponent(text));
   url.searchParams.set('mode', MODE);
   history[push?'pushState':'replaceState'](null,'',url);
+}
+
+// typing effect for quotes
+async function typeOut(el, text, speed=18){
+  el.textContent = '';
+  for (let i=0;i<text.length;i++){
+    el.textContent += text[i];
+    await new Promise(r=>setTimeout(r, speed));
+  }
+}
+
+async function setQuoteTyped(text, push=true){
+  const el = document.getElementById('quote');
+  await typeOut(el, text);
+  setUrlState(text, push);
+  if(AUTO) showAutoTranslation(text); // po dopsání
 }
 
 async function translate(text, direction){
@@ -190,7 +215,7 @@ function maybeBubble(){
   const bubble=document.getElementById('bubble');
   const bubbleText=document.getElementById('bubbleText');
   if(LAST.length>=2 && (LAST.length<=6 ? Math.random()<.5 : Math.random()<.3)){
-    bubbleText.textContent = pick(S.teasers);
+    bubbleText.textContent = "Mám i chat, no cap →";
     bubble.classList.add('show');
   }
 }
@@ -214,17 +239,40 @@ async function init(){
   apply();
 
   const chk=document.getElementById('chkAutoTrans');
-  chk.checked = AUTO; chk.onchange = ()=>{ AUTO = chk.checked; localStorage.setItem('autoTrans', AUTO?'1':'0'); if(!AUTO){ document.getElementById('quoteTranslated').style.display='none'; } else { showAutoTranslation(document.getElementById('quote').textContent); } };
+  chk.checked = AUTO;
+  chk.onchange = ()=>{
+    AUTO = chk.checked;
+    localStorage.setItem('autoTrans', AUTO?'1':'0');
+    if(!AUTO){ document.getElementById('quoteTranslated').style.display='none'; }
+    else { showAutoTranslation(document.getElementById('quote').textContent); }
+  };
 
   const url = new URLSearchParams(location.search);
   const q=url.get('q'); const m=url.get('mode'); if(m){ MODE=m; localStorage.setItem('mode',MODE); apply(); }
 
-  setQuote(q?decodeURIComponent(q):compose(), false);
-  if(AUTO) showAutoTranslation(document.getElementById('quote').textContent);
+  const first = q?decodeURIComponent(q):compose();
+  await setQuoteTyped(first, false);
 
-  document.getElementById('next').onclick=async()=>{ setQuote(compose()); maybeBubble(); if(AUTO) showAutoTranslation(document.getElementById('quote').textContent); };
-  document.getElementById('copy').onclick=async()=>{ await navigator.clipboard.writeText(location.href); const c=document.getElementById('copy'); c.textContent='Zkopčeno ✅'; setTimeout(()=>c.textContent='Zkopči link',1100); };
-  document.getElementById('share').onclick=async()=>{ try{ if(navigator.share){ await navigator.share({title:'TY VOLE .wtf',text:document.getElementById('quote').textContent,url:location.href}); } else { await navigator.clipboard.writeText(location.href); } const s=document.getElementById('share'); s.textContent='Odesláno ✅'; setTimeout(()=>s.textContent='Pošli dál',1100);}catch{} };
+  document.getElementById('next').onclick=async()=>{
+    const text = compose();
+    await setQuoteTyped(text);
+    maybeBubble();
+  };
+  document.getElementById('copy').onclick=async()=>{
+    await navigator.clipboard.writeText(location.href);
+    const c=document.getElementById('copy'); c.textContent='Zkopčeno ✅'; setTimeout(()=>c.textContent='Zkopči link',1100);
+  };
+  document.getElementById('share').onclick=async()=>{
+    try{
+      if(navigator.share){
+        await navigator.share({title:'TY VOLE .wtf',text:document.getElementById('quote').textContent,url:location.href});
+      } else {
+        await navigator.clipboard.writeText(location.href);
+      }
+      const s=document.getElementById('share');
+      s.textContent='Odesláno ✅'; setTimeout(()=>s.textContent='Pošli dál',1100);
+    }catch{}
+  };
 
   // bottom sheet
   const sheet=document.getElementById('sheet'), back=document.getElementById('backdrop');
