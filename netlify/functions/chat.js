@@ -1,78 +1,83 @@
-// netlify/functions/chat.js  (CommonJS)
+// netlify/functions/chat.js
 const fs = require('fs');
 const path = require('path');
 
+const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
+
 exports.handler = async function (event) {
-  // jen POST
-  if (event.httpMethod !== 'POST') {
-    return resp(405, { error: 'Method not allowed' });
-  }
+  if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
 
   try {
-    const body = JSON.parse(event.body || '{}');
-    const q = body.q || '';
-    if (!q) return resp(400, { error: 'Missing q' });
+    const { q } = JSON.parse(event.body || '{}');
+    if (!q || !q.trim()) return json(400, { error: 'Missing q' });
 
-    // --- ENV & mód ---
-    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-    const MODEL_NAME = process.env.MODEL_NAME || 'gpt-4o-mini';
+    // --- načti slovník a config (kvůli tónu) ---
+    const lex = safeRead('../../public/config/lexicon.json');
+    const cfg  = safeRead('../../config/app.json') || {};
+    const modeFromUrl = new URL(event.rawUrl).searchParams.get('mode');
+    const MODE = (modeFromUrl || process.env.MODE || cfg.defaultMode || 'genz');
 
-    // preferuj URL ?mode=..., pak header x-mode, pak ENV, pak config.defaultMode, jinak 'genz'
-    const urlMode = (new URL(event.rawUrl).searchParams.get('mode') || '').trim();
-    const headerMode = (event.headers['x-mode'] || '').trim();
-    let mode = urlMode || headerMode || (process.env.MODE || '');
-    let cfg = null;
+    // --- style guide (žádné otravné otázky) + few-shoty ---
+    const STYLE = `
+Jsi kámoš z Gen Z. Mluv krátce, přátelsky, hovorově. Používej anglicismy (no cap, lowkey, based, rizz…), ale ne toxicky.
+Nesmíš klást generické otázky typu "Co máš dnes v plánu?" / "S čím ti mohu pomoci?" / "Jak ti mohu zpříjemnit den?". Vyhni se klišé.
+Raději navrhni mini-akci (e.g. "dej 3-min focus, pak shipni"), tip, nebo vtipnou poznámku související s promptem.
+Max 2 věty. Pokud se uživatel ptá, odpověz věcně, ale stále ve stylu. Nepoužívej emoji častěji než 1×.
+Dostupný slang (vybírej, co se hodí): ${(lex?.tones_pos||[]).slice(0,10).join(', ')}, ${(lex?.tones_neg||[]).slice(0,8).join(', ')}.
+`;
 
-    try {
-      const cfgPath = path.join(__dirname, '../../config/app.json');
-      cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
-      if (!mode) mode = cfg.defaultMode || 'genz';
-    } catch (_) {
-      if (!mode) mode = 'genz';
-    }
+    const FEWSHOT = [
+      { role: 'user',   content: 'Jsem unavený a nic se mi nechce.' },
+      { role: 'assistant', content: 'Understandable, bro. Dej 5 min break, napij se, a pak mini-task 10 min. Lowkey win → momentum.' },
+      { role: 'user',   content: 'Mám milion věcí a nevím, kde začít.' },
+      { role: 'assistant', content: 'Pick 1 věc, kterou shipneš do 15 min. Všechno ostatní mute. No cap, tohle je W move.' },
+      { role: 'user',   content: 'Je to celé mid.' },
+      { role: 'assistant', content: 'Mid is fine, iteruj. Nerfni scope o 30 % a pushni verzi 0.1. Pak buff.' }
+    ];
 
-    const systemPrompt =
-      (cfg && cfg.modes && cfg.modes[mode] && cfg.modes[mode].systemPrompt) ||
-      'Jsi kámoš z Gen Z. Mluv hovorově, krátce a s anglicismy, ale ne toxicky.';
+    const messages = [
+      { role: 'system', content: STYLE },
+      ...FEWSHOT,
+      { role: 'user', content: q }
+    ];
 
-    // --- OpenAI call ---
-    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+    const body = {
+      model: process.env.MODEL_NAME || 'gpt-4o-mini',
+      temperature: 0.9,
+      presence_penalty: 0.4,
+      frequency_penalty: 0.6,
+      messages
+    };
+
+    const r = await fetch(OPENAI_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
       },
-      body: JSON.stringify({
-        model: MODEL_NAME,
-        temperature: 0.65,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: q }
-        ]
-      }),
+      body: JSON.stringify(body)
     });
 
     if (!r.ok) {
       const detail = await r.text();
-      return resp(500, { error: 'OpenAI error', detail });
+      return json(500, { error: 'OpenAI error', detail });
     }
 
-    const json = await r.json();
-    const reply =
-      (json.choices && json.choices[0] && json.choices[0].message &&
-        (json.choices[0].message.content || '').trim()) || '…';
-
-    return resp(200, { reply, mode });
+    const out = await r.json();
+    const reply = out?.choices?.[0]?.message?.content?.trim() || '…';
+    return json(200, { reply, mode: MODE });
 
   } catch (e) {
-    return resp(500, { error: 'Server error', detail: String(e) });
+    return json(500, { error: 'Server error', detail: String(e) });
   }
 };
 
-function resp(statusCode, body) {
-  return {
-    statusCode,
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    body: JSON.stringify(body),
-  };
+function json(statusCode, body) {
+  return { statusCode, headers: { 'Content-Type': 'application/json; charset=utf-8' }, body: JSON.stringify(body) };
+}
+function safeRead(rel){
+  try{
+    const p = path.join(__dirname, rel);
+    return JSON.parse(fs.readFileSync(p,'utf8'));
+  }catch{ return null; }
 }

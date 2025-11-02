@@ -1,88 +1,62 @@
 <!doctype html>
 <html lang="cs">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>TY VOLE .wtf — Gen-Z hlášky</title>
-<meta name="description" content="Kámo, klikni pro instant vibe. Gen-Z hlášky, memy a přechod do chatu.">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TY VOLE .wtf — vibe generator</title>
+<meta name="description" content="Gen-Z hlášky, mem vibe a přechod do chatu.">
 <style>
   :root{
-    --bg:#0b0b10; --card:#111118; --muted:#a7a7b4; --line:#232333; --ink:#f2f2f7;
-    --accent:#9DFF00; --accent2:#00F0FF;
+    --bg:#0b0b11; --ink:#f3f3f8; --muted:#a7a7b6; --line:#252536;
+    --card:#11121a; --accent:#9DFF00; --cyan:#00F0FF;
   }
   *{box-sizing:border-box}
-  html,body{height:100%}
   body{
-    margin:0; color:var(--ink); background: radial-gradient(1200px 600px at 70% 10%, rgba(0,240,255,.06), transparent 60%) ,
-                                 radial-gradient(900px 500px at 10% 80%, rgba(157,255,0,.05), transparent 55%) ,
-                                 var(--bg);
-    font:16px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-    letter-spacing:.01em;
-    display:flex; align-items:center; justify-content:center; padding:28px;
+    margin:0; color:var(--ink);
+    font:16px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial;
+    background:
+      radial-gradient(1200px 600px at 75% 5%, rgba(0,240,255,.06), transparent 60%),
+      radial-gradient(900px 520px at 15% 90%, rgba(157,255,0,.05), transparent 55%),
+      var(--bg);
+    min-height:100dvh; display:grid; place-items:center; padding:28px;
   }
-  .shell{width:min(980px,100%);}
+  .wrap{width:min(980px,100%);}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .brand{display:flex;gap:10px;align-items:center;font-weight:900;letter-spacing:.02em}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(90deg,var(--accent),var(--cyan));box-shadow:0 0 16px rgba(157,255,0,.7)}
+  .brand span{opacity:.66}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);color:var(--muted);background:rgba(255,255,255,.02);padding:8px 12px;border-radius:999px;font-size:13px}
 
-  header{
-    display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px;
-  }
-  .brand{display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.02em}
-  .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(90deg,var(--accent),var(--accent2)); box-shadow:0 0 18px rgba(157,255,0,.7)}
-  .brand span{opacity:.65;font-weight:800}
-  .chiprow{display:flex; gap:10px; flex-wrap:wrap}
-  .chip{border:1px solid var(--line); background:rgba(255,255,255,.02); color:var(--muted);
-        padding:8px 12px; border-radius:999px; font-size:13px}
+  .card{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));padding:26px;box-shadow:0 22px 60px rgba(0,0,0,.38)}
+  h1{margin:0 0 6px;font-size:clamp(28px,7vw,56px);line-height:1.1;letter-spacing:-.02em}
+  .subtitle{color:var(--muted);font-weight:600;font-size:14px}
+  .quote{margin:18px 0 8px;font-weight:900;font-size:clamp(22px,4.5vw,40px);letter-spacing:-.015em}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  button{appearance:none;border:0;cursor:pointer;font-weight:900;padding:12px 16px;border-radius:14px}
+  .primary{color:#0c0c10;background:linear-gradient(90deg,var(--accent),var(--cyan))}
+  .ghost{color:var(--ink);background:transparent;border:1px solid var(--line)}
+  .tiny{font-size:13px;padding:8px 12px}
 
-  .card{
-    position:relative; overflow:hidden;
-    border:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-    border-radius:24px; padding:26px; box-shadow:0 20px 60px rgba(0,0,0,.35);
-  }
+  footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}
+  .mode{display:flex;gap:6px;align-items:center}
+  .mode button{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font-weight:700}
+  .mode button.active{border-color:var(--accent);color:var(--ink)}
 
-  h1{margin:0 0 6px; font-size:clamp(28px,7vw,56px); line-height:1.1; letter-spacing:-.02em}
-  .subtitle{color:var(--muted); font-weight:600; font-size:14px}
-  .quote{margin:18px 0 10px; font-weight:800; font-size:clamp(22px,4.5vw,40px); letter-spacing:-.015em}
-  .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
-
-  button{
-    appearance:none; border:0; cursor:pointer; font-weight:800;
-    padding:12px 16px; border-radius:14px;
-  }
-  .primary{color:#0c0c10; background:linear-gradient(90deg,var(--accent),var(--accent2));}
-  .ghost{color:var(--ink); background:transparent; border:1px solid var(--line)}
-  .tiny{font-size:13px; padding:8px 12px}
-
-  .bubble{
-    position:fixed; right:18px; bottom:18px; width:min(340px,calc(100% - 36px));
-    border:1px solid var(--line); border-radius:16px; padding:12px 14px;
-    background:rgba(20,20,28,.92); backdrop-filter:saturate(140%) blur(6px);
-    box-shadow:0 18px 50px rgba(0,0,0,.45); display:none;
-  }
-  .bubble.show{ display:block; animation:pop .22s ease-out }
-  .bubble a{ color:var(--accent); font-weight:900; text-decoration:none }
-  .hint{ color:var(--muted); font-size:13px; margin-top:6px }
-
-  @keyframes pop{ from{ transform:scale(.95); opacity:.5 } to{ transform:scale(1); opacity:1 } }
-
-  footer{margin-top:12px; display:flex; align-items:center; justify-content:space-between; color:var(--muted); font-size:12px}
-  .mode{display:flex; gap:6px; align-items:center}
-  .mode button{padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:transparent; color:var(--muted); font-weight:700}
-  .mode button.active{border-color:var(--accent); color:var(--ink)}
+  .bubble{position:fixed;right:18px;bottom:18px;width:min(340px,calc(100% - 36px));border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:rgba(18,18,26,.92);backdrop-filter:saturate(140%) blur(6px);box-shadow:0 18px 50px rgba(0,0,0,.45);display:none}
+  .bubble.show{display:block;animation:pop .22s ease-out}
+  .bubble a{color:var(--accent);font-weight:900;text-decoration:none}
+  .hint{color:var(--muted);font-size:13px;margin-top:6px}
+  @keyframes pop{from{transform:scale(.95);opacity:.5}to{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
-  <div class="shell">
+  <div class="wrap">
     <header>
-      <div class="brand">
-        <div class="dot"></div>
-        <div>TY&nbsp;VOLE<span>.wtf</span></div>
-      </div>
-      <div class="chiprow">
-        <div class="chip">#skibidi</div>
-        <div class="chip">#rizz</div>
-        <div class="chip">#based</div>
-        <div class="chip">#drip</div>
-      </div>
-    </header>
+      <div class="brand"><div class="dot"></div><div>TY&nbsp;VOLE<span>.wtf</span></div></header>
+    <div class="chips">
+      <div class="chip">#skibidi</div><div class="chip">#rizz</div><div class="chip">#based</div><div class="chip">#drip</div>
+    </div>
 
     <div class="card">
       <div class="subtitle">Instant vibe generator</div>
@@ -109,91 +83,90 @@
   </div>
 
 <script>
-let CLICKS = 0;
-let OPENERS=[], FRAGMENTS=[], QUOTES=[], TEASERS=[];
 let MODE = (localStorage.getItem('mode') || 'genz');
+const LAST = []; // anti-repeat buffer
+
+const S = { openers:[], tones_pos:[], tones_mid:[], tones_neg:[], verbs:[], nouns:[], actions:[], emotes:[], templates:[], quotes:[], teasers:[] };
 
 const pick = arr => arr[Math.floor(Math.random()*arr.length)];
-const qEl = () => document.getElementById('quote');
+const uniquePick = (arr) => {
+  let tries = 0;
+  while (tries < 10) {
+    const v = pick(arr);
+    if (!LAST.includes(v)) return v;
+    tries++;
+  }
+  return pick(arr);
+};
 
-async function loadConfig(){
+async function loadLexicon(){
   try{
-    const cfg = await fetch('./config/app.json').then(r=>r.json());
-    OPENERS = cfg.openers||[]; FRAGMENTS = cfg.fragments||[];
-    QUOTES = cfg.quotes||[]; TEASERS = cfg.teaserLines||[];
-    if (!cfg.modes?.[MODE]) MODE = cfg.defaultMode || 'genz';
+    const lex = await fetch('./config/lexicon.json').then(r=>r.json());
+    Object.assign(S, lex);
+    const cfg = await fetch('./config/app.json').then(r=>r.json()).catch(()=>({teaserLines:[]}));
+    S.teasers = cfg.teaserLines || ["Mám i chat →","No cap, piš mi →","Pojď pokecat →"];
   }catch(e){
-    // fallback
-    OPENERS=['Kámo…','Real talk:','No cap –']; FRAGMENTS=['to je mid.','chill, dáme fix.','potřebuje to víc drip.'];
-    QUOTES=['Bro, proč to laguje?','This is not it, chief.','Skibidi moment.']; TEASERS=['Mám i chat →','No cap, piš mi →'];
+    // fallback mini-set
+    Object.assign(S, { openers:["Kámo…","Real talk:"], tones_pos:["based","fire"], tones_mid:["mid"], tones_neg:["L","scuffed"], verbs:["fixnout","shipnout"], nouns:["vibe","plan"], actions:["chill","focus"], emotes:["🔥","🧠"], templates:["{opener} {nouns} je {tones_mid}. Dej tomu {verbs}. {emote}"], quotes:["Bro, proč to laguje?","This ain’t it."] });
+    S.teasers = ["Pojď pokecat →"];
   }
 }
 
-function compose(){
-  // 55 % složená věta, 45 % hotová hláška
-  if (Math.random() < .55 && OPENERS.length && FRAGMENTS.length) {
-    return `${pick(OPENERS)} ${pick(FRAGMENTS)}`;
-  }
-  return pick(QUOTES);
-}
-
-function setQuote(text, push=true){
-  qEl().textContent = text;
-  const url = new URL(location.href);
+function render(text, push=true){
+  const el=document.getElementById('quote');
+  el.textContent=text;
+  if (LAST.push(text) > 10) LAST.shift();
+  const url=new URL(location.href);
   url.searchParams.set('q', encodeURIComponent(text));
   url.searchParams.set('mode', MODE);
   history[push?'pushState':'replaceState'](null,'',url);
 }
 
-function maybeShowBubble(){
-  const bubble = document.getElementById('bubble');
-  const bubbleText = document.getElementById('bubbleText');
-  if (CLICKS >= 1 && (CLICKS <= 4 ? Math.random() < 0.55 : Math.random() < 0.3)) {
-    bubbleText.textContent = pick(TEASERS);
+function compose(){
+  if (Math.random() < 0.55 && S.templates.length){
+    const tpl = uniquePick(S.templates);
+    const txt = tpl
+      .replace('{opener}', uniquePick(S.openers))
+      .replace('{nouns}', uniquePick(S.nouns))
+      .replace('{tones_pos}', uniquePick(S.tones_pos))
+      .replace('{tones_mid}', uniquePick(S.tones_mid))
+      .replace('{tones_neg}', uniquePick(S.tones_neg))
+      .replace('{verbs}', uniquePick(S.verbs))
+      .replace('{actions}', uniquePick(S.actions))
+      .replace('{emote}', uniquePick(S.emotes));
+    return txt;
+  }
+  return uniquePick(S.quotes);
+}
+
+function maybeBubble(){
+  const bubble=document.getElementById('bubble');
+  const bubbleText=document.getElementById('bubbleText');
+  if (LAST.length >= 2 && (LAST.length <= 6 ? Math.random()<.5 : Math.random()<.3)){
+    bubbleText.textContent = pick(S.teasers || ["Pojď pokecat →"]);
     bubble.classList.add('show');
   }
 }
 
 async function init(){
-  await loadConfig();
+  await loadLexicon();
 
-  const next = document.getElementById('next');
-  const copy = document.getElementById('copy');
-  const share = document.getElementById('share');
-  const btnGenz = document.getElementById('btnGenz');
-  const btnSafe = document.getElementById('btnSafe');
+  const btnGenz=document.getElementById('btnGenz');
+  const btnSafe=document.getElementById('btnSafe');
+  const apply=()=>{ btnGenz.classList.toggle('active',MODE==='genz'); btnSafe.classList.toggle('active',MODE==='family_friendly'); };
+  btnGenz.onclick=()=>{MODE='genz';localStorage.setItem('mode',MODE);apply();};
+  btnSafe.onclick=()=>{MODE='family_friendly';localStorage.setItem('mode',MODE);apply();};
 
-  function applyModeButtons(){
-    btnGenz.classList.toggle('active', MODE==='genz');
-    btnSafe.classList.toggle('active', MODE==='family_friendly');
-  }
-  btnGenz.onclick = () => { MODE='genz'; localStorage.setItem('mode',MODE); applyModeButtons(); };
-  btnSafe.onclick = () => { MODE='family_friendly'; localStorage.setItem('mode',MODE); applyModeButtons(); };
+  const url = new URLSearchParams(location.search);
+  const q = url.get('q'); const m = url.get('mode');
+  if (m){ MODE=m; localStorage.setItem('mode',MODE); apply(); }
 
-  const qFromUrl = new URLSearchParams(location.search).get('q');
-  const mFromUrl = new URLSearchParams(location.search).get('mode');
-  if (mFromUrl) { MODE = mFromUrl; localStorage.setItem('mode', MODE); }
-  applyModeButtons();
+  render(q ? decodeURIComponent(q) : compose(), false);
 
-  if (qFromUrl) setQuote(decodeURIComponent(qFromUrl), false);
-  else setQuote(compose(), false);
-
-  next.addEventListener('click', ()=>{ CLICKS++; setQuote(compose()); maybeShowBubble(); });
-
-  copy.addEventListener('click', async ()=>{
-    await navigator.clipboard.writeText(location.href);
-    copy.textContent = 'Zkopírováno ✅'; setTimeout(()=>copy.textContent='Zkopírovat odkaz', 1100);
-  });
-
-  share.addEventListener('click', async ()=>{
-    try{
-      if (navigator.share) await navigator.share({ title:'TY VOLE .wtf', text:qEl().textContent, url:location.href });
-      else { await navigator.clipboard.writeText(location.href); }
-      share.textContent='Sdíleno ✅'; setTimeout(()=>share.textContent='Sdílet',1100);
-    }catch(_){}
-  });
+  document.getElementById('next').onclick=()=>{ render(compose()); maybeBubble(); };
+  document.getElementById('copy').onclick=async()=>{ await navigator.clipboard.writeText(location.href); const c=document.getElementById('copy'); c.textContent='Zkopírováno ✅'; setTimeout(()=>c.textContent='Zkopírovat odkaz',1100); };
+  document.getElementById('share').onclick=async()=>{ try{ if(navigator.share){ await navigator.share({title:'TY VOLE .wtf',text:document.getElementById('quote').textContent,url:location.href}); } else { await navigator.clipboard.writeText(location.href); } const s=document.getElementById('share'); s.textContent='Sdíleno ✅'; setTimeout(()=>s.textContent='Sdílet',1100);}catch(_){} };
 }
-
 init();
 </script>
 </body>

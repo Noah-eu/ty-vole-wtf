@@ -1,0 +1,32 @@
+{
+  "openers": ["Kámo…","Bro,","Real talk:","No cap –","Lowkey:","Highkey:","Skibidi moment:","Be honest,","Bruh,","NGNL:"],
+  "tones_pos": ["peak","fire","based","valid","clean","gas","crispy","sigma","W move","top-tier","drip","ATE","slaps","goated"],
+  "tones_mid": ["mid","meh","okish","lukewarm","kinda fine","surface-level","safe","vanilla"],
+  "tones_neg": ["L","scuffed","cursed","down bad","chalked","copium","mald","brick","dead","not it","flop"],
+  "verbs": ["fixnout","pushnout","deploynout","shipnout","buffnout","nerfnout","rerollnout","locknout","hardcarrynout","speedrunout","clean-upnout","refactor","optimiznout"],
+  "nouns": ["vibe","flow","rizz","braincell","energy","context","stack","setup","mental patch","plan","move","story arc","timeline"],
+  "actions": ["chill","focus","hydrate","touch grass","breathe","sleep buff","music buff","micro-walk","deep work","reset"],
+  "emotes": ["💀","🔥","🧠","💪","🫡","🌀","🧊","⚡","✨","🎯","🫠"],
+  "templates": [
+    "{opener} {nouns} je {tones_mid}. Dej tomu {verbs} a {actions}. {emote}",
+    "{opener} tohle je {tones_neg}. Zkus {verbs} a reroll. {emote}",
+    "{opener} {nouns} today = {tones_pos}. Keep it rolling. {emote}",
+    "{opener} kinda {tones_mid}, ale s {verbs} to bude {tones_pos}. {emote}",
+    "{opener} not gonna lie, {nouns} feels {tones_neg}. {actions} a pak {verbs}. {emote}",
+    "{opener} W idea, L timing. {verbs} později. {emote}",
+    "{opener} short version: do {actions}, pak {verbs} a ship. {emote}",
+    "{opener} zero rizz? Add {actions} → {verbs} → profit. {emote}"
+  ],
+  "quotes": [
+    "Kámo, tohle je giga scuffed.",
+    "Real talk: this ain’t it.",
+    "Chill, dáme hotfix a jedeme dál.",
+    "Skibidi break a pak comeback.",
+    "Lowkey mid, highkey fixable.",
+    "W mindset, teď jen shipnout.",
+    "Based nápad, jen ho neudus plánem.",
+    "Hard carry dneska ty.",
+    "Drip chybí, ideu máš.",
+    "No cap, tohle dá smysl."
+  ]
+}
