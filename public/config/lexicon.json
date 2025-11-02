@@ -1,32 +1,96 @@
-{  
-  "openers": ["Kámo…","Bro,","Real talk:","No cap –","Lowkey:","Highkey:","Skibidi moment:","Be honest,","Bruh,","NGNL:"],
-  "tones_pos": ["peak","fire","based","valid","clean","gas","crispy","sigma","W move","top-tier","drip","ATE","slaps","goated"],
-  "tones_mid": ["mid","meh","okish","lukewarm","kinda fine","surface-level","safe","vanilla"],
-  "tones_neg": ["L","scuffed","cursed","down bad","chalked","copium","mald","brick","dead","not it","flop"],
-  "verbs": ["fixnout","pushnout","deploynout","shipnout","buffnout","nerfnout","rerollnout","locknout","hardcarrynout","speedrunout","clean-upnout","refactor","optimiznout"],
-  "nouns": ["vibe","flow","rizz","braincell","energy","context","stack","setup","mental patch","plan","move","story arc","timeline"],
-  "actions": ["chill","focus","hydrate","touch grass","breathe","sleep buff","music buff","micro-walk","deep work","reset"],
-  "emotes": ["💀","🔥","🧠","💪","🫡","🌀","🧊","⚡","✨","🎯","🫠"],
-  "templates": [
-    "{opener} {nouns} je {tones_mid}. Dej tomu {verbs} a {actions}. {emote}",
-    "{opener} tohle je {tones_neg}. Zkus {verbs} a reroll. {emote}",
-    "{opener} {nouns} today = {tones_pos}. Keep it rolling. {emote}",
-    "{opener} kinda {tones_mid}, ale s {verbs} to bude {tones_pos}. {emote}",
-    "{opener} not gonna lie, {nouns} feels {tones_neg}. {actions} a pak {verbs}. {emote}",
-    "{opener} W idea, L timing. {verbs} později. {emote}",
-    "{opener} short version: do {actions}, pak {verbs} a ship. {emote}",
-    "{opener} zero rizz? Add {actions} → {verbs} → profit. {emote}"
+{
+  "openers": [
+    "Kámo", "Bro", "Hele", "Real talk", "Lowkey", "No cap", "Upřímně", "Tak hele",
+    "Ok listen", "True story", "Side note", "BTW", "Heads up", "Tak jo", "Takhle",
+    "Popravdě", "Nehrotit", "Mimochodem", "IRL", "FYI", "Bro fr", "No jokes",
+    "Skromně", "Ngl", "Be honest"
   ],
+
+  "tones_pos": [
+    "based", "valid", "fire", "peak", "clean", "solid", "hard W", "on point",
+    "sleek", "smooth", "kino", "chef’s kiss", "gas", "goated", "heat", "crisp"
+  ],
+
+  "tones_mid": [
+    "mid", "meh", "basic", "ok-ish", "lukewarm", "lite", "standard", "neutral",
+    "average", "not deep", "whatever", "so-so"
+  ],
+
+  "tones_neg": [
+    "L", "cringe", "yikes", "dead", "sus", "trash", "iffy", "off", "low effort",
+    "overkill", "pain", "cope", "doom", "nah", "not it"
+  ],
+
+  "verbs": [
+    "fixnout", "shipnout", "rerollnout", "locknout", "buffnout", "nerfnout",
+    "hard carry", "clapnout bug", "refactor", "pushnout", "deploynout", "scale-nout",
+    "mute-nout notifikace", "ghostnout", "cancelnout", "save-nout", "pin-nout",
+    "dropnout", "grindit", "resetnout", "revive-nout", "speedrunout", "min-maxnout",
+    "pivotnout", "stacknout", "cooldown", "pingnout", "syncnout", "merge-nout"
+  ],
+
+  "nouns": [
+    "vibe", "setup", "flow", "drip", "mood", "plan", "grind", "energy", "stack",
+    "buff", "nerf", "clout", "rizz", "brain", "focus", "playlist", "notifikace",
+    "deadline", "scope", "context", "cooldown", "overhead", "latence", "skill issue",
+    "momentum", "checkpoint", "meta", "xp", "loot", "combo"
+  ],
+
+  "actions": [
+    "reset", "chill", "focus", "vypnout notifikace", "dát pauzu", "stretch",
+    "nadejchat vzduch", "vyměnit playlist", "pít vodu", "short walk",
+    "snížit jas", "dark mode", "projet to na loud", "offline mód", "deep breath",
+    "rychlej detox sítí", "proklepat prsty", "mind reset", "rychlej re-sync",
+    "střihnout mini úkol", "odložit perfekcionismus", "zapsat 3 myšlenky"
+  ],
+
+  "emotes": [
+    "🔥","💀","⚡","😮‍💨","🫠","🎯","🧠","💅","🫡","🤝","🚀","🧩","🌀","🧯",
+    "🪫","🔋","🧵","🧹","🧽","🗿","✨","📈","🫨","🥶","😵‍💫","🧘","🕹️","🎧","📌"
+  ],
+
+  "templates": [
+    "{opener}, tohle je {tones_neg}. Dej tomu {verbs} a jedeme dál. {emote}",
+    "{opener}, vibe je {tones_mid}, buffni {nouns} a zvedni level. {emote}",
+    "{opener}, full {tones_pos}, když dáš {actions}. {emote}",
+    "{opener}, to je mid – reroll a {verbs} {nouns}. {emote}",
+    "{opener}, cringe vibes – {verbs} to hned. {emote}",
+    "{opener}, potřebuje to {verbs} a míň {nouns} šumu. {emote}",
+    "{opener}, dej si {actions}, ať není {tones_neg}. {emote}",
+    "{opener}, basic setup. Přidej {nouns}, ať je to peak. {emote}",
+    "{opener}, skill issue, ale fixnutelný – {verbs}. {emote}",
+    "{opener}, buffni {nouns}, sundej {nouns} overhead. {emote}",
+    "{opener}, valid plan, jen {verbs} a drž {flow}. {emote}",
+    "{opener}, pain spotted – cooldown a {actions}. {emote}",
+    "{opener}, latence v hlavě – {actions} a pak {verbs}. {emote}",
+    "{opener}, grind je real, ale {verbs} to posune. {emote}",
+    "{opener}, dej mini-quest: {actions}, pak {verbs}. {emote}",
+    "{opener}, W move: {verbs} + {nouns} checkpoint. {emote}",
+    "{opener}, L moment, ale krátkej – {verbs}. {emote}",
+    "{opener}, ok-ish, chce to {nouns} a míň chaosu. {emote}",
+    "{opener}, sundej notifikace, buffni {focus} a {verbs}. {emote}"
+  ],
+
   "quotes": [
-    "Kámo, tohle je giga scuffed.",
-    "Real talk: this ain’t it.",
-    "Chill, dáme hotfix a jedeme dál.",
-    "Skibidi break a pak comeback.",
-    "Lowkey mid, highkey fixable.",
-    "W mindset, teď jen shipnout.",
-    "Based nápad, jen ho neudus plánem.",
-    "Hard carry dneska ty.",
-    "Drip chybí, ideu máš.",
-    "No cap, tohle dá smysl."
+    "Skibidi… ok.",
+    "Be honest, tohle je L.",
+    "No thoughts, just vibes.",
+    "Lowkey valid.",
+    "Mid? Tak reroll.",
+    "Hard carry only.",
+    "Brain lag detected.",
+    "Kino vibes.",
+    "No cap, jedeme.",
+    "W move.",
+    "Cringe? Cut.",
+    "Reset, pak drip.",
+    "Pingni mě až to žije.",
+    "Mute notifikace, zvedni skill.",
+    "Focus mode ON.",
+    "Cool down, pak push.",
+    "Buff energy, ne ego.",
+    "Less talk, more ship.",
+    "Ghostni chaos.",
+    "Small step, big W."
   ]
 }
