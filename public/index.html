@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ty-vole.wtf</title>
+<style>
+  body{margin:0;background:#0f0f12;color:#e7e7ec;font:18px/1.45 system-ui;display:flex;min-height:100dvh}
+  .wrap{margin:auto;max-width:880px;padding:24px}
+  .card{border-radius:20px;padding:28px;background:#16161c;border:1px solid #262633;box-shadow:0 8px 40px rgba(0,0,0,.35)}
+  h1{margin:0 0 4px;font-size:clamp(28px,6vw,56px);letter-spacing:-.02em}
+  .quote{font-size:clamp(22px,4.5vw,38px);font-weight:700;margin:20px 0 8px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  button{border:0;border-radius:12px;padding:12px 16px;cursor:pointer;font-weight:700}
+  .primary{background:#9DFF00;color:#0f0f12}
+  .ghost{background:transparent;border:1px solid #2b2b3a;color:#e7e7ec}
+  .bubble{position:fixed;right:16px;bottom:16px;max-width:320px;background:#1b1b24;border:1px solid #2b2b3a;padding:12px 14px;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.35);display:none}
+  .bubble.show{display:block;animation:pop .22s ease-out}
+  @keyframes pop{from{transform:scale(.9);opacity:.5}to{transform:scale(1);opacity:1}}
+  .bubble a{display:inline-block;margin-top:8px;font-weight:700;color:#9DFF00;text-decoration:none}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>TY&nbsp;VOLE<span style="opacity:.6">.wtf</span></h1>
+      <div class="quote" id="quote">…načítám šílenou hlášku…</div>
+      <div class="row">
+        <button id="next" class="primary">Další WTF</button>
+        <button id="copy" class="ghost">Zkopírovat odkaz</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bubble" id="bubble">
+    <div id="bubbleText">Ty vole…</div>
+    <a href="./chat.html" id="bubbleCta">Pojď pokecat →</a>
+  </div>
+
+<script>
+let CLICKS = 0, QUOTES = [], TEASERS = [];
+fetch('../config/app.json').then(r=>r.json()).then(cfg=>{ QUOTES=cfg.quotes; TEASERS=cfg.teaserLines; init(); });
+
+function init(){
+  const qEl = document.getElementById('quote');
+  const next = document.getElementById('next');
+  const copy = document.getElementById('copy');
+  const bubble = document.getElementById('bubble');
+  const bubbleText = document.getElementById('bubbleText');
+
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+  const setQuote = (text, push=true) => {
+    qEl.textContent = text;
+    const url=new URL(location.href); url.searchParams.set('q', encodeURIComponent(text));
+    history[push?'pushState':'replaceState'](null,'',url);
+  };
+  const fromURL = () => { const q=new URLSearchParams(location.search).get('q'); return q?decodeURIComponent(q):null; };
+
+  function maybeShowBubble(){
+    if (CLICKS >= 2 && (CLICKS <= 5 ? Math.random() < 0.35 : Math.random() < 0.2)) {
+      bubbleText.textContent = pick(TEASERS);
+      bubble.classList.add('show');
+    }
+  }
+  function newQuote(){
+    CLICKS++; setQuote(pick(QUOTES)); maybeShowBubble();
+  }
+
+  const existing = fromURL();
+  existing ? setQuote(existing,false) : newQuote();
+  next.addEventListener('click', newQuote);
+  copy.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(location.href);
+    copy.textContent='Zkopírováno ✅'; setTimeout(()=>copy.textContent='Zkopírovat odkaz',1200);
+  });
+}
+</script>
+</body>
+</html>

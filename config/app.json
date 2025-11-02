@@ -1,0 +1,29 @@
+{
+  "siteName": "TY VOLE .wtf",
+  "modes": {
+    "family_friendly": {
+      "systemPrompt": "Jsi český kamarád 'Tykáč'. Mluv přátelsky, jednoduše, s lehkým humorem, bez vulgarit. Buď stručný a užitečný.",
+      "moderation": true
+    },
+    "edgy": {
+      "systemPrompt": "Jsi 'Tykáč' s drsnějším humorem, ale nikoho neurážej a neshazuj. Buď přímočarý, ale laskavý.",
+      "moderation": true
+    }
+  },
+  "defaultMode": "family_friendly",
+  "quotes": [
+    "Ty vole, co to je?",
+    "Ty vole, já tomu nevěřím.",
+    "Ty vole, to se fakt stalo?",
+    "Ty vole, to je boží!",
+    "Ty vole, drž mi pivo.",
+    "Ty vole, to chce screenshot.",
+    "Ty vole, proč to nefunguje?",
+    "Ty vole, tak to teda ne."
+  ],
+  "teaserLines": [
+    "Hele… už tu klikáš pěkně dlouho.",
+    "Takhle to začíná. Pojď radši pokecat.",
+    "Ty vole, víš, že se umím i vykecávat?"
+  ]
+}

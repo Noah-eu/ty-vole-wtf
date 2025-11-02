@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tykáč • chat</title>
+<style>
+  body{margin:0;background:#0f0f12;color:#e7e7ec;font:17px/1.45 system-ui;display:flex;flex-direction:column;min-height:100dvh}
+  header{padding:12px 16px;border-bottom:1px solid #262633}
+  .wrap{flex:1;max-width:920px;width:100%;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+  .msg{max-width:80%;padding:10px 12px;border-radius:12px}
+  .bot{background:#1b1b24;border:1px solid #2b2b3a}
+  .you{background:#17200a;border:1px solid #335a0b;margin-left:auto}
+  .row{display:flex;gap:8px;padding:10px 16px;border-top:1px solid #262633}
+  input{flex:1;background:#101017;border:1px solid #2b2b3a;color:#e7e7ec;border-radius:10px;padding:12px}
+  button{background:#9DFF00;color:#0f0f12;border:0;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer}
+  .hint{color:#a6a6b2;font-size:13px}
+</style>
+</head>
+<body>
+  <header><strong><a href="./" style="color:inherit;text-decoration:none">TY VOLE .wtf</a></strong></header>
+  <div class="wrap" id="chat">
+    <div class="msg bot">Ty vole… o co jde?</div>
+    <div class="hint">Beta: odpovědi běží přes serverovou proxy.</div>
+  </div>
+  <div class="row">
+    <input id="inp" placeholder="Napiš, co řešíš…"/>
+    <button id="send">Poslat</button>
+  </div>
+<script>
+const chat=document.getElementById('chat'), inp=document.getElementById('inp'), send=document.getElementById('send');
+function add(t,who='bot'){const d=document.createElement('div');d.className='msg '+(who==='you'?'you':'bot');d.textContent=t;chat.appendChild(d);window.scrollTo(0,document.body.scrollHeight)}
+async function ask(q){
+  add(q,'you'); inp.value='';
+  try{
+    const r = await fetch('../api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({q})});
+    const data = await r.json(); add(data.reply || '…','bot');
+  }catch{ add('Ty vole… něco se pokazilo. Zkus to znova.','bot'); }
+}
+send.addEventListener('click',()=>{const q=inp.value.trim(); if(q) ask(q)});
+inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){const q=inp.value.trim(); if(q) ask(q)}});
+</script>
+</body>
+</html>
