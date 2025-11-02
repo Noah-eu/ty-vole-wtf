@@ -8,7 +8,7 @@
 <style>
   :root{
     --bg:#0b0b11; --ink:#f3f3f8; --muted:#a7a7b6; --line:#252536;
-    --card:#11121a; --accent:#9DFF00; --cyan:#00F0FF;
+    --card:#11121a; --accent:#9DFF00; --cyan:#00F0FF; --ink-dark:#0c0c10;
   }
   *{box-sizing:border-box}
   body{
@@ -27,7 +27,7 @@
   .brand span{opacity:.66}
   .chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .chip{border:1px solid var(--line);color:var(--muted);background:rgba(255,255,255,.02);padding:8px 12px;border-radius:999px;font-size:13px}
-  .chip.btn{cursor:pointer;color:#0c0c10;background:linear-gradient(90deg,var(--accent),var(--cyan));border:0;font-weight:900}
+  .chip.btn{cursor:pointer;color:var(--ink-dark);background:linear-gradient(90deg,var(--accent),var(--cyan));border:0;font-weight:900}
 
   .card{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));padding:26px;box-shadow:0 22px 60px rgba(0,0,0,.38)}
   h1{margin:0 0 6px;font-size:clamp(28px,7vw,56px);line-height:1.1;letter-spacing:-.02em}
@@ -36,7 +36,7 @@
   .trans{color:var(--muted);font-size:15px;margin-top:2px}
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
   button{appearance:none;border:0;cursor:pointer;font-weight:900;padding:12px 16px;border-radius:14px}
-  .primary{color:#0c0c10;background:linear-gradient(90deg,var(--accent),var(--cyan))}
+  .primary{color:var(--ink-dark);background:linear-gradient(90deg,var(--accent),var(--cyan))}
   .ghost{color:var(--ink);background:transparent;border:1px solid var(--line)}
   .tiny{font-size:13px;padding:8px 12px}
 
@@ -69,7 +69,7 @@
       <div class="brand"><div class="dot"></div><div>TY&nbsp;VOLE<span>.wtf</span></div></div>
       <div class="chips">
         <div class="chip">#skibidi</div><div class="chip">#rizz</div><div class="chip">#based</div><div class="chip">#drip</div>
-        <button id="btnSheet" class="chip btn">Překladač ↔</button>
+        <button id="btnSheet" class="chip btn">Překladač (Gen-Z)</button>
       </div>
     </header>
 
@@ -80,10 +80,10 @@
 
       <div class="row">
         <button id="next" class="primary">Další shot 🔥</button>
-        <button id="copy" class="ghost">Zkopírovat odkaz</button>
-        <button id="share" class="ghost tiny">Sdílet</button>
+        <button id="copy" class="ghost" title="Zkopíruje URL s touhle hláškou">Zkopči link</button>
+        <button id="share" class="ghost tiny" title="Sdílej do zpráv nebo appky">Pošli dál</button>
         <label class="chip" style="cursor:pointer;">
-          <input id="chkAutoTrans" type="checkbox" style="vertical-align:middle;margin-right:6px;"> Zobrazovat překlad
+          <input id="chkAutoTrans" type="checkbox" style="vertical-align:middle;margin-right:6px;"> Ukazuj překlad
         </label>
       </div>
 
@@ -223,8 +223,8 @@ async function init(){
   if(AUTO) showAutoTranslation(document.getElementById('quote').textContent);
 
   document.getElementById('next').onclick=async()=>{ setQuote(compose()); maybeBubble(); if(AUTO) showAutoTranslation(document.getElementById('quote').textContent); };
-  document.getElementById('copy').onclick=async()=>{ await navigator.clipboard.writeText(location.href); const c=document.getElementById('copy'); c.textContent='Zkopírováno ✅'; setTimeout(()=>c.textContent='Zkopírovat odkaz',1100); };
-  document.getElementById('share').onclick=async()=>{ try{ if(navigator.share){ await navigator.share({title:'TY VOLE .wtf',text:document.getElementById('quote').textContent,url:location.href}); } else { await navigator.clipboard.writeText(location.href); } const s=document.getElementById('share'); s.textContent='Sdíleno ✅'; setTimeout(()=>s.textContent='Sdílet',1100);}catch{} };
+  document.getElementById('copy').onclick=async()=>{ await navigator.clipboard.writeText(location.href); const c=document.getElementById('copy'); c.textContent='Zkopčeno ✅'; setTimeout(()=>c.textContent='Zkopči link',1100); };
+  document.getElementById('share').onclick=async()=>{ try{ if(navigator.share){ await navigator.share({title:'TY VOLE .wtf',text:document.getElementById('quote').textContent,url:location.href}); } else { await navigator.clipboard.writeText(location.href); } const s=document.getElementById('share'); s.textContent='Odesláno ✅'; setTimeout(()=>s.textContent='Pošli dál',1100);}catch{} };
 
   // bottom sheet
   const sheet=document.getElementById('sheet'), back=document.getElementById('backdrop');

@@ -5,32 +5,38 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>TYKáč – chat</title>
 <style>
-  :root{--bg:#0b0b11;--ink:#f3f3f8;--muted:#a7a7b6;--line:#252536;--card:#11121a;--accent:#9DFF00;}
-  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui;
+  :root{
+    --bg:#0b0b11;--ink:#f3f3f8;--muted:#a7a7b6;--line:#252536;--card:#11121a;--accent:#9DFF00;--ink-dark:#0c0c10;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui;
     min-height:100dvh;display:grid;grid-template-rows:auto 1fr auto}
   header,footer{padding:12px 16px;border-bottom:1px solid var(--line)} footer{border-top:1px solid var(--line);border-bottom:0}
   .wrap{max-width:900px;margin:0 auto;width:100%}
   .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:13px;color:var(--muted)}
-  .pill.sel{border-color:var(--accent);color:var(--ink);font-weight:800}
-  .chat{padding:12px 16px} .msg{max-width:760px;margin:10px 0;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:#11121a}
+  .pill{border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:13px;color:var(--ink);background:rgba(255,255,255,.03);cursor:pointer}
+  .pill.sel{border-color:var(--accent);background:linear-gradient(90deg,var(--accent),#bfff70);color:var(--ink-dark);font-weight:900}
+  .chat{padding:12px 16px}
+  .msg{max-width:760px;margin:10px 0;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:#11121a;white-space:pre-wrap}
   .me{margin-left:auto;background:#0f1a10;border-color:#1f3a20}
   .trans{margin-top:6px;color:var(--muted);font-size:14px}
-  .input{display:flex;gap:8px} input[type=text]{flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0f1016;color:var(--ink)}
-  button{border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer} .go{background:var(--accent);color:#0b0b11}
+  .input{display:flex;gap:8px}
+  input[type=text]{flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0f1016;color:var(--ink)}
+  button{border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
+  .go{background:linear-gradient(90deg,var(--accent),#bfff70);color:var(--ink-dark)}
 </style>
 </head>
 <body>
   <header><div class="wrap row">
     <strong>TY VOLE .wtf – Chat</strong>
     <div class="row" style="margin-left:auto">
-      <span class="pill">Vstup:</span>
-      <button class="pill sel" id="inNormal">Normální</button>
-      <button class="pill" id="inGenz">Gen-Z</button>
-      <span class="pill">Překlad:</span>
-      <button class="pill sel" id="trNever">Nikdy</button>
-      <button class="pill" id="trOnClick">Na klik</button>
-      <button class="pill" id="trAlways">Vždy</button>
+      <span class="pill" style="opacity:.8;">Vstup</span>
+      <button class="pill sel" id="inNormal" title="Píšu normálně, odpověď bude Gen-Z">Normální</button>
+      <button class="pill" id="inGenz" title="Píšu Gen-Z, odpověď bude normální">Gen-Z</button>
+      <span class="pill" style="opacity:.8;">Překlad</span>
+      <button class="pill sel" id="trNever" title="Bez překladu">Vyp</button>
+      <button class="pill" id="trOnClick" title="Zobraz na klik">Klik</button>
+      <button class="pill" id="trAlways" title="Vždy zobraz pod zprávou">Vždy</button>
     </div>
   </div></header>
 
@@ -49,7 +55,6 @@ const elChat = document.getElementById('chat');
 const elTxt = document.getElementById('text');
 
 function setSel(id,on){ document.getElementById(id).classList.toggle('sel',on); }
-
 function applyToggles(){
   setSel('inNormal', inputStyle==='normal'); setSel('inGenz', inputStyle==='genz');
   setSel('trNever', translateMode==='never'); setSel('trOnClick', translateMode==='click'); setSel('trAlways', translateMode==='always');
@@ -83,7 +88,6 @@ async function send(){
   const q = elTxt.value.trim(); if(!q) return;
   elTxt.value=''; addMsg(q,true);
 
-  // reply style je opak k inputu (když píšeš normálně, odpověď Gen-Z)
   const replyStyle = (inputStyle==='normal') ? 'genz' : 'normal';
   const withTranslation = (translateMode!=='never');
 
@@ -96,7 +100,6 @@ async function send(){
     let reply = j.reply || '…';
     let translation = j.translation || '';
 
-    // fallback: pokud funkce neposlala translation a režim to chce, dožádej přes /translate
     if(!translation && withTranslation){
       const direction = (replyStyle==='genz') ? 'gz_to_normal' : 'normal_to_gz';
       translation = await translate(reply, direction);
@@ -110,6 +113,9 @@ async function send(){
 
 document.getElementById('send').onclick=send;
 elTxt.addEventListener('keydown',e=>{ if(e.key==='Enter'){ send(); }});
+
+// úvodní bublina (Gen-Z, ale srozumitelná)
+addMsg("Čau kámo! Píš normálně a já to dám do Gen-Z. Nebo přepni vstup na Gen-Z a vrátím to lidsky. No cap – bez zbytečných otázek.", false);
 </script>
 </body>
 </html>

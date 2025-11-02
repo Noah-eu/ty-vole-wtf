@@ -17,38 +17,33 @@ exports.handler = async function (event) {
     const withTranslation = !!body.withTranslation;
 
     const lex = safeRead('../../public/config/lexicon.json') || {};
-    const cfg = safeRead('../../config/app.json') || {};
     const slangPos = (lex.tones_pos||[]).slice(0,12).join(', ');
     const slangNeg = (lex.tones_neg||[]).slice(0,10).join(', ');
 
     const STYLE = (replyStyle==='genz')
-      ? `Jsi kámoš z Gen Z. Mluv krátce, přátelsky, hovorově. Rozumně používej anglicismy (no cap, lowkey, based, rizz, drip…), ale ne toxicky.
-         Nikdy nekladej generické otázky jako 'Co máš v plánu?' apod. Buď věcný, navrhni mini-akci nebo tip související s tématem.
-         Max 1–2 věty, max 1 emoji. Povolený slang: ${slangPos}, ${slangNeg}.`
-      : `Piš srozumitelnou běžnou češtinou, stručně a přímo. Žádné generické dotazy.
-         Max 1–2 věty, bez zbytečného patosu.`;
+      ? `Jsi kámoš z Gen Z. Hovorově, krátce, přátelsky. Rozumně anglicismy (no cap, lowkey, based, rizz, drip…), ale srozumitelně.
+         NIKDY nekladej generické otázky (např. "Co máš v plánu?", "Jak ti mohu zpříjemnit den?"). Pokud se uživatel výslovně nezeptá,
+         neptej se – raději dej krátký tip nebo mini-akci související s tématem. Max 1–2 věty, max 1 emoji. Povolený slang: ${slangPos}, ${slangNeg}.`
+      : `Piš srozumitelnou, běžnou češtinou. Stručně, přímo, bez generických otázek. Max 1–2 věty.`;
 
-    // Few-shots, aby nepadal do otázek
     const FEWSHOT = [
       { role:'user', content:'Jsem unavený a nic se mi nechce.' },
-      { role:'assistant', content: replyStyle==='genz' ? 'Understandable, bro. Dej 5 min break, napij se, pak mini-task 10 min. Lowkey win → momentum.' : 'Dej si 5 minut pauzu, napij se a pak udělej jeden drobný úkol na 10 minut. Získáš tempo.' },
+      { role:'assistant', content: replyStyle==='genz' ? 'Understandable, bro. Dej 5 min pauzu, napi se, pak 10 min mini-task. Lowkey win → momentum.' : 'Dej si 5 minut pauzu, napij se a pak udělej jeden malý úkol na 10 minut. Získáš tempo.' },
       { role:'user', content:'Mám milion věcí a nevím, kde začít.' },
-      { role:'assistant', content: replyStyle==='genz' ? 'Pick 1 věc na 15 min. Všechno ostatní mute. No cap, tohle je W move.' : 'Vyber si jednu věc na 15 minut a zbytek ignoruj. Je to nejrychlejší způsob, jak se rozjet.' }
+      { role:'assistant', content: replyStyle==='genz' ? 'Vyber 1 věc na 15 min, zbytek mute. W move, no cap.' : 'Vyber si jednu věc na 15 minut a zbytek ignoruj. Nejrychlejší způsob, jak se rozjet.' }
     ];
 
-    const primary = await openai({
+    const reply = await openai({
       model: MODEL,
-      temperature: 0.85,
+      temperature: 0.9,
       presence_penalty: 0.4,
-      frequency_penalty: 0.6,
+      frequency_penalty: 0.7,
       messages: [
         { role:'system', content: STYLE },
         ...FEWSHOT,
         { role:'user', content: q }
       ]
-    });
-
-    const reply = primary || '…';
+    }) || '…';
 
     let translation = '';
     if (withTranslation) {
