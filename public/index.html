@@ -18,6 +18,7 @@
   :root{
     --bg:#0b0b11; --ink:#f3f3f8; --muted:#a7a7b6; --line:#252536;
     --card:#11121a; --accent:#9DFF00; --cyan:#00F0FF; --ink-dark:#0c0c10;
+    --pink:#ff63b8;
   }
   *{box-sizing:border-box}
   body{
@@ -28,8 +29,24 @@
       radial-gradient(900px 520px at 15% 90%, rgba(157,255,0,.05), transparent 55%),
       var(--bg);
     min-height:100dvh; display:grid; place-items:center; padding:28px;
+    position:relative; overflow-x:hidden;
   }
-  .wrap{width:min(980px,100%);}
+
+  /* === BIG BACKGROUND WORDMARK === */
+  .bg-wordmark{
+    position:fixed; inset:0; display:grid; place-items:center; pointer-events:none;
+    z-index:0;
+  }
+  .bg-wordmark span{
+    font-weight:900; letter-spacing:.02em; white-space:nowrap;
+    font-size:clamp(64px, 20vw, 320px);
+    color:var(--pink); opacity:.08;
+    text-shadow:0 10px 40px rgba(255,99,184,.45);
+    transform:translateY(-2vh) rotate(-3deg);
+    user-select:none;
+  }
+
+  .wrap{width:min(980px,100%); position:relative; z-index:1;}
   header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
   .brand{display:flex;gap:10px;align-items:center;font-weight:900;letter-spacing:.02em}
   .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(90deg,var(--accent),var(--cyan));box-shadow:0 0 16px rgba(157,255,0,.7)}
@@ -61,13 +78,14 @@
     padding:12px 14px;background:rgba(18,18,26,.92);
     backdrop-filter:saturate(140%) blur(6px);
     box-shadow:0 18px 50px rgba(0,0,0,.45);
+    z-index:2;
   }
   .cta a{display:block;color:var(--accent);font-weight:900;text-decoration:none}
   .cta small{display:block;color:var(--muted);margin-top:6px}
   
   /* bottom sheet (translator) */
-  .sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none}
-  .sheet{position:fixed;left:0;right:0;bottom:0;max-height:70dvh;background:#11121a;border-top:1px solid var(--line);border-radius:18px 18px 0 0;transform:translateY(100%);transition:.2s ease-out}
+  .sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none; z-index:10;}
+  .sheet{position:fixed;left:0;right:0;bottom:0;max-height:70dvh;background:#11121a;border-top:1px solid var(--line);border-radius:18px 18px 0 0;transform:translateY(100%);transition:.2s ease-out; z-index:11;}
   .sheet.open{transform:translateY(0)}
   .sheet-backdrop.show{display:block}
   .sheet .head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
@@ -78,6 +96,9 @@
 </style>
 </head>
 <body>
+  <!-- big background wordmark -->
+  <div class="bg-wordmark"><span>TY VOLE .wtf</span></div>
+
   <div class="wrap">
     <header>
       <div class="brand"><div class="dot"></div><div>TY&nbsp;VOLE<span>.wtf</span></div></div>
@@ -107,7 +128,7 @@
           <button data-mode="genz" id="btnGenz" class="active">Gen-Z</button>
           <button data-mode="family_friendly" id="btnSafe">Safe</button>
         </div>
-        <div class="hint">Tip: otevři i chat, je víc chaos.</div>
+        <!-- hint odstraněn -->
       </footer>
     </div>
   </div>
@@ -122,7 +143,7 @@
     <div class="head">
       <strong>Překladač Gen-Z ↔ normální</strong>
       <div>
-        <button id="swap" class="ghost tiny">Vyměnit strany ↔</button>
+        <!-- tlačítko Vyměnit strany odstraněno -->
         <button id="closeSheet" class="ghost tiny">Zavřít</button>
       </div>
     </div>
@@ -133,7 +154,7 @@
           <textarea id="tNorm" placeholder="Napiš normálně…"></textarea>
           <div class="smallrow">
             <button id="bNorm2Genz" class="primary">Přeložit</button>
-            <button id="cGenzOut" class="ghost tiny">Kopírovat výsledek</button>
+            <!-- Kopírovat výsledek odstraněno -->
           </div>
         </div>
         <div>
@@ -141,7 +162,7 @@
           <textarea id="tGenz" placeholder="Nebo Gen-Z…"></textarea>
           <div class="smallrow">
             <button id="bGenz2Norm" class="primary">Přeložit</button>
-            <button id="cNormOut" class="ghost tiny">Kopírovat výsledek</button>
+            <!-- Kopírovat výsledek odstraněno -->
           </div>
         </div>
       </div>
@@ -153,7 +174,7 @@ let MODE = (localStorage.getItem('mode') || 'genz');
 let AUTO = localStorage.getItem('autoTrans') === '1';
 const LAST = [];
 
-// ===== Lexikon (načte se z /config/lexicon.json; jinak fallback) =====
+// ===== Lexikon =====
 const L = { openers:[], tones_pos:[], tones_mid:[], tones_neg:[], verbs:[], nouns:[], actions:[], emotes:[], templates:[], quotes:[] };
 
 const pick = arr => arr[Math.floor(Math.random()*arr.length)];
@@ -167,34 +188,7 @@ async function loadLexicon(){
     });
     Object.assign(L, lex);
   }catch(e){
-    Object.assign(L, {
-      openers: ["Kámo","Bro","No cap","Real talk","Lowkey","Hele"],
-      tones_pos: ["based","fire","clean","valid","peak"],
-      tones_mid: ["mid","meh","ok-ish","basic"],
-      tones_neg: ["L","sus","cringe","dead","yikes"],
-      verbs: ["fixnout","rerollnout","pushnout","shipnout","vibe-nout","hard carry","clapnout bug","locknout plán","nerfnout ego","buffnout to"],
-      nouns: ["vibe","setup","flow","brain","drip","mood","plan","grind","stack","energy"],
-      actions: ["chill","reset","focus","napit se vody","dát pauzu","prohodit playlist","vzít čerstvej vzduch"],
-      emotes: ["🧠","🔥","💀","⚡","💅","😮‍💨","🫠","🫡","🤝","🎯"],
-      templates: [
-        "{opener}, tohle je {tones_neg}. Dej tomu {verbs} a jedeme dál. {emote}",
-        "{opener}, vibe je {tones_mid}, zkus {verbs} a buffni {nouns}. {emote}",
-        "{opener}, full {tones_pos} když {actions}. Trust. {emote}",
-        "{opener}, to je mid. Reroll a {verbs} {nouns}. {emote}",
-        "{opener}, L moment. Reset, {verbs} a back to grind. {emote}",
-        "{opener}, drip {nouns} je {tones_pos}, keep it rolling. {emote}",
-        "{opener}, cringe vibes – {verbs} to hned. {emote}",
-        "{opener}, basic setup. Přidej {nouns}, ať je to peak. {emote}"
-      ],
-      quotes: [
-        "Skibidi rizz check.",
-        "No thoughts, just vibes.",
-        "Be honest, tohle je L.",
-        "Brain lag detected, dej reset.",
-        "This ain’t it, chief.",
-        "Hard carry only."
-      ]
-    });
+    Object.assign(L, { openers:["Hele"], templates:["No cap, další."], quotes:["No cap, další."] });
   }
 }
 
@@ -310,13 +304,12 @@ async function init(){
   const tNorm=document.getElementById('tNorm'), tGenz=document.getElementById('tGenz');
   document.getElementById('bNorm2Genz').onclick=async()=>{ tGenz.value = await translate(tNorm.value,'normal_to_gz'); };
   document.getElementById('bGenz2Norm').onclick=async()=>{ tNorm.value = await translate(tGenz.value,'gz_to_normal'); };
-  document.getElementById('cGenzOut').onclick=async()=>{ await navigator.clipboard.writeText(tGenz.value); };
-  document.getElementById('cNormOut').onclick=async()=>{ await navigator.clipboard.writeText(tNorm.value); };
-  document.getElementById('swap').onclick=()=>{ const A=tNorm.value; tNorm.value=tGenz.value; tGenz.value=A; };
+
+  // tlačítko Vyměnit strany + Kopírovat výsledek byly odstraněny, takže bez handlerů
 }
 init();
 
-// === Service worker registrace (PWA) ===
+// PWA SW registrace
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(console.error);

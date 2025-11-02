@@ -5,22 +5,18 @@
     "Popravdě", "Nehrotit", "Mimochodem", "IRL", "FYI", "Bro fr", "No jokes",
     "Skromně", "Ngl", "Be honest"
   ],
-
   "tones_pos": [
     "based", "valid", "fire", "peak", "clean", "solid", "hard W", "on point",
     "sleek", "smooth", "kino", "chef’s kiss", "gas", "goated", "heat", "crisp"
   ],
-
   "tones_mid": [
     "mid", "meh", "basic", "ok-ish", "lukewarm", "lite", "standard", "neutral",
     "average", "not deep", "whatever", "so-so"
   ],
-
   "tones_neg": [
     "L", "cringe", "yikes", "dead", "sus", "trash", "iffy", "off", "low effort",
     "overkill", "pain", "cope", "doom", "nah", "not it"
   ],
-
   "verbs": [
     "fixnout", "shipnout", "rerollnout", "locknout", "buffnout", "nerfnout",
     "hard carry", "clapnout bug", "refactor", "pushnout", "deploynout", "scale-nout",
@@ -28,14 +24,12 @@
     "dropnout", "grindit", "resetnout", "revive-nout", "speedrunout", "min-maxnout",
     "pivotnout", "stacknout", "cooldown", "pingnout", "syncnout", "merge-nout"
   ],
-
   "nouns": [
     "vibe", "setup", "flow", "drip", "mood", "plan", "grind", "energy", "stack",
     "buff", "nerf", "clout", "rizz", "brain", "focus", "playlist", "notifikace",
     "deadline", "scope", "context", "cooldown", "overhead", "latence", "skill issue",
     "momentum", "checkpoint", "meta", "xp", "loot", "combo"
   ],
-
   "actions": [
     "reset", "chill", "focus", "vypnout notifikace", "dát pauzu", "stretch",
     "nadejchat vzduch", "vyměnit playlist", "pít vodu", "short walk",
@@ -43,12 +37,10 @@
     "rychlej detox sítí", "proklepat prsty", "mind reset", "rychlej re-sync",
     "střihnout mini úkol", "odložit perfekcionismus", "zapsat 3 myšlenky"
   ],
-
   "emotes": [
-    "🔥","💀","⚡","😮‍💨","🫠","🎯","🧠","💅","🫡","🤝","🚀","🧩","🌀","🧯",
-    "🪫","🔋","🧵","🧹","🧽","🗿","✨","📈","🫨","🥶","😵‍💫","🧘","🕹️","🎧","📌"
+    "🔥", "💀", "⚡", "😮‍💨", "🫠", "🎯", "🧠", "💅", "🫡", "🤝", "🚀", "🧩", "🌀", "🧯",
+    "🪫", "🔋", "🧵", "🧹", "🧽", "🗿", "✨", "📈", "🫨", "🥶", "😵‍💫", "🧘", "🕹️", "🎧", "📌"
   ],
-
   "templates": [
     "{opener}, tohle je {tones_neg}. Dej tomu {verbs} a jedeme dál. {emote}",
     "{opener}, vibe je {tones_mid}, buffni {nouns} a zvedni level. {emote}",
@@ -68,9 +60,8 @@
     "{opener}, W move: {verbs} + {nouns} checkpoint. {emote}",
     "{opener}, L moment, ale krátkej – {verbs}. {emote}",
     "{opener}, ok-ish, chce to {nouns} a míň chaosu. {emote}",
-    "{opener}, sundej notifikace, buffni {focus} a {verbs}. {emote}"
+    "{opener}, sundej notifikace, buffni {nouns} a {verbs}. {emote}"
   ],
-
   "quotes": [
     "Skibidi… ok.",
     "Be honest, tohle je L.",
