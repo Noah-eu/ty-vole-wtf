@@ -34,18 +34,21 @@
   }
 
   /* === BIG BACKGROUND WORDMARK === */
-  .bg-wordmark{
-    position:fixed; inset:0; display:grid; place-items:center; pointer-events:none;
-    z-index:0;
-  }
-  .bg-wordmark span{
-    font-weight:900; letter-spacing:.02em; white-space:nowrap;
-    font-size:clamp(64px, 20vw, 320px);
-    color:var(--pink); opacity:.08;
-    text-shadow:0 10px 40px rgba(255,99,184,.45);
-    transform:translateY(-2vh) rotate(-3deg);
-    user-select:none;
-  }
+ .bg-wordmark{
+  position:fixed; inset:0; display:grid; place-items:center; pointer-events:none; z-index:0;
+}
+.bg-wordmark span{
+  font-weight:900; letter-spacing:.02em; white-space:nowrap;
+  /* větší – přes celou obrazovku */
+  font-size:clamp(140px, 36vw, 1100px);
+  /* světlejší růžová */
+  color:#ffa1d8; 
+  opacity:.14;                 /* víc viditelné, ale pořád decentní */
+  text-shadow:0 12px 60px rgba(255,161,216,.45);
+  /* lehké natočení a natažení do výšky */
+  transform:translateY(-3vh) rotate(-5deg) scaleY(1.25);
+  user-select:none;
+}
 
   .wrap{width:min(980px,100%); position:relative; z-index:1;}
   header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
