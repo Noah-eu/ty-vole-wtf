@@ -34,21 +34,21 @@
   }
 
   /* === BIG BACKGROUND WORDMARK === */
- .bg-wordmark{
-  position:fixed; inset:0; display:grid; place-items:center; pointer-events:none; z-index:0;
-}
-.bg-wordmark span{
-  font-weight:900; letter-spacing:.02em; white-space:nowrap;
-  /* větší – přes celou obrazovku */
-  font-size:clamp(140px, 36vw, 1100px);
-  /* světlejší růžová */
-  color:#ffa1d8; 
-  opacity:.14;                 /* víc viditelné, ale pořád decentní */
-  text-shadow:0 12px 60px rgba(255,161,216,.45);
-  /* lehké natočení a natažení do výšky */
-  transform:translateY(-3vh) rotate(-5deg) scaleY(1.25);
-  user-select:none;
-}
+  .bg-wordmark{
+    position:fixed; inset:0; display:grid; place-items:center; pointer-events:none; z-index:0;
+  }
+  .bg-wordmark span{
+    font-weight:900; letter-spacing:.02em; white-space:nowrap;
+    /* větší – přes celou obrazovku */
+    font-size:clamp(140px, 36vw, 1100px);
+    /* světlejší růžová */
+    color:#ffa1d8; 
+    opacity:.14;                 /* víc viditelné, ale pořád decentní */
+    text-shadow:0 12px 60px rgba(255,161,216,.45);
+    /* lehké natočení a natažení do výšky */
+    transform:translateY(-3vh) rotate(-5deg) scaleY(1.25);
+    user-select:none;
+  }
 
   .wrap{width:min(980px,100%); position:relative; z-index:1;}
   header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
@@ -132,7 +132,6 @@
           <button data-mode="genz" id="btnGenz" class="active">Gen-Z</button>
           <button data-mode="family_friendly" id="btnSafe">Safe</button>
         </div>
-        <!-- hint odstraněn -->
       </footer>
     </div>
   </div>
@@ -147,7 +146,6 @@
     <div class="head">
       <strong>Překladač Gen-Z ↔ normální</strong>
       <div>
-        <!-- tlačítko Vyměnit strany odstraněno -->
         <button id="closeSheet" class="ghost tiny">Zavřít</button>
       </div>
     </div>
@@ -158,7 +156,6 @@
           <textarea id="tNorm" placeholder="Napiš normálně…"></textarea>
           <div class="smallrow">
             <button id="bNorm2Genz" class="primary">Přeložit</button>
-            <!-- Kopírovat výsledek odstraněno -->
           </div>
         </div>
         <div>
@@ -166,7 +163,6 @@
           <textarea id="tGenz" placeholder="Nebo Gen-Z…"></textarea>
           <div class="smallrow">
             <button id="bGenz2Norm" class="primary">Přeložit</button>
-            <!-- Kopírovat výsledek odstraněno -->
           </div>
         </div>
       </div>
@@ -235,16 +231,140 @@ async function setQuoteTyped(text, push=true){
   if(AUTO) showAutoTranslation(text);
 }
 
+/* ========= Lokální překladač CZ <-> Gen-Z ========= */
+const _strip = (s) => s
+  .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/\s+/g, ' ').trim();
+const _isUpper = (w) => w && w === w.toUpperCase();
+const _isCapitalized = (w) => w && w[0] === w[0].toUpperCase() && w.slice(1) === w.slice(1).toLowerCase();
+const _preserveCase = (src, dst) => {
+  if (!dst) return dst;
+  if (_isUpper(src)) return dst.toUpperCase();
+  if (_isCapitalized(src)) return dst[0].toUpperCase() + dst.slice(1);
+  return dst;
+};
+
+const DICT_CZ2GZ = [
+  ["citim se hodne trapne", "cítím se mega cringe"],
+  ["citím se hodne trapne", "cítím se mega cringe"],
+  ["citim se trapne", "cítím se cringe"],
+  ["citím se trapne", "cítím se cringe"],
+  ["bez srandy", "no cap"],
+  ["bez kecu", "no cap"],
+  ["fakt pravda", "no cap"],
+  ["to je lez", "cap"],
+  ["to je pravda", "no cap"],
+  ["to je cool", "based"],
+  ["trapny", "cringe"],
+  ["trapne", "cringe"],
+  ["divny", "skibidi"],
+  ["divne", "skibidi"],
+  ["hodne", "mega"],
+  ["dost", "lowkey"],
+  ["opravdu", "fr"],
+  ["vazne", "fr"],
+  ["upřimne", "ngl"],
+  ["upřimně", "ngl"],
+  ["charisma", "rizz"],
+  ["drby", "tea"],
+  ["toxicky", "toxic"],
+  ["autenticky", "based"],
+  ["dobry", "valid"],
+  ["vyborny", "bussin"],
+  ["vyborne", "bussin"],
+  ["super", "fire"]
+];
+
+const DICT_GZ2CZ = [
+  ["no cap", "fakt / bez keců"],
+  ["hits different", "působí jinak / výjimečně"],
+  ["let him cook", "nech ho tvořit / má plán"],
+  ["skibidi", "divné / absurdní"],
+  ["bussin", "výborné (hlavně jídlo)"],
+  ["rizz", "charisma / umění okouzlit"],
+  ["based", "autentický / cool"],
+  ["cap", "lež"],
+  ["slay", "perfektní / top"],
+  ["cringe", "trapné"],
+  ["vibe", "nálada / atmosféra"],
+  ["toxic", "toxické chování"],
+  ["tea", "drby"],
+  ["delulu", "mimo realitu / iluze"],
+  ["fr", "fakt / vážně"],
+  ["ngl", "upřímně"],
+  ["idk", "nevím"],
+  ["imo", "podle mě"],
+  ["lowkey", "trochu / potichu"],
+  ["highkey", "hodně / nahlas"],
+  ["mid", "průměr / meh"],
+  ["goated", "legendární / top"],
+  ["kino", "filmové / působivé"],
+  ["heat", "horké / hype"],
+  ["valid", "dobré / solidní"],
+  ["drip", "styl / outfit"]
+];
+
+function _mergeFromLexiconDictionary() {
+  if (!L || !Array.isArray(L.dictionary)) return;
+  for (const item of L.dictionary) {
+    if (!item || !item.gz || !item.cz) continue;
+    const cz = _strip(String(item.cz).toLowerCase());
+    const gz = _strip(String(item.gz).toLowerCase());
+    if (cz && gz) {
+      DICT_CZ2GZ.unshift([cz, item.gz]);
+      DICT_GZ2CZ.unshift([gz, item.cz]);
+    }
+  }
+}
+
+function _replaceByDict(input, dict) {
+  if (!input) return input;
+  let out = input;
+  const byLen = [...dict].sort((a,b)=>b[0].length - a[0].length);
+  for (const [srcRaw, dstRaw] of byLen) {
+    const src = _strip(srcRaw);
+    if (!src) continue;
+    const wordLike = !src.includes(' ');
+    const pattern = wordLike ? `\\b${src}\\b` : src.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(pattern, 'gi');
+    out = out.replace(re, (m) => _preserveCase(m, dstRaw));
+  }
+  return out;
+}
+
+function localTranslate(text, direction) {
+  _mergeFromLexiconDictionary();
+  const s = String(text || "");
+  if (!s.trim()) return "";
+  if (direction === "normal_to_gz") {
+    return _replaceByDict(s, DICT_CZ2GZ);
+  } else if (direction === "gz_to_normal") {
+    return _replaceByDict(s, DICT_GZ2CZ);
+  } else {
+    const looksGZ = /\b(skibidi|rizz|based|cringe|bussin|cap|no cap|slay|fr|ngl|mid|drip|goated)\b/i.test(s);
+    return looksGZ ? _replaceByDict(s, DICT_GZ2CZ) : _replaceByDict(s, DICT_CZ2GZ);
+  }
+}
+
+// Přepiš původní translate() – nejdřív lokal, pak tichý fallback na serverless (pokud ho máš)
 async function translate(text, direction){
+  const local = localTranslate(text, direction);
+  if (local && local.toLowerCase() !== String(text||"").toLowerCase()) {
+    return local;
+  }
   try{
     const r = await fetch('/.netlify/functions/translate',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ text, direction })
     });
-    const j = await r.json(); if(j.translated) return j.translated;
-  }catch{}
-  return '';
+    if (r.ok) {
+      const j = await r.json();
+      if (j && j.translated) return j.translated;
+    }
+  }catch(e){}
+  return local || String(text || "");
 }
+/* ========= konec lokálního překladače ========= */
 
 async function showAutoTranslation(source){
   const el = document.getElementById('quoteTranslated');
@@ -308,8 +428,6 @@ async function init(){
   const tNorm=document.getElementById('tNorm'), tGenz=document.getElementById('tGenz');
   document.getElementById('bNorm2Genz').onclick=async()=>{ tGenz.value = await translate(tNorm.value,'normal_to_gz'); };
   document.getElementById('bGenz2Norm').onclick=async()=>{ tNorm.value = await translate(tGenz.value,'gz_to_normal'); };
-
-  // tlačítko Vyměnit strany + Kopírovat výsledek byly odstraněny, takže bez handlerů
 }
 init();
 
