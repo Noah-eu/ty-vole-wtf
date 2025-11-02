@@ -38,7 +38,7 @@
 
 <script>
 let CLICKS = 0, QUOTES = [], TEASERS = [];
-fetch('../config/app.json').then(r=>r.json()).then(cfg=>{ QUOTES=cfg.quotes; TEASERS=cfg.teaserLines; init(); });
+fetch('./config/app.json').then(r=>r.json()).then(cfg=>{ QUOTES=cfg.quotes; TEASERS=cfg.teaserLines; init(); });
 
 function init(){
   const qEl = document.getElementById('quote');
