@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>TY VOLE .wtf — vibe generator</title>
 <meta name="description" content="Gen-Z hlášky, chat a překladač Gen-Z ↔ normální čeština.">
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#111111">
+<link rel="icon" href="/icons/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <style>
   :root{
     --bg:#0b0b11; --ink:#f3f3f8; --muted:#a7a7b6; --line:#252536;
@@ -105,7 +114,6 @@
 
   <div class="cta">
     <a href="/chat.html">Mám i chat, no cap →</a>
-
   </div>
 
   <!-- Translator bottom sheet -->
@@ -153,14 +161,12 @@ const uniquePick = (arr) => { let tries=0; while(tries<10){ const v=pick(arr); i
 
 async function loadLexicon(){
   try{
-    // ABSOLUTNÍ cesta + verze (láme CDN cache)
     const lex = await fetch('/config/lexicon.json?v=20251102').then(r=>{
       if(!r.ok) throw new Error('lexicon fetch '+r.status);
       return r.json();
     });
     Object.assign(L, lex);
   }catch(e){
-    // fallback: CZ/Gen-Z mix
     Object.assign(L, {
       openers: ["Kámo","Bro","No cap","Real talk","Lowkey","Hele"],
       tones_pos: ["based","fire","clean","valid","peak"],
@@ -309,6 +315,13 @@ async function init(){
   document.getElementById('swap').onclick=()=>{ const A=tNorm.value; tNorm.value=tGenz.value; tGenz.value=A; };
 }
 init();
+
+// === Service worker registrace (PWA) ===
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(console.error);
+  });
+}
 </script>
 </body>
 </html>

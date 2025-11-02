@@ -1,0 +1,16 @@
+{
+  "name": "ty-vole.wtf",
+  "short_name": "ty-vole",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#111111",
+  "description": "Slovníček a hříčky s češtinou. Offline i jako aplikace.",
+  "icons": [
+    { "src": "/icons/icon-192.png",     "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png",     "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
