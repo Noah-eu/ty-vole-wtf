@@ -36,16 +36,17 @@
   /* === MEGA BACKGROUND WORDMARK (celá obrazovka) === */
   .bg-wordmark{
     position:fixed; inset:0; display:grid; place-items:center; pointer-events:none; z-index:0;
+    overflow:hidden;
   }
   .bg-wordmark span{
     font-weight:900; white-space:nowrap;
-    font-size:42vw;               /* obří šířka podle viewportu */
-    letter-spacing:2.5vw;         /* mezery mezi písmeny */
-    word-spacing:6vw;
-    color:#ffa1d8;
-    opacity:.14;
-    text-shadow:0 14px 70px rgba(255,161,216,.45);
-    transform:translateY(-4vh) rotate(-6deg) scale(1.2,1.4); /* natažení do výšky */
+    font-size:20vw;               /* velikost podle šířky viewportu */
+    letter-spacing:-0.5vw;        /* záporné mezery pro těsnější písmena */
+    word-spacing:0.5vw;
+    color:#ffc0e0;                /* světlejší růžová */
+    opacity:.16;
+    text-shadow:0 14px 70px rgba(255,192,224,.45);
+    transform:translateY(0) rotate(0deg) scaleX(1.2) scaleY(3.5); /* velmi úzká a extrémně vysoká písmena */
     user-select:none;
   }
 
@@ -240,47 +241,50 @@ const CZ2GZ_PHRASES = [
 ];
 
 const CZ2GZ_WORDS = [
-  [/\btrapn(ý|e)\b/gi, 'cringe'],
-  [/\bdivn(ý|é|e|y)\b/gi, 'skibidi'],
+  [/\btrapn([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'cringe'],
+  [/\bdivn([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'skibidi'],
   [/\bhodn(ě|e)\b/gi, 'mega'],
   [/\bdost\b/gi, 'lowkey'],
   [/\bopravdu\b/gi, 'fr'],
   [/\bv(á|a)žn(ě|e)\b/gi, 'fr'],
   [/\bupř(í|i)mn(ě|e)\b/gi, 'ngl'],
-  [/\bcharisma\b/gi, 'rizz'],
-  [/\bdrby\b/gi, 'tea'],
-  [/\btoxick(ý|é|a|o)\b/gi, 'toxic'],
-  [/\bautentick(ý|é|a|o)\b/gi, 'based'],
-  [/\bdobr(ý|é|a|e)\b/gi, 'valid'],
-  [/\b(vý|vy)born(ý|é|a|e)\b/gi, 'bussin'],
-  [/\bsuper\b/gi, 'fire']
+  [/\bcharism(a|y|u|ou)?\b/gi, 'rizz'],
+  [/\bdrb(y|ů|ám|ami)?\b/gi, 'tea'],
+  [/\btoxick([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'toxic'],
+  [/\bautentick([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'based'],
+  [/\bdobr([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'valid'],
+  [/\b(vý|vy)born([ýéeya]|á|ého|ému|ým|ém)?\b/gi, 'bussin'],
+  [/\bsuper\b/gi, 'fire'],
+  [/\bněco\s+dobr(ý|é|ého)\b/gi, 'something valid']
 ];
 
 const GZ2CZ_WORDS = [
-  [/\bno cap\b/gi, 'fakt / bez keců'],
+  [/\bno cap\b/gi, 'fakt, bez keců'],
   [/\bcap\b/gi, 'lež'],
-  [/\bskibidi\b/gi, 'divné / absurdní'],
-  [/\bbussin\b/gi, 'výborné (hlavně jídlo)'],
-  [/\brizz\b/gi, 'charisma / umění okouzlit'],
-  [/\bbased\b/gi, 'autentický / cool'],
-  [/\bslay\b/gi, 'perfektní / top'],
+  [/\bskibidi\b/gi, 'divné'],
+  [/\bbussin['"]?\b/gi, 'výborné'],
+  [/\brizz\b/gi, 'charisma'],
+  [/\bbased\b/gi, 'autentické'],
+  [/\bslay\b/gi, 'perfektní'],
   [/\bcringe\b/gi, 'trapné'],
-  [/\bvibe\b/gi, 'nálada / atmosféra'],
-  [/\btoxic\b/gi, 'toxické chování'],
+  [/\bvibe(s)?\b/gi, 'nálada'],
+  [/\btoxic\b/gi, 'toxické'],
   [/\btea\b/gi, 'drby'],
-  [/\bdelulu\b/gi, 'mimo realitu / iluze'],
-  [/\bfr\b/gi, 'fakt / vážně'],
+  [/\bdelulu\b/gi, 'mimo realitu'],
+  [/\bfr\b/gi, 'vážně'],
   [/\bngl\b/gi, 'upřímně'],
   [/\bidk\b/gi, 'nevím'],
   [/\bimo\b/gi, 'podle mě'],
-  [/\blowkey\b/gi, 'trochu / potichu'],
-  [/\bhighkey\b/gi, 'hodně / nahlas'],
-  [/\bmid\b/gi, 'průměr / meh'],
-  [/\bgoated\b/gi, 'legendární / top'],
-  [/\bkino\b/gi, 'filmové / působivé'],
-  [/\bheat\b/gi, 'horké / hype'],
-  [/\bvalid\b/gi, 'dobré / solidní'],
-  [/\bdrip\b/gi, 'styl / outfit']
+  [/\blowkey\b/gi, 'trochu'],
+  [/\bhighkey\b/gi, 'hodně'],
+  [/\bmid\b/gi, 'průměrné'],
+  [/\bgoated\b/gi, 'legendární'],
+  [/\bkino\b/gi, 'filmové'],
+  [/\bheat\b/gi, 'žhavé'],
+  [/\bvalid\b/gi, 'dobré'],
+  [/\bdrip\b/gi, 'styl'],
+  [/\bmega\b/gi, 'hodně'],
+  [/\bfire\b/gi, 'super']
 ];
 
 function looksGenZ(s){
