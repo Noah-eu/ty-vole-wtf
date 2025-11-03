@@ -170,8 +170,9 @@
           <textarea id="tGenz" placeholder="Nebo Gen-Z…"></textarea>
         </div>
       </div>
-      <div style="text-align:center;margin-top:16px;">
+      <div style="text-align:center;margin-top:16px;display:flex;gap:12px;justify-content:center;align-items:center;">
         <button id="bTranslate" class="primary" style="min-width:200px;">Přeložit ↔️</button>
+        <button id="bClear" class="ghost" style="min-width:140px;">🗑️ Smaž text</button>
       </div>
       <div id="explanation" style="margin-top:16px;padding:12px;background:rgba(157,255,0,.05);border:1px solid rgba(157,255,0,.2);border-radius:12px;display:none;">
         <div style="font-weight:700;margin-bottom:8px;color:var(--accent);">💡 Co to znamená?</div>
@@ -710,6 +711,8 @@ function translateLocal(text, direction){
   if (direction === 'normal_to_gz'){
     s = applyReplacements(s, CZ2GZ_PHRASES);
     s = applyReplacements(s, CZ2GZ_WORDS);
+    // Přidej Gen-Z struktury a fillery do věty
+    s = addGenZFlair(s);
     return s;
   }
   if (direction === 'gz_to_normal'){
@@ -718,6 +721,69 @@ function translateLocal(text, direction){
   }
   // autodetekce
   return looksGenZ(s) ? translateLocal(s,'gz_to_normal') : translateLocal(s,'normal_to_gz');
+}
+
+// Přidá Gen-Z struktury a fillery do přeložené věty
+function addGenZFlair(text){
+  let result = text;
+  
+  // Náhodně vyber, co přidat (ne vše najednou)
+  const additions = [];
+  
+  // Náhodná šance na přidání různých prvků (30% šance na každý)
+  if(Math.random() > 0.7) additions.push('prefix'); // "jako", "literally" na začátku
+  if(Math.random() > 0.7) additions.push('mid'); // "like" doprostřed věty
+  if(Math.random() > 0.7) additions.push('suffix'); // "fr fr", "no cap" na konec
+  if(Math.random() > 0.8) additions.push('skibidi'); // "skibidi" jako vtipný prvek
+  
+  // Prefix - na začátek
+  if(additions.includes('prefix')){
+    const prefixes = ['jako', 'literally', 'honestly', 'okay takže'];
+    result = prefixes[Math.floor(Math.random()*prefixes.length)] + ' ' + result;
+  }
+  
+  // Mid - doprostřed po první větě/čárce
+  if(additions.includes('mid')){
+    const mids = ['like', 'you know', 'literally'];
+    const midWord = mids[Math.floor(Math.random()*mids.length)];
+    // Najdi první tečku, čárku nebo střed věty
+    const punctuation = result.match(/[,\.]/);
+    if(punctuation){
+      const idx = result.indexOf(punctuation[0]);
+      result = result.slice(0, idx+1) + ' ' + midWord + ',' + result.slice(idx+1);
+    } else {
+      // Vlož doprostřed textu
+      const words = result.split(' ');
+      if(words.length > 2){
+        const midIdx = Math.floor(words.length / 2);
+        words.splice(midIdx, 0, midWord);
+        result = words.join(' ');
+      }
+    }
+  }
+  
+  // Suffix - na konec
+  if(additions.includes('suffix')){
+    const suffixes = ['fr fr', 'no cap', 'fr', 'ngl', 'on god'];
+    result = result + ', ' + suffixes[Math.floor(Math.random()*suffixes.length)];
+  }
+  
+  // Skibidi - speciální vtipný prvek
+  if(additions.includes('skibidi')){
+    const skibidiPhrases = ['skibidi vibes', 'skibidi moment', 'skibidi energy'];
+    // Přidej buď doprostřed nebo na konec
+    if(Math.random() > 0.5){
+      result = result + ', ' + skibidiPhrases[Math.floor(Math.random()*skibidiPhrases.length)];
+    } else {
+      const words = result.split(' ');
+      if(words.length > 3){
+        words.splice(2, 0, 'skibidi');
+        result = words.join(' ');
+      }
+    }
+  }
+  
+  return result;
 }
 
 // přepis původní translate(): nejdřív lokální, serverless fallback tiše
@@ -905,6 +971,16 @@ async function init(){
       tNorm.value = await translate(genzVal, 'gz_to_normal');
       showExplanation(genzVal);
     }
+  };
+  
+  // Tlačítko "Smaž text" - vymaže obě textová pole
+  document.getElementById('bClear').onclick=()=>{
+    tNorm.value = '';
+    tGenz.value = '';
+    explanationDiv.style.display='none';
+    explanationText.textContent='';
+    // Focus na první pole pro pohodlí
+    tNorm.focus();
   };
 }
 init();
