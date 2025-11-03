@@ -1,0 +1,17 @@
+{
+  "name": "TY VOLE.wtf",
+  "short_name": "TY VOLE",
+  "start_url": "/public/index.html?source=pwa",
+  "scope": "/public/",
+  "display": "standalone",
+  "background_color": "#0b0b11",
+  "theme_color": "#111111",
+  "description": "Gen-Z hlášky, chat a překladač Gen-Z ↔ normální čeština.",
+  "icons": [
+    { "src": "icons/icon-192.png",        "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png",        "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-192.png",    "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/maskable-512.png",    "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "apple-touch-icon.png",      "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}
