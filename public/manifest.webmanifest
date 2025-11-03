@@ -1,8 +1,8 @@
 {
   "name": "TY VOLE.wtf",
   "short_name": "TY VOLE",
-  "start_url": "/public/index.html?source=pwa",
-  "scope": "/public/",
+  "start_url": "./?source=pwa",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0b0b11",
   "theme_color": "#111111",

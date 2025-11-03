@@ -1,21 +1,25 @@
 // sw.js
-const CACHE_VERSION = 'v1.0.1';
+const CACHE_VERSION = 'v1.0.2';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = 'runtime';
 
-// Přednačti základ
+// Získej base path z location service workeru
+const BASE = self.registration.scope;
+
+// Přednačti základ - použij relativní cesty
 const PRECACHE = [
-  '/public/',
-  '/public/index.html',
-  '/public/chat.html',
-  '/public/manifest.webmanifest',
-  '/public/icons/icon-192.png',
-  '/public/icons/icon-512.png',
-  '/public/icons/maskable-192.png',
-  '/public/icons/maskable-512.png',
-  '/public/apple-touch-icon.png',
-  '/public/favicon-32.png',
-  '/public/favicon-16.png'
+  './',
+  './index.html',
+  './chat.html',
+  './manifest.webmanifest',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/maskable-192.png',
+  './icons/maskable-512.png',
+  './apple-touch-icon.png',
+  './favicon-32.png',
+  './favicon-16.png',
+  './offline.html'
 ];
 
 self.addEventListener('install', (event) => {
@@ -46,7 +50,7 @@ self.addEventListener('fetch', (event) => {
           caches.open(RUNTIME_CACHE).then((c) => c.put(req, res.clone()));
           return res;
         })
-        .catch(async () => (await caches.match(req)) || caches.match('/public/index.html'))
+        .catch(async () => (await caches.match(req)) || caches.match('./offline.html'))
     );
     return;
   }
