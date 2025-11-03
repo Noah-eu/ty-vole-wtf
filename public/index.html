@@ -183,6 +183,7 @@
 let MODE = (localStorage.getItem('mode') || 'genz');
 let AUTO = localStorage.getItem('autoTrans') === '1';
 const LAST = [];
+let translationInProgress = false;
 
 // ===== Lexikon =====
 const L = { openers:[], tones_pos:[], tones_mid:[], tones_neg:[], verbs:[], nouns:[], actions:[], emotes:[], templates:[], quotes:[] };
@@ -236,9 +237,18 @@ async function typeOut(el, text, speed=18){
 
 async function setQuoteTyped(text, push=true){
   const el = document.getElementById('quote');
+  // Schováme překlad během psaní
+  const transEl = document.getElementById('quoteTranslated');
+  transEl.style.display='none';
+  
   await typeOut(el, text);
   setUrlState(text, push);
-  if(AUTO) showAutoTranslation(text);
+  
+  // Počkáme chvilku po dopsání, než začneme překládat
+  if(AUTO) {
+    await new Promise(r=>setTimeout(r, 100));
+    showAutoTranslation(text);
+  }
 }
 
 /* ========= Lokální překladač CZ <-> Gen-Z (regex-based) ========= */
@@ -374,15 +384,52 @@ async function translate(text, direction){
 
 async function showAutoTranslation(source){
   const el = document.getElementById('quoteTranslated');
-  if(!AUTO){ el.style.display='none'; el.textContent=''; return; }
-  const dir = looksGenZ(source) ? 'gz_to_normal' : 'normal_to_gz';
-  const out = await translate(source, dir);
-  if(out && out.trim() && out.trim().toLowerCase() !== source.trim().toLowerCase()){
-    el.textContent = '↳ Překlad: ' + out;
-    el.style.display='block';
-  } else {
+  
+  // Pokud není AUTO nebo už běží překlad, skonči
+  if(!AUTO){ 
+    el.style.display='none'; 
+    el.textContent=''; 
+    return; 
+  }
+  
+  // Zabráníme vícenásobným překladům najednou
+  if(translationInProgress){
+    return;
+  }
+  
+  // Kontrola, že máme co překládat
+  if(!source || !source.trim()){
     el.style.display='none';
     el.textContent='';
+    return;
+  }
+  
+  translationInProgress = true;
+  
+  try{
+    const dir = looksGenZ(source) ? 'gz_to_normal' : 'normal_to_gz';
+    const out = await translate(source, dir);
+    
+    // Zkontrolujeme znovu AUTO, protože uživatel mohl checkbox změnit během překladu
+    if(!AUTO){
+      el.style.display='none';
+      el.textContent='';
+      return;
+    }
+    
+    if(out && out.trim() && out.trim().toLowerCase() !== source.trim().toLowerCase()){
+      el.textContent = '↳ Překlad: ' + out;
+      el.style.display='block';
+    } else {
+      el.style.display='none';
+      el.textContent='';
+    }
+  } catch(e){
+    console.error('Translation error:', e);
+    el.style.display='none';
+    el.textContent='';
+  } finally {
+    translationInProgress = false;
   }
 }
 
@@ -398,11 +445,24 @@ async function init(){
 
   const chk=document.getElementById('chkAutoTrans');
   chk.checked = AUTO;
-  chk.onchange = ()=>{
+  chk.onchange = async ()=>{
     AUTO = chk.checked;
     localStorage.setItem('autoTrans', AUTO?'1':'0');
-    if(!AUTO){ document.getElementById('quoteTranslated').style.display='none'; }
-    else { showAutoTranslation(document.getElementById('quote').textContent); }
+    const transEl = document.getElementById('quoteTranslated');
+    
+    if(!AUTO){ 
+      // Vypneme překlad
+      transEl.style.display='none'; 
+      transEl.textContent='';
+    } else { 
+      // Zapneme překlad - zobrazíme loading a pak přeložíme
+      transEl.textContent = '↳ Překládám...';
+      transEl.style.display='block';
+      const currentQuote = document.getElementById('quote').textContent;
+      if(currentQuote && currentQuote.trim()){
+        await showAutoTranslation(currentQuote);
+      }
+    }
   };
 
   const url = new URLSearchParams(location.search);
