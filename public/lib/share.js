@@ -165,6 +165,13 @@ class ShareSystem {
     return new Blob([u8arr], { type: mime });
   }
   
+  // Get clean URL without query parameters
+  getCleanURL() {
+    const url = new URL(window.location.href);
+    // Return base URL without query string
+    return url.origin + url.pathname;
+  }
+  
   // Web Share API
   async shareNative() {
     if (!navigator.share) {
@@ -172,7 +179,7 @@ class ShareSystem {
     }
     
     const text = this.currentQuote || document.getElementById('quote')?.textContent || 'Check this out!';
-    const url = window.location.href;
+    const url = this.getCleanURL();
     const title = 'TY VOLE .wtf';
     
     const shareData = {
@@ -211,41 +218,43 @@ class ShareSystem {
   
   // Fallback share methods
   shareWhatsApp() {
-    const text = encodeURIComponent(this.currentQuote + '\n\n' + window.location.href);
+    const cleanURL = this.getCleanURL();
+    const text = encodeURIComponent(this.currentQuote + '\n\n' + cleanURL);
     window.open(`https://wa.me/?text=${text}`, '_blank');
     window.analytics.shareSuccess('whatsapp');
   }
   
   shareTelegram() {
     const text = encodeURIComponent(this.currentQuote);
-    const url = encodeURIComponent(window.location.href);
+    const url = encodeURIComponent(this.getCleanURL());
     window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
     window.analytics.shareSuccess('telegram');
   }
   
   shareMessenger() {
-    const url = encodeURIComponent(window.location.href);
+    const url = encodeURIComponent(this.getCleanURL());
     window.open(`fb-messenger://share/?link=${url}`, '_blank');
     window.analytics.shareSuccess('messenger');
   }
   
   shareTwitter() {
     const text = encodeURIComponent(this.currentQuote);
-    const url = encodeURIComponent(window.location.href);
+    const url = encodeURIComponent(this.getCleanURL());
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
     window.analytics.shareSuccess('twitter');
   }
   
   async copyLink() {
+    const cleanURL = this.getCleanURL();
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(cleanURL);
       window.analytics.copyLink();
       this.showToast(window.i18n.t('toast.copied'));
     } catch (err) {
       console.error('[Share] Copy failed:', err);
       // Fallback
       const input = document.createElement('input');
-      input.value = window.location.href;
+      input.value = cleanURL;
       document.body.appendChild(input);
       input.select();
       document.execCommand('copy');

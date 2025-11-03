@@ -3,13 +3,13 @@
 
 const translations = {
   cz: {
-    'cta.share': 'Hoď to do chatu',
-    'cta.copyShare': 'Zkopírovat & sdílet',
-    'cta.download': 'Stáhnout kartu',
-    'cta.copyLink': 'Zkopírovat link',
+    'cta.share': 'Drop do chatu 💀',
+    'cta.copyShare': 'Drop do chatu 💀',
+    'cta.download': 'Bake it 🍰',
+    'cta.copyLink': 'Boomer sharing mode',
     'toast.copied': 'Zkopírováno — běž to poslat 🔥',
-    'toast.downloaded': 'Karta stažena! 📥',
-    'toast.shareSuccess': 'Sdíleno úspěšně! 🎉',
+    'toast.downloaded': 'Baked! 📥',
+    'toast.shareSuccess': 'Dropped! 🎉',
     'microcopy.random': [
       'Tohle ukončí přátelství.',
       'Posílej s rozvahou.',
@@ -31,13 +31,13 @@ const translations = {
     'card.watermark': 'TY VOLE .wtf — instant vibe generator'
   },
   en: {
-    'cta.share': 'Drop this in the group chat',
-    'cta.copyShare': 'Copy & share',
-    'cta.download': 'Download card',
-    'cta.copyLink': 'Copy link',
+    'cta.share': 'Drop to chat 💀',
+    'cta.copyShare': 'Drop to chat 💀',
+    'cta.download': 'Bake it 🍰',
+    'cta.copyLink': 'Boomer sharing mode',
     'toast.copied': 'Copied — go roast someone 🔥',
-    'toast.downloaded': 'Card downloaded! 📥',
-    'toast.shareSuccess': 'Shared successfully! 🎉',
+    'toast.downloaded': 'Baked! 📥',
+    'toast.shareSuccess': 'Dropped! 🎉',
     'microcopy.random': [
       'This one ends friendships.',
       'Send responsibly.',

@@ -153,10 +153,10 @@
             <span id="shareMainText">Nahrávám...</span>
           </button>
           <button id="downloadCard" class="ghost" title="Stáhnout jako obrázek">
-            📥 <span id="downloadText">Stáhnout</span>
+            <span id="downloadText">Nahrávám...</span>
           </button>
-          <button id="copy" class="ghost" title="Zkopíruje URL s touhle hláškou">
-            🔗 <span id="copyText">Link</span>
+          <button id="copy" class="ghost" title="Zkopíruje URL">
+            <span id="copyText">Nahrávám...</span>
           </button>
         </div>
         <label class="chip" style="cursor:pointer;">
@@ -1083,8 +1083,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function updateCTATexts() {
     shareMainText.textContent = window.abTest.getCTAText();
-    downloadText.textContent = window.i18n.t('cta.download').replace('Stáhnout kartu', 'Stáhnout');
-    copyText.textContent = window.i18n.t('cta.copyLink').replace('Zkopírovat link', 'Link');
+    downloadText.textContent = window.i18n.t('cta.download');
+    copyText.textContent = window.i18n.t('cta.copyLink');
   }
   
   function showMicrocopy() {
