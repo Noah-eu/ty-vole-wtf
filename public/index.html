@@ -91,10 +91,72 @@
   .quote{margin:18px 0 6px;font-weight:900;font-size:clamp(22px,4.5vw,40px);letter-spacing:-.015em; min-height:2.4em}
   .trans{color:var(--muted);font-size:15px;margin-top:2px}
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-  button{appearance:none;border:0;cursor:pointer;font-weight:900;padding:12px 16px;border-radius:14px}
+  button{appearance:none;border:0;cursor:pointer;font-weight:900;padding:12px 16px;border-radius:14px;transition:all .2s ease}
   .primary{color:var(--ink-dark);background:linear-gradient(90deg,var(--accent),var(--cyan))}
   .ghost{color:var(--ink);background:transparent;border:1px solid var(--line)}
   .tiny{font-size:13px;padding:8px 12px}
+  
+  /* CTA tlačítka grid - barevné pro mobil */
+  .btn-group{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    width:100%;
+    margin-top:8px;
+  }
+  
+  /* První tlačítko (Drop do chatu) - accent zelená */
+  #shareMain{
+    background:linear-gradient(135deg, var(--accent), #7acc00);
+    color:var(--ink-dark);
+    font-size:15px;
+    padding:16px 20px;
+    box-shadow:0 4px 16px rgba(157,255,0,.3);
+    border:0;
+  }
+  #shareMain:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 20px rgba(157,255,0,.4);
+  }
+  
+  /* Druhé tlačítko (Bake it) - cyan modrá */
+  #downloadCard{
+    background:linear-gradient(135deg, var(--cyan), #00c4d4);
+    color:var(--ink-dark);
+    font-size:15px;
+    padding:16px 20px;
+    box-shadow:0 4px 16px rgba(0,240,255,.3);
+    border:0;
+  }
+  #downloadCard:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 20px rgba(0,240,255,.4);
+  }
+  
+  /* Třetí tlačítko (Boomer mode) - pink */
+  #copy{
+    background:linear-gradient(135deg, var(--pink), #ff3d9a);
+    color:var(--ink);
+    font-size:15px;
+    padding:16px 20px;
+    box-shadow:0 4px 16px rgba(255,99,184,.3);
+    border:0;
+    grid-column:1 / -1; /* Na celou šířku */
+  }
+  #copy:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 20px rgba(255,99,184,.4);
+  }
+  
+  /* Responzivní - na úzkém mobilu stack vertikálně */
+  @media(max-width:480px){
+    .btn-group{
+      grid-template-columns:1fr;
+    }
+    #copy{
+      grid-column:1;
+    }
+  }
 
   footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}
   .mode{display:flex;gap:6px;align-items:center}
@@ -148,20 +210,22 @@
 
       <div class="row">
         <button id="next" class="primary">Další shot 🔥</button>
-        <div class="btn-group" style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button id="shareMain" class="primary btn-primary-cta" title="Sdílej kartu do chatu">
-            <span id="shareMainText">Nahrávám...</span>
-          </button>
-          <button id="downloadCard" class="ghost" title="Stáhnout jako obrázek">
-            <span id="downloadText">Nahrávám...</span>
-          </button>
-          <button id="copy" class="ghost" title="Zkopíruje URL">
-            <span id="copyText">Nahrávám...</span>
-          </button>
-        </div>
         <label class="chip" style="cursor:pointer;">
           <input id="chkAutoTrans" type="checkbox" style="vertical-align:middle;margin-right:6px;"> Dej překlad
         </label>
+      </div>
+      
+      <!-- Barevné CTA tlačítka v gridu -->
+      <div class="btn-group">
+        <button id="shareMain" title="Sdílej kartu do chatu">
+          <span id="shareMainText">Nahrávám...</span>
+        </button>
+        <button id="downloadCard" title="Stáhnout jako obrázek">
+          <span id="downloadText">Nahrávám...</span>
+        </button>
+        <button id="copy" title="Zkopíruje URL">
+          <span id="copyText">Nahrávám...</span>
+        </button>
       </div>
       <div id="ctaMicrocopy" class="cta-microcopy" style="display:none;"></div>
 
