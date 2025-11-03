@@ -1146,9 +1146,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const ctaMicrocopy = document.getElementById('ctaMicrocopy');
   
   function updateCTATexts() {
+    if (!window.i18n || !window.abTest) {
+      console.error('i18n or abTest not loaded yet');
+      return;
+    }
     shareMainText.textContent = window.abTest.getCTAText();
     downloadText.textContent = window.i18n.t('cta.download');
     copyText.textContent = window.i18n.t('cta.copyLink');
+    console.log('CTA texts updated:', {
+      share: shareMainText.textContent,
+      download: downloadText.textContent,
+      copy: copyText.textContent
+    });
   }
   
   function showMicrocopy() {
@@ -1162,7 +1171,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 10);
   }
   
-  updateCTATexts();
+  // Wait a bit for all scripts to load, then update
+  setTimeout(() => {
+    updateCTATexts();
+  }, 100);
   
   // Share button - main CTA
   shareMainBtn.onclick = async () => {
