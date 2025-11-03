@@ -267,11 +267,52 @@ const CZ2GZ_WORDS = [
   [/moment/gi, 'moment'],
   [/setup/gi, 'setup'],
   [/flow/gi, 'flow'],
-  [/vibe/gi, 'vibe'],
   
-  // České překlady do Gen-Z - ROZŠÍŘENO
+  // SPECIFICKÉ FRÁZE NEJDŘÍV (před jednotlivými slovy!)
+  [/trapn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)\s+vtip/gi, 'dad joke'],
+  [/strach\s+(z|ze)\s+zme(š|s)k(á|a)n(í|ého|ímu|ím|ém)/gi, 'FOMO'],
+  [/nejlep(ší|šího|šímu|ším|šem)\s+(k(á|a)mo(š|s|še|ši|šem|šovi)|kamar(á|a)d(a|y|u|em|ovi|ka|ce|ku|kou)?)/gi, 'bestie'],
+  [/vztah\s+nevztah/gi, 'situationship'],
+  [/mimo\s+realit(u|y|ě)/gi, 'delulu'],
+  [/hniloba\s+mozku/gi, 'brain rot'],
+  [/star(ší|šího)\s+generac(e|i)/gi, 'boomer'],
+  [/tr(á|a)vit\s+(č|c)as\s+s\s+p(ř|r)(á|a)teli/gi, 'felit'],
+  [/u(č|c)en(í|ého|ímu|ím|ém)\s+nejde/gi, 'academic victim'],
+  [/varovn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)\s+sign(á|a)l/gi, 'red flag'],
+  [/pozitivn(í|ího|ímu|ím|ém|á|ou|é|i)\s+sign(á|a)l/gi, 'green flag'],
+  [/neutr(á|a)ln(í|ího|ímu|ím|ém|á|ou|é|i)\s+sign(á|a)l/gi, 'beige flag'],
+  
+  // DELŠÍ VÝRAZY před kratšími
+  [/(vý|vy)born(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'bussin'],
+  [/perfektn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'slay'],
+  [/legend(á|a)rn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'goated'],
+  [/autentick(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'based'],
+  [/toxick(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'toxic'],
   [/trapn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'cringe'],
   [/divn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'skibidi'],
+  [/průměrn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'mid'],
+  [/nudn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'mid'],
+  [/zamilov(á|a)n(í|ého|ímu|ím|ém|á|ou|é|i)/gi, 'crush'],
+  [/bl(á|a)zniv(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'goofy'],
+  [/absurdn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'skibidi'],
+  [/z(á|a)bavn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'lit'],
+  [/podez(ř|r)el(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'sus'],
+  [/p(ř|r)ecitliv(ě|e)l(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'snowflake'],
+  [/ignorov(á|a)n(í|ého|ímu|ím|ém)/gi, 'ghosting'],
+  [/manipulac(e|i)/gi, 'gaslighting'],
+  [/ne(ú|u)sp(ě|e)(š|s)n(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'fail'],
+  [/elegant(n|t)(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'classy'],
+  [/zru(š|s)en(ý|y|ého|ému|ým|ém|á|ou|é|e)/gi, 'cancelled'],
+  [/unik(á|a)tn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'sigma'],
+  [/nez(á|a)visl(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'sigma'],
+  [/naivn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'delulu'],
+  [/(š|s)(t|ť)astn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'blessed'],
+  [/eleg(á|a)ntn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'drip'],
+  [/sm(ě|e)(š|s)n(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'goofy'],
+  
+  // KRATŠÍ OBECNÉ VÝRAZY až nakonec
+  [/dobr(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'valid'],
+  [/super/gi, 'fire'],
   [/hodn(ě|e)/gi, 'mega'],
   [/dost/gi, 'lowkey'],
   [/opravdu/gi, 'fr'],
@@ -279,66 +320,31 @@ const CZ2GZ_WORDS = [
   [/upř(í|i)mn(ě|e)/gi, 'ngl'],
   [/charism(a|y|u|ou|e|ě)/gi, 'rizz'],
   [/drb(y|ů|ám|ami|a)/gi, 'tea'],
-  [/toxick(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'toxic'],
-  [/autentick(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'based'],
-  [/dobr(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'valid'],
-  [/(vý|vy)born(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'bussin'],
-  [/super/gi, 'fire'],
-  [/perfektn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'slay'],
-  [/legend(á|a)rn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'goated'],
-  [/průměrn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'mid'],
   [/n(á|a)lad(a|y|u|ou|ě)/gi, 'vibe'],
+  [/atmosf(é|e)ra/gi, 'vibe'],
   [/styl/gi, 'drip'],
+  [/vibe/gi, 'vibe'],
   
-  // Nové výrazy z rozšířeného slovníku
-  [/extrémn(ě|e)/gi, 'AF'],
-  [/nejlep(ší|ší|šího|šímu|ším|šem) (k(á|a)mo(š|s|še|ši|šem|šovi)|kamar(á|a)d(a|y|u|em|ovi|ka|ce|ku|kou)?)/gi, 'bestie'],
-  [/(nejlep(ší|ší)|nej)/gi, 'GOAT'],
-  [/star(ší|ší) generac(e|i)/gi, 'boomer'],
-  [/hniloba mozku/gi, 'brain rot'],
-  [/zru(š|s)en(ý|y|ého|ému|ým|ém|á|ou|é|e)/gi, 'cancelled'],
-  [/elegant(n|t)(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'classy'],
-  [/zamilov(á|a)n(í|ého|ímu|ím|ém|á|ou|é|i)/gi, 'crush'],
-  [/trapn(ý|y) vtip/gi, 'dad joke'],
-  [/mimo realit(u|y|ě)/gi, 'delulu'],
-  [/naivn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'delulu'],
-  [/ne(ú|u)sp(ě|e)(š|s)n(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'fail'],
-  [/chyba/gi, 'fail'],
-  [/selh(á|a)n(í|ého|ímu|ím|ém)/gi, 'fail'],
-  [/p(ř|r)edv(á|a)d(ě|e)t se/gi, 'flex'],
-  [/chlubi(t se|l|la|li)/gi, 'flex'],
-  [/strach (z|ze) zme(š|s)k(á|a)n(í|ého|ímu|ím|ém)/gi, 'FOMO'],
-  [/ignorov(á|a)n(í|ého|ímu|ím|ém)/gi, 'ghosting'],
-  [/bl(á|a)zniv(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'goofy'],
-  [/varovn(ý|ého|ému|ým|ém|á|ou|é|e|y|i) sign(á|a)l/gi, 'red flag'],
-  [/pozitivn(í|ího|ímu|ím|ém|á|ou|é|i) sign(á|a)l/gi, 'green flag'],
-  [/neutr(á|a)ln(í|ího|ímu|ím|ém|á|ou|é|i) sign(á|a)l/gi, 'beige flag'],
-  [/podez(ř|r)el(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'sus'],
-  [/manipulac(e|i)/gi, 'gaslighting'],
-  [/nesmysln(ý|ého|ému|ým|ém|á|ou|é|e|y|i) p(ř|r)(í|i)sp(ě|e)vek/gi, 'shitpost'],
-  [/vztah nevztah/gi, 'situationship'],
-  [/p(ř|r)ecitliv(ě|e)l(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'snowflake'],
-  [/provokovat|provokuje|provokoval|provokovali/gi, 'trolling'],
-  [/nudn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'mid'],
-  [/podiv(í|i)n/gi, 'weirdo'],
-  [/u(č|c)en(í|ého|ímu|ím|ém) nejde/gi, 'academic victim'],
-  [/absurdn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'skibidi'],
-  [/z(á|a)bavn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'lit'],
-  [/unik(á|a)tn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'sigma'],
-  [/nez(á|a)visl(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'sigma'],
+  // Akce a verba
   [/pos(í|i)lit/gi, 'buffnout'],
   [/oslabit/gi, 'nerfnout'],
   [/opravit/gi, 'fixnout'],
   [/(ž|z)vatlat/gi, 'yapping'],
   [/brblat/gi, 'yapping'],
-  [/tr(á|a)vit (č|c)as s p(ř|r)(á|a)teli/gi, 'felit'],
   [/pop(í|i)jet/gi, 'felit'],
   [/chlad(n|ň)a/gi, 'chill'],
-  [/atmosf(é|e)ra/gi, 'vibe'],
+  [/p(ř|r)edv(á|a)d(ě|e)t\s+se/gi, 'flex'],
+  [/chlubi(t\s+se|l|la|li)/gi, 'flex'],
+  [/provokovat|provokuje|provokoval|provokovali/gi, 'trolling'],
+  
+  // Jednoduché výrazy
+  [/extrémn(ě|e)/gi, 'AF'],
+  [/(nejlep(ší|ší)|nej)/gi, 'GOAT'],
+  [/chyba/gi, 'fail'],
+  [/selh(á|a)n(í|ého|ímu|ím|ém)/gi, 'fail'],
+  [/podiv(í|i)n/gi, 'weirdo'],
+  [/nesmysln(ý|ého|ému|ým|ém|á|ou|é|e|y|i)\s+p(ř|r)(í|i)sp(ě|e)vek/gi, 'shitpost'],
   [/cool/gi, 'fire'],
-  [/(š|s)(t|ť)astn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'blessed'],
-  [/eleg(á|a)ntn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'drip'],
-  [/sm(ě|e)(š|s)n(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'goofy'],
   [/h(ř|r)(í|i)(š|s)n(í|ího|ímu|ím|ém|á|ou|é|i)k/gi, 'lil bro'],
   [/sestra|sestřička/gi, 'lil sis'],
   [/bratr|brácha/gi, 'bro'],
@@ -347,8 +353,7 @@ const CZ2GZ_WORDS = [
   [/hit/gi, 'banger'],
   [/l(ž|z)e/gi, 'cap'],
   [/nepravda/gi, 'cap'],
-  [/pravda/gi, 'no cap'],
-  [/fakt/gi, 'fr']
+  [/pravda/gi, 'no cap']
 ];
 
 // Slovník s vysvětleními pro Gen-Z výrazy
@@ -765,42 +770,22 @@ function translateLocal(text, direction){
   return looksGenZ(s) ? translateLocal(s,'gz_to_normal') : translateLocal(s,'normal_to_gz');
 }
 
-// Odstraní Gen-Z fillery a strukturní prvky z textu
+// Odstraní Gen-Z fillery a strukturní prvky z textu (JEMNĚ)
 function removeGenZFlair(text){
   let result = text;
   
-  // Odstranění běžných Gen-Z fillerů a frází (zachovat význam věty)
-  const fillersToRemove = [
-    // Prefix/suffix fillery
-    /^(jako|literally|honestly|okay takže|ok listen|true story|side note|btw|heads up|popravdě|mimochodem|be honest|real talk|lowkey|no cap|ngl|upřímně|tak hele|tak jo|takhle|nehrotit|bro fr|no jokes|skromně|hele|kámo|bro)\s*,?\s*/gi,
-    /(,\s*)?(fr fr|no cap|on god|ngl|fr|you know|literally|like)(\s*,|\s*\.)?$/gi,
-    
-    // Doprostřed vět
-    /,\s*(like|you know|literally)\s*,/gi,
-    /\s+(like|you know|literally)\s+/gi,
-    
-    // Skibidi výrazy (pokud jsou jen jako filler)
-    /,?\s*skibidi (vibes|moment|energy)/gi,
-    /skibidi\s+(?!toilet|ohio)/gi, // skibidi jako filler (ne když je součást pojmu)
-    
-    // Zdvojené čárky po odstranění
-    /,\s*,/g,
-    // Čárka na začátku
-    /^,\s*/,
-    // Čárka před tečkou
-    /,\s*\./g,
-    // Vícenásobné mezery
-    /\s{2,}/g
-  ];
+  // Odstranění JEN nejběžnějších fillerů, které nemění význam
+  // Odstranit openers na začátku (ale zachovat význam)
+  result = result.replace(/^(jako|literally|honestly|okay takže|ok listen|hele)\s*,?\s*/i, '');
   
-  for (const pattern of fillersToRemove){
-    result = result.replace(pattern, (match, ...args) => {
-      // Pokud je to pattern s čárkou, zachovej mezeru
-      if(match.includes(',')) return ' ';
-      if(match.trim() === '') return ' ';
-      return ' ';
-    });
-  }
+  // Odstranit suffix fillery na konci
+  result = result.replace(/,?\s*(fr fr|no cap|on god|ngl)\s*\.?\s*$/i, '');
+  
+  // Odstranit "like" a "you know" když jsou jako fillery (ne ve smyslové části)
+  result = result.replace(/,\s*(like|you know)\s*,/gi, ', ');
+  
+  // Odstranit skibidi když je jen jako filler
+  result = result.replace(/,?\s*skibidi (vibes|moment|energy)\s*/gi, ' ');
   
   // Vyčisti nadbytečné mezery a interpunkci
   result = result
@@ -820,64 +805,22 @@ function removeGenZFlair(text){
   return result;
 }
 
-// Přidá Gen-Z struktury a fillery do přeložené věty
+// Přidá Gen-Z struktury a fillery do přeložené věty (JEDNODUŠŠÍ)
 function addGenZFlair(text){
   let result = text;
   
-  // Náhodně vyber, co přidat (ne vše najednou)
-  const additions = [];
+  // Menší šance na fillery - jen 20-30% šance
+  const rand = Math.random();
   
-  // Náhodná šance na přidání různých prvků (30% šance na každý)
-  if(Math.random() > 0.7) additions.push('prefix'); // "jako", "literally" na začátku
-  if(Math.random() > 0.7) additions.push('mid'); // "like" doprostřed věty
-  if(Math.random() > 0.7) additions.push('suffix'); // "fr fr", "no cap" na konec
-  if(Math.random() > 0.8) additions.push('skibidi'); // "skibidi" jako vtipný prvek
-  
-  // Prefix - na začátek
-  if(additions.includes('prefix')){
-    const prefixes = ['jako', 'literally', 'honestly', 'okay takže'];
-    result = prefixes[Math.floor(Math.random()*prefixes.length)] + ' ' + result;
+  // Buď přidej prefix (20% šance)
+  if(rand < 0.2){
+    const prefixes = ['jako', 'literally', 'honestly'];
+    result = prefixes[Math.floor(Math.random()*prefixes.length)] + ', ' + result;
   }
-  
-  // Mid - doprostřed po první větě/čárce
-  if(additions.includes('mid')){
-    const mids = ['like', 'you know', 'literally'];
-    const midWord = mids[Math.floor(Math.random()*mids.length)];
-    // Najdi první tečku, čárku nebo střed věty
-    const punctuation = result.match(/[,\.]/);
-    if(punctuation){
-      const idx = result.indexOf(punctuation[0]);
-      result = result.slice(0, idx+1) + ' ' + midWord + ',' + result.slice(idx+1);
-    } else {
-      // Vlož doprostřed textu
-      const words = result.split(' ');
-      if(words.length > 2){
-        const midIdx = Math.floor(words.length / 2);
-        words.splice(midIdx, 0, midWord);
-        result = words.join(' ');
-      }
-    }
-  }
-  
-  // Suffix - na konec
-  if(additions.includes('suffix')){
-    const suffixes = ['fr fr', 'no cap', 'fr', 'ngl', 'on god'];
+  // Nebo suffix (další 20% šance)
+  else if(rand < 0.4){
+    const suffixes = ['fr', 'no cap', 'ngl'];
     result = result + ', ' + suffixes[Math.floor(Math.random()*suffixes.length)];
-  }
-  
-  // Skibidi - speciální vtipný prvek
-  if(additions.includes('skibidi')){
-    const skibidiPhrases = ['skibidi vibes', 'skibidi moment', 'skibidi energy'];
-    // Přidej buď doprostřed nebo na konec
-    if(Math.random() > 0.5){
-      result = result + ', ' + skibidiPhrases[Math.floor(Math.random()*skibidiPhrases.length)];
-    } else {
-      const words = result.split(' ');
-      if(words.length > 3){
-        words.splice(2, 0, 'skibidi');
-        result = words.join(' ');
-      }
-    }
   }
   
   return result;
