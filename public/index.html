@@ -164,17 +164,18 @@
         <div>
           <div class="subtitle">Normální → Gen-Z</div>
           <textarea id="tNorm" placeholder="Napiš normálně…"></textarea>
-          <div class="smallrow">
-            <button id="bNorm2Genz" class="primary">Přeložit</button>
-          </div>
         </div>
         <div>
           <div class="subtitle">Gen-Z → Normální</div>
           <textarea id="tGenz" placeholder="Nebo Gen-Z…"></textarea>
-          <div class="smallrow">
-            <button id="bGenz2Norm" class="primary">Přeložit</button>
-          </div>
         </div>
+      </div>
+      <div style="text-align:center;margin-top:16px;">
+        <button id="bTranslate" class="primary" style="min-width:200px;">Přeložit ↔️</button>
+      </div>
+      <div id="explanation" style="margin-top:16px;padding:12px;background:rgba(157,255,0,.05);border:1px solid rgba(157,255,0,.2);border-radius:12px;display:none;">
+        <div style="font-weight:700;margin-bottom:8px;color:var(--accent);">💡 Co to znamená?</div>
+        <div id="explanationText" style="font-size:14px;line-height:1.6;color:var(--muted);"></div>
       </div>
     </div>
   </section>
@@ -288,6 +289,55 @@ const CZ2GZ_WORDS = [
   [/n(á|a)lad(a|y|u|ou|ě)/gi, 'vibe'],
   [/styl/gi, 'drip']
 ];
+
+// Slovník s vysvětleními pro Gen-Z výrazy
+const GZ2CZ_EXPLANATIONS = {
+  'af': 'As F**k - používá se ke zdůraznění, např. "cool AF" = opravdu super',
+  'banger': 'něco výjimečně dobrého, hit (hudba, video, zážitek)',
+  'bestie': 'best friend, nejlepší kamarád/ka',
+  'boomer': 'člověk nerozumějící moderním trendům, starší generace',
+  'brain rot': 'hniloba mozku - příliš mnoho času s mělkým obsahem',
+  'cancelled': 'zrušený - ztráta podpory kvůli kontroverzím',
+  'classy': 'stylový, elegantní, má třídu',
+  'cringe': 'trapné a nepříjemné',
+  'crush': 'zamilování, pobláznění do někoho',
+  'dad joke': 'trapný prvoplánový vtip',
+  'delulu': 'mimo realitu, naivní, nesmyslná očekávání',
+  'drip': 'skvělý smysl pro módu, styl',
+  'fail': 'chyba, selhání, neúspěch',
+  'flexit': 'předvádět se, často s materiálním bohatstvím',
+  'fomo': 'fear of missing out - strach z toho, že něco zmeškáte',
+  'ghosting': 'ignorování, přestat odpovídat',
+  'goat': 'greatest of all time - nejlepší všech dob',
+  'goofy': 'bláznivý, vtipný, trochu trapný ale roztomilý',
+  'rizz': 'charisma, šarm, schopnost někoho okouzlit',
+  'sick': 'cool, stylové, super (pozitivně)',
+  'sigma': 'nezávislý samotář, nepotřebuje uznání',
+  'shady': 'podezřelé, nedůvěryhodné',
+  'skibidi': 'divné, absurdní, zábavné',
+  'slay': 'perfektní výkon, stylový, mimořádně úspěšný',
+  'vibe': 'nálada, atmosféra',
+  'weirdo': 'podivín, člověk vymykající se normám',
+  'lit': 'skvělé, výborné, zajímavé',
+  'mid': 'průměrné, meh',
+  'bussin': 'výborné (hlavně jídlo)',
+  'based': 'autentické, cool, sebevědomé názory',
+  'toxic': 'toxické chování',
+  'valid': 'dobré, solidní, rozumné',
+  'cope': 'způsob vyrovnání se s něčím',
+  'flex': 'chlubit se, předvádět se',
+  'stan': 'posedlý fanoušek',
+  'sus': 'suspicious - podezřelý',
+  'cap': 'lež, není pravda',
+  'no cap': 'fakt, bez keců, je to pravda',
+  'iykyk': 'if you know you know - když víš, tak víš',
+  'felit': 'trávit čas s přáteli, popíjet, chillovat',
+  'feelovat': 'pocitově prožít, cítit',
+  'fixnout': 'opravit',
+  'buffnout': 'posílit',
+  'nerfnout': 'oslabit',
+  'yapping': 'žvatlat, brblat'
+};
 
 const GZ2CZ_WORDS = [
   // Fráze (delší musí být první)
@@ -415,7 +465,149 @@ const GZ2CZ_WORDS = [
   [/fire/gi, 'super'],
   [/\bcap\b/gi, 'lež'],
   [/\bbro\b/gi, 'brácho'],
-  [/k(á|a)mo/gi, 'kamaráde']
+  [/k(á|a)mo/gi, 'kamaráde'],
+  
+  // Nové výrazy ze slovníku
+  [/\baf\b/gi, 'extrémně'],
+  [/banger/gi, 'hit'],
+  [/bestie/gi, 'nejlepší kámoš'],
+  [/boomer/gi, 'starší generace'],
+  [/brain\s+rot/gi, 'hniloba mozku'],
+  [/cancelled/gi, 'zrušený'],
+  [/classy/gi, 'elegantní'],
+  [/crush/gi, 'zamilování'],
+  [/dad\s+joke/gi, 'trapný vtip'],
+  [/eboy|egirl/gi, 'emo styl'],
+  [/fail/gi, 'neúspěch'],
+  [/finsta/gi, 'falešný Instagram'],
+  [/flexit/gi, 'předvádět se'],
+  [/fomo/gi, 'strach zmeškat'],
+  [/gaslighting/gi, 'manipulace'],
+  [/ghosting/gi, 'ignorování'],
+  [/goat/gi, 'nejlepší'],
+  [/goofy/gi, 'bláznivý'],
+  [/red\s+flag/gi, 'varovný signál'],
+  [/green\s+flag/gi, 'pozitivní signál'],
+  [/beige\s+flag/gi, 'neutrální signál'],
+  [/shady/gi, 'podezřelé'],
+  [/shitpost/gi, 'nesmyslný příspěvek'],
+  [/situationship/gi, 'vztah nevztah'],
+  [/snowflake/gi, 'přecitlivělý'],
+  [/swag/gi, 'styl'],
+  [/troll(ing)?/gi, 'provokování'],
+  [/vanilla/gi, 'nudné'],
+  [/weirdo/gi, 'podivín'],
+  [/academic\s+victim/gi, 'učení nejde'],
+  [/academic\s+weapon/gi, 'dobrý ve škole'],
+  [/ate\s+and\s+left\s+no\s+crumbs/gi, 'udělal skvěle'],
+  [/baddie/gi, 'drsná žena'],
+  [/\bbae\b/gi, 'miláček'],
+  [/baller/gi, 'úspěšný'],
+  [/ballin/gi, 'luxusní život'],
+  [/black\s+cat/gi, 'chladná energie'],
+  [/bodyshaming/gi, 'urážení těla'],
+  [/bombex/gi, 'super'],
+  [/booknout/gi, 'zarezervovat'],
+  [/boujee|bougie/gi, 'luxusní'],
+  [/\bbruh\b/gi, 'kámo'],
+  [/built\s+different/gi, 'talentovaný'],
+  [/chillovat/gi, 'relaxovat'],
+  [/cooking/gi, 'dělat dobře'],
+  [/let\s+(him|her|them)\s+cook/gi, 'nech ho/ji tvořit'],
+  [/coping\s+mechanism/gi, 'způsob vyrovnání'],
+  [/cringovat/gi, 'být trapný'],
+  [/death\s+stare/gi, 'mrtvolný pohled'],
+  [/deg(e)?š/gi, 'hloupý'],
+  [/dope/gi, 'super'],
+  [/edgovat/gi, 'napínat'],
+  [/fame/gi, 'slavný'],
+  [/fancy/gi, 'noblesní'],
+  [/feelovat/gi, 'cítit'],
+  [/fel(á|a)ci/gi, 'kámoši'],
+  [/felit/gi, 'posedět'],
+  [/\bfit\b/gi, 'outfit'],
+  [/fit\s+check/gi, 'ukázka outfitu'],
+  [/\bflex\b/gi, 'chlubit se'],
+  [/\bflop\b/gi, 'neúspěch'],
+  [/fruity/gi, 'ne úplně hetero'],
+  [/gaslight/gi, 'manipulovat'],
+  [/gatekeep/gi, 'kontrolovat přístup'],
+  [/ghostnout/gi, 'ignorovat'],
+  [/girl\s+dinner/gi, 'snacky místo jídla'],
+  [/girl\s+math/gi, 'ženská logika'],
+  [/girlboss/gi, 'úspěšná žena'],
+  [/glow[\-\s]?up/gi, 'změna k lepšímu'],
+  [/glow[\-\s]?down/gi, 'změna k horšímu'],
+  [/golden\s+retriever/gi, 'milý člověk'],
+  [/gymrat/gi, 'závislý na cvičení'],
+  [/highlight/gi, 'vrchol'],
+  [/hits\s+different/gi, 'jinak působí'],
+  [/\bhoe\b/gi, 'lehká dívka'],
+  [/\bhot\b/gi, 'atraktivní'],
+  [/\bhuh\b/gi, 'co?'],
+  [/ch(á|a)br/gi, 'brácha'],
+  [/\bchad\b/gi, 'alfa samec'],
+  [/ch(á|a)lka/gi, 'jídlo'],
+  [/ch(á|a)lovat/gi, 'jíst'],
+  [/checkuju|checknout/gi, 'zkontrolovat'],
+  [/chicago/gi, 'místo pohody'],
+  [/chicken\s+legs/gi, 'slabé nohy'],
+  [/\bick\b/gi, 'odpudivé'],
+  [/imagine/gi, 'představ si'],
+  [/its\s+giving/gi, 'vypadá skvěle'],
+  [/karen/gi, 'protivná žena'],
+  [/legit/gi, 'doopravdy'],
+  [/legit\s+check/gi, 'kontrola pravosti'],
+  [/\bmatch\b/gi, 'padnout si'],
+  [/\bmeh\b/gi, 'nic moc'],
+  [/\bmood\b/gi, 'nálada'],
+  [/mother(ing)?/gi, 'královna'],
+  [/nefeelovat/gi, 'necítím to'],
+  [/netflix\s+and\s+chill/gi, 'sex'],
+  [/niche/gi, 'unikátní'],
+  [/\bnope\b/gi, 'ne'],
+  [/passenger\s+princess/gi, 'spolujezdec jako král'],
+  [/period/gi, 'tečka'],
+  [/photo\s+dump/gi, 'více fotek'],
+  [/pick\s+me\s+girl/gi, 'holka shazující jiné'],
+  [/pregame/gi, 'pít před akcí'],
+  [/puff(í|i)k/gi, 'elektronická cigareta'],
+  [/\bqueen\b/gi, 'královna'],
+  [/resting\s+bitch\s+face/gi, 'odsuzující pohled'],
+  [/roman\s+empire/gi, 'neustále přemýšlet'],
+  [/savage/gi, 'divošské'],
+  [/\bscam\b/gi, 'podvod'],
+  [/serving/gi, 'vypadat skvěle'],
+  [/shade/gi, 'podezřelé'],
+  [/\bship\b/gi, 'párovat'],
+  [/shipovat/gi, 'podporovat vztah'],
+  [/shoutout/gi, 'vyzdvihnutí'],
+  [/side\s+eye/gi, 'boční oko'],
+  [/\bsimp\b/gi, 'submisivní muž'],
+  [/sip\s+tea/gi, 'hltání drbů'],
+  [/\bskip\b/gi, 'vynechat'],
+  [/smash\s+or\s+pass/gi, 'ano nebo ne'],
+  [/\bstan\b/gi, 'posedlý fanoušek'],
+  [/solulu/gi, 'řešení'],
+  [/sugar\s+(baby|daddy|mamma)/gi, 'dotovaný vztah'],
+  [/sweet\s+treat/gi, 'dezertík'],
+  [/tahat\s+se/gi, 'vídat se'],
+  [/spill\s+the\s+tea/gi, 'řekni drby'],
+  [/the\s+feminine\s+urge/gi, 'ženské nutkání'],
+  [/thirst\s+trap/gi, 'svůdná fotka'],
+  [/tinderdate/gi, 'rande z Tinderu'],
+  [/\btrigger\b/gi, 'spouštěč'],
+  [/trolling/gi, 'provokování'],
+  [/turn\s+on|turn\s+off/gi, 'přitažlivé/nepřitažlivé'],
+  [/vyghostit/gi, 'ignorovat'],
+  [/\bwack\b/gi, 'nudný'],
+  [/white\s+girl\s+music/gi, 'Taylor Swift'],
+  [/who\s+let\s+(him|her)\s+cook/gi, 'to je skvělé'],
+  [/\bwoke\b/gi, 'politicky korektní'],
+  [/yapping/gi, 'žvatlat'],
+  [/\byass\b/gi, 'ano'],
+  [/zaddy/gi, 'sexy starší muž'],
+  [/zne(ž|z)ivit\s+se/gi, 'sebevražda']
 ];
 
 function looksGenZ(s){
@@ -604,8 +796,56 @@ async function init(){
   document.getElementById('closeSheet').onclick=closeSheet; back.onclick=closeSheet;
 
   const tNorm=document.getElementById('tNorm'), tGenz=document.getElementById('tGenz');
-  document.getElementById('bNorm2Genz').onclick=async()=>{ tGenz.value = await translate(tNorm.value,'normal_to_gz'); };
-  document.getElementById('bGenz2Norm').onclick=async()=>{ tNorm.value = await translate(tGenz.value,'gz_to_normal'); };
+  const explanationDiv = document.getElementById('explanation');
+  const explanationText = document.getElementById('explanationText');
+  
+  // Funkce pro zobrazení vysvětlení
+  function showExplanation(text){
+    if(!text || !text.trim()) {
+      explanationDiv.style.display='none';
+      return;
+    }
+    
+    const words = text.toLowerCase().match(/\b[\w\s-]+\b/g) || [];
+    const explanations = [];
+    
+    // Najdi všechny Gen-Z výrazy a jejich vysvětlení
+    for(const word of words){
+      const cleanWord = word.trim();
+      if(GZ2CZ_EXPLANATIONS[cleanWord]){
+        explanations.push(`<strong>${cleanWord}:</strong> ${GZ2CZ_EXPLANATIONS[cleanWord]}`);
+      }
+    }
+    
+    if(explanations.length > 0){
+      explanationText.innerHTML = explanations.join('<br><br>');
+      explanationDiv.style.display='block';
+    } else {
+      explanationDiv.style.display='none';
+    }
+  }
+  
+  // Jedno tlačítko pro překlad v obou směrech
+  document.getElementById('bTranslate').onclick=async()=>{ 
+    const normVal = tNorm.value.trim();
+    const genzVal = tGenz.value.trim();
+    
+    // Schovat vysvětlení při začátku překladu
+    explanationDiv.style.display='none';
+    
+    if(normVal && !genzVal){
+      // Překlad z normální do Gen-Z
+      tGenz.value = await translate(normVal, 'normal_to_gz');
+    } else if(genzVal && !normVal){
+      // Překlad z Gen-Z do normální + zobraz vysvětlení
+      tNorm.value = await translate(genzVal, 'gz_to_normal');
+      showExplanation(genzVal);
+    } else if(normVal && genzVal){
+      // Oba jsou vyplněné - přelož Gen-Z do normální (priorita vysvětlení)
+      tNorm.value = await translate(genzVal, 'gz_to_normal');
+      showExplanation(genzVal);
+    }
+  };
 }
 init();
 
