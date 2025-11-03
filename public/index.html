@@ -261,9 +261,13 @@ const CZ2GZ_PHRASES = [
 ];
 
 const CZ2GZ_WORDS = [
+  // Základní Gen-Z výrazy co už jsou Gen-Z - nechám je být
   [/moment/gi, 'moment'],
-  [/kr(á|a)tk(ý|ého|ému|ým|ém|á|ou|é|e|ej|y|i)/gi, 'krátkej'],
-  [/revive[\-\s]?nout/gi, 'revive-nout'],
+  [/setup/gi, 'setup'],
+  [/flow/gi, 'flow'],
+  [/vibe/gi, 'vibe'],
+  
+  // České překlady do Gen-Z
   [/trapn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'cringe'],
   [/divn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'skibidi'],
   [/hodn(ě|e)/gi, 'mega'],
@@ -278,14 +282,82 @@ const CZ2GZ_WORDS = [
   [/dobr(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'valid'],
   [/(vý|vy)born(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'bussin'],
   [/super/gi, 'fire'],
-  [/něco\s+dobr(ý|é|ého)/gi, 'something valid']
+  [/perfektn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'slay'],
+  [/legend(á|a)rn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'goated'],
+  [/průměrn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'mid'],
+  [/n(á|a)lad(a|y|u|ou|ě)/gi, 'vibe'],
+  [/styl/gi, 'drip']
 ];
 
 const GZ2CZ_WORDS = [
+  // Fráze (delší musí být první)
   [/no\s+cap/gi, 'fakt, bez keců'],
+  [/real\s+talk/gi, 'upřímně'],
   [/skill\s+issue/gi, 'problém se schopnostmi'],
+  [/hard\s+carry/gi, 'táhnout tým'],
+  [/hard\s+W/gi, 'velké vítězství'],
+  [/on\s+point/gi, 'přesné'],
+  [/chef'?s\s+kiss/gi, 'dokonalé'],
+  [/low\s+effort/gi, 'nízké úsilí'],
+  [/not\s+it/gi, 'špatné'],
+  [/not\s+deep/gi, 'není to složité'],
+  [/short\s+walk/gi, 'krátká procházka'],
+  [/dark\s+mode/gi, 'tmavý režim'],
+  [/deep\s+breath/gi, 'hluboký nádech'],
+  [/mind\s+reset/gi, 'reset mysli'],
+  
+  // Verbs (českočeská Gen-Z slovesa)
+  [/fixnout/gi, 'opravit'],
+  [/buffnout/gi, 'posílit'],
+  [/nerfnout/gi, 'oslabit'],
+  [/shipnout/gi, 'vydat'],
+  [/rerollnout/gi, 'zkusit znovu'],
+  [/locknout/gi, 'uzamknout'],
+  [/pushnout/gi, 'poslat'],
+  [/deploynout/gi, 'nasadit'],
+  [/scale[\-\s]?nout/gi, 'škálovat'],
+  [/mute[\-\s]?nout/gi, 'ztlumit'],
+  [/ghostnout/gi, 'ignorovat'],
+  [/cancelnout/gi, 'zrušit'],
+  [/save[\-\s]?nout/gi, 'uložit'],
+  [/pin[\-\s]?nout/gi, 'připnout'],
+  [/dropnout/gi, 'pustit'],
+  [/grindit/gi, 'dřít'],
+  [/resetnout/gi, 'resetovat'],
   [/revive[\-\s]?nout/gi, 'oživit'],
-  [/kr(á|a)tk(ý|ého|ému|ým|ém|á|ou|é|e|ej|y|i)/gi, 'krátký'],
+  [/speedrunout/gi, 'rychle projet'],
+  [/min[\-\s]?maxnout/gi, 'optimalizovat'],
+  [/pivotnout/gi, 'změnit směr'],
+  [/stacknout/gi, 'navrstvit'],
+  [/pingnout/gi, 'ozvat se'],
+  [/syncnout/gi, 'synchronizovat'],
+  [/merge[\-\s]?nout/gi, 'sloučit'],
+  [/clapnout\s+bug/gi, 'opravit chybu'],
+  
+  // Nouns
+  [/setup/gi, 'nastavení'],
+  [/flow/gi, 'tok'],
+  [/mood/gi, 'nálada'],
+  [/grind/gi, 'dřina'],
+  [/energy/gi, 'energie'],
+  [/stack/gi, 'vrstva'],
+  [/buff/gi, 'posílení'],
+  [/nerf/gi, 'oslabení'],
+  [/clout/gi, 'vliv'],
+  [/brain/gi, 'mozek'],
+  [/focus/gi, 'soustředění'],
+  [/playlist/gi, 'playlist'],
+  [/deadline/gi, 'termín'],
+  [/scope/gi, 'rozsah'],
+  [/context/gi, 'kontext'],
+  [/cooldown/gi, 'pauza'],
+  [/overhead/gi, 'náklad'],
+  [/latence/gi, 'zpoždění'],
+  [/momentum/gi, 'rozjezd'],
+  [/checkpoint/gi, 'kontrolní bod'],
+  [/meta/gi, 'meta'],
+  
+  // Tones & slang
   [/skibidi/gi, 'divné'],
   [/bussin['"]?/gi, 'výborné'],
   [/rizz/gi, 'charisma'],
@@ -296,10 +368,41 @@ const GZ2CZ_WORDS = [
   [/toxic/gi, 'toxické'],
   [/\btea\b/gi, 'drby'],
   [/delulu/gi, 'mimo realitu'],
+  [/peak/gi, 'vrchol'],
+  [/clean/gi, 'čisté'],
+  [/solid/gi, 'solidní'],
+  [/sleek/gi, 'elegantní'],
+  [/smooth/gi, 'hladké'],
+  [/crisp/gi, 'ostré'],
+  [/\bgas\b/gi, 'super'],
+  [/\bsus\b/gi, 'podezřelé'],
+  [/yikes/gi, 'fuj'],
+  [/\bdead\b/gi, 'mrtvé'],
+  [/trash/gi, 'špatné'],
+  [/iffy/gi, 'nejisté'],
+  [/\boff\b/gi, 'divné'],
+  [/overkill/gi, 'přehnané'],
+  [/\bpain\b/gi, 'bolest'],
+  [/cope/gi, 'vyrovnávání'],
+  [/doom/gi, 'záhuba'],
+  [/\bnah\b/gi, 'ne'],
+  [/basic/gi, 'základní'],
+  [/lukewarm/gi, 'vlažné'],
+  [/\blite\b/gi, 'lehké'],
+  [/standard/gi, 'standardní'],
+  [/neutral/gi, 'neutrální'],
+  [/average/gi, 'průměrné'],
+  [/whatever/gi, 'cokoli'],
+  [/so[\-\s]?so/gi, 'tak tak'],
+  
+  // Openery a běžné výrazy
   [/\bfr\b/gi, 'vážně'],
   [/\bngl\b/gi, 'upřímně'],
   [/\bidk\b/gi, 'nevím'],
   [/\bimo\b/gi, 'podle mě'],
+  [/\bbtw\b/gi, 'mimochodem'],
+  [/\bfyi\b/gi, 'pro tvou informaci'],
+  [/\birl\b/gi, 'v reálu'],
   [/lowkey/gi, 'trochu'],
   [/highkey/gi, 'hodně'],
   [/\bmid\b/gi, 'průměrné'],
@@ -310,11 +413,14 @@ const GZ2CZ_WORDS = [
   [/drip/gi, 'styl'],
   [/mega/gi, 'hodně'],
   [/fire/gi, 'super'],
-  [/\bcap\b/gi, 'lež']
+  [/\bcap\b/gi, 'lež'],
+  [/\bbro\b/gi, 'brácho'],
+  [/k(á|a)mo/gi, 'kamaráde']
 ];
 
 function looksGenZ(s){
-  return /\b(skibidi|rizz|based|cringe|bussin|cap|no cap|slay|fr|ngl|mid|drip|goated|delulu|lowkey|highkey)\b/i.test(s);
+  // Rozšířená detekce Gen-Z slangu včetně českých hybridů
+  return /\b(skibidi|rizz|based|cringe|bussin|cap|no cap|slay|fr|ngl|mid|drip|goated|delulu|lowkey|highkey|vibe|toxic|valid|fire|kino|heat|sus|yikes|cope|peak|clean|sleek|smooth|fixnout|buffnout|nerfnout|shipnout|rerollnout|pushnout|deploynout|grindit|ghostnout|skill issue|bro|kámo|real talk)\b/i.test(s);
 }
 
 function applyReplacements(s, pairs){
