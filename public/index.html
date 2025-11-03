@@ -246,12 +246,13 @@ const CZ2GZ_PHRASES = [
   [/(cítím|citim)\s+se\s+trapn(ě|e)/gi, 'cítím se cringe'],
   [/bez\s+(srandy|keců|kecu)/gi, 'no cap'],
   [/to\s+je\s+(pravda|real)/gi, 'no cap'],
-  [/to\s+je\s+lež/gi, 'cap'],
-  [/skill\s+issue/gi, 'skill issue']
+  [/to\s+je\s+lež/gi, 'cap']
 ];
 
 const CZ2GZ_WORDS = [
-  [/skill\s+issue/gi, 'skill issue'],
+  [/moment/gi, 'moment'],
+  [/kr(á|a)tk(ý|ého|ému|ým|ém|á|ou|é|e|ej|y|i)/gi, 'krátkej'],
+  [/revive[\-\s]?nout/gi, 'revive-nout'],
   [/trapn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'cringe'],
   [/divn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'skibidi'],
   [/hodn(ě|e)/gi, 'mega'],
@@ -266,16 +267,14 @@ const CZ2GZ_WORDS = [
   [/dobr(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'valid'],
   [/(vý|vy)born(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'bussin'],
   [/super/gi, 'fire'],
-  [/něco\s+dobr(ý|é|ého)/gi, 'something valid'],
-  [/ale/gi, 'ale'],
-  [/fixnuteln(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'fixnutelný'],
-  [/pushnout/gi, 'pushnout']
+  [/něco\s+dobr(ý|é|ého)/gi, 'something valid']
 ];
 
 const GZ2CZ_WORDS = [
   [/no\s+cap/gi, 'fakt, bez keců'],
-  [/\bcap\b/gi, 'lež'],
   [/skill\s+issue/gi, 'problém se schopnostmi'],
+  [/revive[\-\s]?nout/gi, 'oživit'],
+  [/kr(á|a)tk(ý|ého|ému|ým|ém|á|ou|é|e|ej|y|i)/gi, 'krátký'],
   [/skibidi/gi, 'divné'],
   [/bussin['"]?/gi, 'výborné'],
   [/rizz/gi, 'charisma'],
@@ -300,8 +299,7 @@ const GZ2CZ_WORDS = [
   [/drip/gi, 'styl'],
   [/mega/gi, 'hodně'],
   [/fire/gi, 'super'],
-  [/fixnuteln(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'opravitelné'],
-  [/pushnout/gi, 'poslat']
+  [/\bcap\b/gi, 'lež']
 ];
 
 function looksGenZ(s){
@@ -310,15 +308,29 @@ function looksGenZ(s){
 
 function applyReplacements(s, pairs){
   let out = s;
+  // Aplikuj všechny nahrazení postupně
   for (const [re, to] of pairs){
-    // Globální nahrazení všech výskytů
-    out = out.replace(new RegExp(re.source, re.flags), (m)=>{
-      // zachování první kapitalizace (jednoduše)
-      if (m[0] === m[0].toUpperCase() && to.length) {
-        return to[0].toUpperCase() + to.slice(1);
+    const regex = new RegExp(re.source, re.flags);
+    let matches = [];
+    let match;
+    
+    // Najdi všechny matches
+    while ((match = regex.exec(out)) !== null) {
+      matches.push({index: match.index, length: match[0].length, original: match[0], replacement: to});
+      // Pokud není global flag, ukonči
+      if (!regex.global) break;
+    }
+    
+    // Aplikuj všechny nahrazení od konce, aby se neposunuly indexy
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const m = matches[i];
+      let replacement = m.replacement;
+      // zachování první kapitalizace
+      if (m.original[0] === m.original[0].toUpperCase() && replacement.length) {
+        replacement = replacement[0].toUpperCase() + replacement.slice(1);
       }
-      return to;
-    });
+      out = out.substring(0, m.index) + replacement + out.substring(m.index + m.length);
+    }
   }
   return out;
 }
