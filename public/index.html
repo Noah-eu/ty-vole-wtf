@@ -218,13 +218,13 @@
       <!-- Barevné CTA tlačítka v gridu -->
       <div class="btn-group">
         <button id="shareMain" title="Sdílej kartu do chatu">
-          <span id="shareMainText">Nahrávám...</span>
+          <span id="shareMainText">Drop do chatu 💀</span>
         </button>
         <button id="downloadCard" title="Stáhnout jako obrázek">
-          <span id="downloadText">Nahrávám...</span>
+          <span id="downloadText">Bake it 🍰</span>
         </button>
         <button id="copy" title="Zkopíruje URL">
-          <span id="copyText">Nahrávám...</span>
+          <span id="copyText">Boomer sharing mode</span>
         </button>
       </div>
       <div id="ctaMicrocopy" class="cta-microcopy" style="display:none;"></div>
@@ -1126,11 +1126,11 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
-<!-- Share System Scripts -->
-<script src="lib/i18n.js"></script>
-<script src="lib/analytics.js"></script>
-<script src="lib/ab-test.js"></script>
-<script src="lib/share.js"></script>
+<!-- Share System Scripts - defer ensures DOM is ready -->
+<script src="lib/i18n.js" defer></script>
+<script src="lib/analytics.js" defer></script>
+<script src="lib/ab-test.js" defer></script>
+<script src="lib/share.js" defer></script>
 
 <script>
 // Initialize share system after page load
@@ -1146,18 +1146,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const ctaMicrocopy = document.getElementById('ctaMicrocopy');
   
   function updateCTATexts() {
-    if (!window.i18n || !window.abTest) {
-      console.error('i18n or abTest not loaded yet');
-      return;
+    // Update all button texts with i18n
+    try {
+      shareMainText.textContent = window.abTest.getCTAText();
+      downloadText.textContent = window.i18n.t('cta.download');
+      copyText.textContent = window.i18n.t('cta.copyLink');
+    } catch (e) {
+      console.error('Error updating CTA texts:', e);
     }
-    shareMainText.textContent = window.abTest.getCTAText();
-    downloadText.textContent = window.i18n.t('cta.download');
-    copyText.textContent = window.i18n.t('cta.copyLink');
-    console.log('CTA texts updated:', {
-      share: shareMainText.textContent,
-      download: downloadText.textContent,
-      copy: copyText.textContent
-    });
   }
   
   function showMicrocopy() {
@@ -1171,10 +1167,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 10);
   }
   
-  // Wait a bit for all scripts to load, then update
-  setTimeout(() => {
-    updateCTATexts();
-  }, 100);
+  // Update texts immediately (scripts have defer so they're loaded)
+  updateCTATexts();
   
   // Share button - main CTA
   shareMainBtn.onclick = async () => {
