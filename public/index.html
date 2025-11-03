@@ -497,14 +497,21 @@ const GZ2CZ_WORDS = [
   [/cope/gi, 'vyrovnávání'],
   [/doom/gi, 'záhuba'],
   [/\bnah\b/gi, 'ne'],
+  [/not\s+it/gi, 'to není ono'],
   [/basic/gi, 'základní'],
   [/lukewarm/gi, 'vlažné'],
   [/\blite\b/gi, 'lehké'],
   [/standard/gi, 'standardní'],
   [/neutral/gi, 'neutrální'],
   [/average/gi, 'průměrné'],
+  [/not\s+deep/gi, 'není to hluboké'],
   [/whatever/gi, 'cokoli'],
   [/so[\-\s]?so/gi, 'tak tak'],
+  [/ok[\-\s]?ish/gi, 'tak akorát'],
+  [/hard\s+W/gi, 'velké vítězství'],
+  [/on\s+point/gi, 'přesné'],
+  [/chef'?s\s+kiss/gi, 'dokonalé'],
+  [/low\s+effort/gi, 'málo úsilí'],
   
   // Openery a běžné výrazy
   [/\bfr\b/gi, 'vážně'],
@@ -573,11 +580,33 @@ const GZ2CZ_WORDS = [
   [/\bbruh\b/gi, 'kámo'],
   [/built\s+different/gi, 'talentovaný'],
   [/chillovat/gi, 'relaxovat'],
+  [/\bchill\b/gi, 'v klidu'],
   [/cooking/gi, 'dělat dobře'],
   [/let\s+(him|her|them)\s+cook/gi, 'nech ho/ji tvořit'],
   [/coping\s+mechanism/gi, 'způsob vyrovnání'],
   [/cringovat/gi, 'být trapný'],
   [/death\s+stare/gi, 'mrtvolný pohled'],
+  
+  // Actions z lexikonu
+  [/reset/gi, 'restart'],
+  [/vypnout\s+notifikace/gi, 'vypnout notifikace'],
+  [/d(á|a)t\s+pauzu/gi, 'dát pauzu'],
+  [/stretch/gi, 'protažení'],
+  [/nadejchat\s+vzduch/gi, 'nadejchat vzduch'],
+  [/vym(ě|e)nit\s+playlist/gi, 'vyměnit playlist'],
+  [/p(í|i)t\s+vodu/gi, 'pít vodu'],
+  [/short\s+walk/gi, 'krátká procházka'],
+  [/sn(í|i)(ž|z)it\s+jas/gi, 'snížit jas'],
+  [/dark\s+mode/gi, 'tmavý režim'],
+  [/offline\s+m(ó|o)d/gi, 'offline režim'],
+  [/deep\s+breath/gi, 'hluboký nádech'],
+  [/rychl(e|ej)\s+detox\s+s(í|i)t(í|i)/gi, 'rychlý detox sítí'],
+  [/proklepat\s+prsty/gi, 'proklepat prsty'],
+  [/mind\s+reset/gi, 'reset mysli'],
+  [/rychl(e|ej)\s+re[\-\s]?sync/gi, 'rychlá synchronizace'],
+  [/st(ř|r)ihnout\s+mini\s+(ú|u)kol/gi, 'udělat miniúkol'],
+  [/odlo(ž|z)it\s+perfekcionismus/gi, 'odložit perfekcionismus'],
+  [/zapsat\s+\d+\s+my(š|s)lenky/gi, 'zapsat myšlenky'],
   [/deg(e)?š/gi, 'hloupý'],
   [/dope/gi, 'super'],
   [/edgovat/gi, 'napínat'],
@@ -672,8 +701,18 @@ const GZ2CZ_WORDS = [
 ];
 
 function looksGenZ(s){
-  // Rozšířená detekce Gen-Z slangu včetně českých hybridů
-  return /\b(skibidi|rizz|based|cringe|bussin|cap|no cap|slay|fr|ngl|mid|drip|goated|delulu|lowkey|highkey|vibe|toxic|valid|fire|kino|heat|sus|yikes|cope|peak|clean|sleek|smooth|fixnout|buffnout|nerfnout|shipnout|rerollnout|pushnout|deploynout|grindit|ghostnout|skill issue|bro|kámo|real talk)\b/i.test(s);
+  // Rozšířená detekce Gen-Z slangu včetně českých hybridů a struktur
+  const genZPatterns = [
+    /\b(skibidi|rizz|based|cringe|bussin|cap|no cap|slay|fr|ngl|mid|drip|goated|delulu|lowkey|highkey|vibe|toxic|valid|fire|kino|heat|sus|yikes|cope|peak|clean|sleek|smooth|gas|lit|W|L)\b/i,
+    /\b(fixnout|buffnout|nerfnout|shipnout|rerollnout|pushnout|deploynout|grindit|ghostnout|locknout|clapnout|resetnout|speedrunout|pivotnout|stacknout|pingnout|syncnout)\b/i,
+    /\b(setup|flow|mood|grind|energy|stack|buff|nerf|clout|focus|deadline|scope|context|cooldown|overhead|latence|momentum|checkpoint|meta|xp|loot|combo)\b/i,
+    /\b(bro|kámo|real talk|ok listen|true story|side note|btw|heads up|no jokes|literally|honestly|okay takže)\b/i,
+    /\b(skill issue|hard W|hard L|on point|chef'?s kiss|low effort|brain lag|not it|ok-ish|so-so)\b/i,
+    /(fr fr|on god|no cap|you know|like,)/i
+  ];
+  
+  // Pokud se shoduje s jakýmkoli Gen-Z patternem
+  return genZPatterns.some(pattern => pattern.test(s));
 }
 
 function applyReplacements(s, pairs){
@@ -716,11 +755,69 @@ function translateLocal(text, direction){
     return s;
   }
   if (direction === 'gz_to_normal'){
+    // Nejdřív vyčisti Gen-Z fillery a struktury
+    s = removeGenZFlair(s);
+    // Pak přelož Gen-Z slova do češtiny
     s = applyReplacements(s, GZ2CZ_WORDS);
     return s;
   }
   // autodetekce
   return looksGenZ(s) ? translateLocal(s,'gz_to_normal') : translateLocal(s,'normal_to_gz');
+}
+
+// Odstraní Gen-Z fillery a strukturní prvky z textu
+function removeGenZFlair(text){
+  let result = text;
+  
+  // Odstranění běžných Gen-Z fillerů a frází (zachovat význam věty)
+  const fillersToRemove = [
+    // Prefix/suffix fillery
+    /^(jako|literally|honestly|okay takže|ok listen|true story|side note|btw|heads up|popravdě|mimochodem|be honest|real talk|lowkey|no cap|ngl|upřímně|tak hele|tak jo|takhle|nehrotit|bro fr|no jokes|skromně|hele|kámo|bro)\s*,?\s*/gi,
+    /(,\s*)?(fr fr|no cap|on god|ngl|fr|you know|literally|like)(\s*,|\s*\.)?$/gi,
+    
+    // Doprostřed vět
+    /,\s*(like|you know|literally)\s*,/gi,
+    /\s+(like|you know|literally)\s+/gi,
+    
+    // Skibidi výrazy (pokud jsou jen jako filler)
+    /,?\s*skibidi (vibes|moment|energy)/gi,
+    /skibidi\s+(?!toilet|ohio)/gi, // skibidi jako filler (ne když je součást pojmu)
+    
+    // Zdvojené čárky po odstranění
+    /,\s*,/g,
+    // Čárka na začátku
+    /^,\s*/,
+    // Čárka před tečkou
+    /,\s*\./g,
+    // Vícenásobné mezery
+    /\s{2,}/g
+  ];
+  
+  for (const pattern of fillersToRemove){
+    result = result.replace(pattern, (match, ...args) => {
+      // Pokud je to pattern s čárkou, zachovej mezeru
+      if(match.includes(',')) return ' ';
+      if(match.trim() === '') return ' ';
+      return ' ';
+    });
+  }
+  
+  // Vyčisti nadbytečné mezery a interpunkci
+  result = result
+    .replace(/\s+/g, ' ')
+    .replace(/\s*,\s*/g, ', ')
+    .replace(/\s*\.\s*/g, '. ')
+    .replace(/\s+([.,!?])/g, '$1')
+    .replace(/^[,\s]+/, '')
+    .replace(/[,\s]+$/, '')
+    .trim();
+  
+  // Velké písmeno na začátku
+  if(result.length > 0){
+    result = result[0].toUpperCase() + result.slice(1);
+  }
+  
+  return result;
 }
 
 // Přidá Gen-Z struktury a fillery do přeložené věty
