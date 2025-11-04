@@ -499,6 +499,11 @@ const GZ2CZ_EXPLANATIONS = {
 };
 
 const GZ2CZ_WORDS = [
+  // Běžná angličtina (delší fráze první)
+  [/no\s+thoughts,?\s+just/gi, 'žádné myšlenky, jenom'],
+  [/literally,?\s+no\s+thoughts/gi, 'doslova žádné myšlenky'],
+  [/instant\s+vibe\s+generator/gi, 'generátor nálady'],
+  
   // Fráze (delší musí být první)
   [/no\s+cap/gi, 'fakt, bez keců'],
   [/real\s+talk/gi, 'upřímně'],
@@ -542,6 +547,12 @@ const GZ2CZ_WORDS = [
   [/syncnout/gi, 'synchronizovat'],
   [/merge[\-\s]?nout/gi, 'sloučit'],
   [/clapnout\s+bug/gi, 'opravit chybu'],
+  
+  // Běžná anglická slova (podstatná jména)
+  [/\bthoughts\b/gi, 'myšlenky'],
+  [/\bvibes\b/gi, 'nálada'],
+  [/\binstant\b/gi, 'okamžitý'],
+  [/\bgenerator\b/gi, 'generátor'],
   
   // Nouns
   [/setup/gi, 'nastavení'],
@@ -610,6 +621,11 @@ const GZ2CZ_WORDS = [
   [/on\s+point/gi, 'přesné'],
   [/chef'?s\s+kiss/gi, 'dokonalé'],
   [/low\s+effort/gi, 'málo úsilí'],
+  
+  // Běžná anglická slovíčka (krátká, často se vyskytující)
+  [/\bjust\b/gi, 'jenom'],
+  [/\bliterally\b/gi, 'doslova'],
+  [/\bno\b/gi, 'žádné'],
   
   // Openery a běžné výrazy
   [/\bfr\b/gi, 'vážně'],
