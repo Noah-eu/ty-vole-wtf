@@ -1116,7 +1116,13 @@ async function init(){
     tNorm.focus();
   };
 }
-init();
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 
 // PWA SW registrace
 if ('serviceWorker' in navigator) {
