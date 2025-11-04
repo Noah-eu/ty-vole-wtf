@@ -48,18 +48,39 @@
 
 <style>
   :root{
-    --bg:#0b0b11; --ink:#f3f3f8; --muted:#a7a7b6; --line:#252536;
-    --card:#11121a; --accent:#9DFF00; --cyan:#00F0FF; --ink-dark:#0c0c10;
-    --pink:#ff63b8;
+    /* New design system colors */
+    --bg-0:#0A0A0A;
+    --bg-1:#080808;
+    --bg-2:#0E0E0E;
+    --text:#F4F4F4;
+    --muted:#BDBDBD;
+
+    --lime:#B8FF4D;     /* jemnější zelená */
+    --cyan:#27F1E2;     /* měkčí tyrkys */
+    --pink:#FF5FA6;
+
+    --card:#121212;
+    --radius:18px;
+    --gap:22px;
+    
+    /* Legacy compatibility */
+    --ink:var(--text);
+    --bg:var(--bg-0);
+    --accent:var(--lime);
+    --ink-dark:#0c0c10;
+    --line:#252536;
   }
+  
   *{box-sizing:border-box}
+  
+  html, body{
+    background: linear-gradient(180deg, var(--bg-0), var(--bg-1) 60%, var(--bg-2));
+    color: var(--text);
+  }
+  
   body{
-    margin:0; color:var(--ink);
+    margin:0;
     font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial;
-    background:
-      radial-gradient(1200px 600px at 75% 5%, rgba(0,240,255,.06), transparent 60%),
-      radial-gradient(900px 520px at 15% 90%, rgba(157,255,0,.05), transparent 55%),
-      var(--bg);
     min-height:100dvh; max-height:100dvh; display:grid; place-items:center; padding:28px;
     position:fixed; width:100%; overflow:hidden;
   }
@@ -93,21 +114,95 @@
   .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(90deg,var(--accent),var(--cyan));box-shadow:0 0 16px rgba(157,255,0,.7)}
   .brand span{opacity:.66}
   .chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .chip{border:1px solid var(--line);color:var(--muted);background:rgba(255,255,255,.02);padding:8px 12px;border-radius:999px;font-size:13px}
-  .chip.btn{cursor:pointer;color:var(--ink-dark);background:linear-gradient(90deg,var(--accent),var(--cyan));border:0;font-weight:900}
+  .chip{border:1px solid var(--line);color:var(--muted);background:#1a1a1a;padding:8px 12px;border-radius:999px;font-size:13px;transition: all .2s ease;}
+  .chip.btn{cursor:pointer;color:var(--ink-dark);background:linear-gradient(90deg,var(--lime),#CFFF85);border:0;font-weight:900}
+  
+  /* Active chip with pulse animation */
+  .chip-active{
+    background: linear-gradient(90deg,var(--lime),#CFFF85);
+    color:#031;
+    font-weight:900;
+    border:0;
+  }
+  
+  @media (prefers-reduced-motion:no-preference){
+    @keyframes pulse-glow{
+      0%,100%{ box-shadow:0 0 0 0 rgba(184,255,77,.35); }
+      50%{ box-shadow:0 0 0 8px rgba(184,255,77,.0); }
+    }
+    .chip-active{
+      animation: pulse-glow 2.2s ease-in-out infinite;
+    }
+  }
 
-  .card{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));padding:26px;box-shadow:0 22px 60px rgba(0,0,0,.38)}
+  .card{
+    background:var(--card);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow:0 22px 60px rgba(0,0,0,.38);
+    max-width: 680px;
+    margin-inline:auto;
+  }
+  .card + .card{ margin-top: var(--gap); }
   h1{margin:0 0 6px;font-size:clamp(28px,7vw,56px);line-height:1.1;letter-spacing:-.02em}
   .subtitle{color:var(--muted);font-weight:600;font-size:14px}
   .quote{margin:18px 0 6px;font-weight:900;font-size:clamp(22px,4.5vw,40px);letter-spacing:-.015em; min-height:2.4em}
   .trans{color:var(--muted);font-size:15px;margin-top:2px}
+  /* Section spacing */
+  .section { padding: 0 var(--gap); margin: var(--gap) 0; }
+  
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-  button{appearance:none;border:0;cursor:pointer;font-weight:900;padding:12px 16px;border-radius:14px;transition:all .2s ease}
-  .primary{color:var(--ink-dark);background:linear-gradient(90deg,var(--accent),var(--cyan))}
-  .ghost{color:var(--ink);background:transparent;border:1px solid var(--line)}
+  
+  /* Button system - 3 hierarchy levels */
+  button, .btn{
+    appearance:none;
+    border:0;
+    cursor:pointer;
+    font-weight:700;
+    padding:14px 18px;
+    border-radius:14px;
+    line-height:1;
+    transition: transform .15s ease, box-shadow .2s ease;
+  }
+  
+  .btn:focus-visible, button:focus-visible{
+    outline:2px solid color-mix(in oklab, var(--text), transparent 60%);
+    outline-offset:2px;
+  }
+  
+  @media (prefers-reduced-motion:no-preference){
+    .btn:hover, button:hover{
+      transform: translateY(-1px);
+    }
+  }
+  
+  /* Primary – hlavní akce (Drop/Share) */
+  .btn-primary{
+    background: linear-gradient(90deg, var(--lime), #CFFF85);
+    color:#081;
+    box-shadow:0 10px 30px rgba(184,255,77,.15);
+  }
+  
+  /* Secondary – download */
+  .btn-secondary{
+    background: linear-gradient(90deg, var(--cyan), #7DF7EB);
+    color:#062;
+    box-shadow:0 10px 30px rgba(39,241,226,.12);
+  }
+  
+  /* Tertiary – copy link / boomer mode */
+  .btn-tertiary{
+    background: transparent;
+    color: var(--text);
+    border:1px solid color-mix(in oklab, var(--text), transparent 75%);
+  }
+  
+  /* Legacy compat */
+  .primary{color:var(--ink-dark);background:linear-gradient(90deg,var(--lime),var(--cyan))}
+  .ghost{color:var(--text);background:transparent;border:1px solid var(--line)}
   .tiny{font-size:13px;padding:8px 12px}
   
-  /* CTA tlačítka grid - barevné pro mobil */
+  /* CTA tlačítka grid - používá hierarchy systém */
   .btn-group{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -116,47 +211,8 @@
     margin-top:8px;
   }
   
-  /* První tlačítko (Drop do chatu) - accent zelená */
-  #shareMain{
-    background:linear-gradient(135deg, var(--accent), #7acc00);
-    color:var(--ink-dark);
-    font-size:15px;
-    padding:16px 20px;
-    box-shadow:0 4px 16px rgba(157,255,0,.3);
-    border:0;
-  }
-  #shareMain:hover{
-    transform:translateY(-2px);
-    box-shadow:0 6px 20px rgba(157,255,0,.4);
-  }
-  
-  /* Druhé tlačítko (Bake it) - cyan modrá */
-  #downloadCard{
-    background:linear-gradient(135deg, var(--cyan), #00c4d4);
-    color:var(--ink-dark);
-    font-size:15px;
-    padding:16px 20px;
-    box-shadow:0 4px 16px rgba(0,240,255,.3);
-    border:0;
-  }
-  #downloadCard:hover{
-    transform:translateY(-2px);
-    box-shadow:0 6px 20px rgba(0,240,255,.4);
-  }
-  
-  /* Třetí tlačítko (Boomer mode) - pink */
   #copy{
-    background:linear-gradient(135deg, var(--pink), #ff3d9a);
-    color:var(--ink);
-    font-size:15px;
-    padding:16px 20px;
-    box-shadow:0 4px 16px rgba(255,99,184,.3);
-    border:0;
-    grid-column:1 / -1; /* Na celou šířku */
-  }
-  #copy:hover{
-    transform:translateY(-2px);
-    box-shadow:0 6px 20px rgba(255,99,184,.4);
+    grid-column:1 / -1; /* Tertiary přes celou šířku */
   }
   
   /* Responzivní - na úzkém mobilu stack vertikálně */
@@ -177,21 +233,42 @@
   .cta{
     position:fixed;right:18px;bottom:18px;
     width:min(380px,calc(100% - 36px));
-    border-radius:28px;
-    padding:18px 24px;
-    background:linear-gradient(rgba(11,11,17,.98), rgba(11,11,17,.98)) padding-box,
-               linear-gradient(135deg, var(--accent), var(--cyan)) border-box;
-    border:2px solid transparent;
-    backdrop-filter:saturate(140%) blur(8px);
-    box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(157,255,0,.2) inset;
     z-index:2;
+  }
+  
+  .footer-cta{
+    border:1px solid color-mix(in oklab, var(--cyan), transparent 60%);
+    border-radius:20px;
+    padding:16px;
+    background:rgba(18,18,18,.92);
+    backdrop-filter:saturate(140%) blur(8px);
     transition:transform .2s ease, box-shadow .2s ease;
   }
-  .cta:hover{
+  
+  .footer-cta:hover{
     transform:translateY(-2px);
-    box-shadow:0 24px 70px rgba(0,0,0,.6), 0 0 0 1px rgba(157,255,0,.3) inset;
+    box-shadow:0 24px 70px rgba(0,0,0,.6);
   }
-  .cta a{display:block;color:var(--accent);font-weight:900;text-decoration:none;font-size:18px;letter-spacing:-0.01em}
+  
+  .footer-cta a{
+    display:block;
+    color:var(--cyan);
+    font-weight:900;
+    text-decoration:none;
+    font-size:18px;
+    letter-spacing:-0.01em;
+  }
+  
+  @media (prefers-reduced-motion:no-preference){
+    @keyframes arrow-bounce{
+      0%,100%{ transform:translateX(0);}
+      50%{ transform:translateX(4px);}
+    }
+    .footer-cta .arrow{
+      display:inline-block;
+      animation: arrow-bounce 1.4s ease-in-out infinite;
+    }
+  }
   .cta small{display:block;color:var(--muted);margin-top:6px}
   
   /* bottom sheet (translator) */
@@ -218,7 +295,7 @@
       <div class="brand"><div class="dot"></div><div>TY&nbsp;VOLE<span>.wtf</span></div></div>
       <div class="chips">
         <div class="chip">#skibidi</div><div class="chip">#rizz</div><div class="chip">#based</div><div class="chip">#drip</div>
-        <button id="btnSheet" class="chip btn">Skibidi překladač</button>
+        <button id="btnSheet" class="chip btn chip-active" aria-label="Otevřít Skibidi překladač">Skibidi překladač</button>
       </div>
     </header>
 
@@ -234,15 +311,15 @@
         </label>
       </div>
       
-      <!-- Barevné CTA tlačítka v gridu -->
+      <!-- CTA tlačítka - 3-level hierarchy -->
       <div class="btn-group">
-        <button id="shareMain" title="Sdílej kartu do chatu">
+        <button id="shareMain" class="btn btn-primary" aria-label="Sdílet kartu do chatu">
           <span id="shareMainText">Drop do chatu 💀</span>
         </button>
-        <button id="downloadCard" title="Stáhnout jako obrázek">
+        <button id="downloadCard" class="btn btn-secondary" aria-label="Stáhnout kartu jako PNG">
           <span id="downloadText">Bake it 🍰</span>
         </button>
-        <button id="copy" title="Zkopíruje URL">
+        <button id="copy" class="btn btn-tertiary" aria-label="Zkopírovat odkaz">
           <span id="copyText">Boomer sharing mode</span>
         </button>
       </div>
@@ -258,8 +335,8 @@
     </div>
   </div>
 
-  <div class="cta">
-    <a href="/chat.html">Mám i chat, bro 😭 →</a>
+  <div class="cta footer-cta">
+    <a href="/chat.html">Mám i chat, bro 😭 <span class="arrow">→</span></a>
   </div>
 
   <!-- Translator bottom sheet -->

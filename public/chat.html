@@ -7,11 +7,34 @@
 <meta name="description" content="Gen-Z chat (Tykáč). Krátké, trefné, trochu drzé odpovědi.">
 <style>
   :root{
-    --bg:#0b0b11; --ink:#f3f3f8; --muted:#a7a7b6; --line:#252536;
-    --card:#11121a; --accent:#9DFF00; --cyan:#00F0FF; --ink-dark:#0c0c10;
+    /* New design system colors */
+    --bg-0:#0A0A0A;
+    --bg-1:#080808;
+    --bg-2:#0E0E0E;
+    --text:#F4F4F4;
+    --muted:#BDBDBD;
+
+    --lime:#B8FF4D;
+    --cyan:#27F1E2;
+    --pink:#FF5FA6;
+
+    --card:#121212;
+    --radius:18px;
+    --gap:22px;
+    
+    /* Legacy compat */
+    --ink:var(--text);
+    --bg:var(--bg-0);
+    --accent:var(--lime);
+    --ink-dark:#0c0c10;
+    --line:#252536;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Inter,Roboto,Arial;position:relative}
+  html, body{
+    background: linear-gradient(180deg, var(--bg-0), var(--bg-1) 60%, var(--bg-2));
+    color: var(--text);
+  }
+  body{margin:0;font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Inter,Roboto,Arial;position:relative}
   
   /* MEGA BACKGROUND WORDMARK */
   .bg-wordmark{
@@ -45,10 +68,10 @@
   .chip.switch{cursor:pointer}
   #log{padding:18px;overflow:auto;scroll-behavior:smooth}
   .msg{max-width:860px;margin:0 auto 12px auto;display:flex;gap:10px}
-  .you .bubble{margin-left:auto;background:#1a1b25;border:1px solid var(--line)}
-  .ai .bubble{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));border:1px solid var(--line)}
-  .pfp{width:34px;height:34px;border-radius:50%;background:#15161f;border:1px solid var(--line);flex:0 0 auto;display:grid;place-items:center;font-weight:900;color:var(--muted)}
-  .bubble{border-radius:14px;padding:12px 14px;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+  .you .bubble{margin-left:auto;background:#152;border:1px solid var(--line)}
+  .ai .bubble{background:#1a1a1a;border:1px solid var(--line)}
+  .avatar, .pfp{width:28px;height:28px;border-radius:50%;background:#2a2a2a;flex:0 0 auto;display:grid;place-items:center;font-weight:700;color:var(--muted)}
+  .bubble{border-radius:14px;padding:10px 14px;box-shadow:0 10px 28px rgba(0,0,0,.35)}
   .trans{color:var(--muted);font-size:13px;margin-top:6px}
   .typing{display:inline-block;min-width:12px;border-right:2px solid var(--ink);animation:blink 1s steps(1,end) infinite}
   @keyframes blink{50%{border-color:transparent}}
@@ -84,8 +107,8 @@
 
   <footer>
     <form id="f">
-      <textarea id="q" placeholder="Hoď sem téma… třeba 'škola je pain, co s tím'"></textarea>
-      <button id="send" type="submit">Pošli</button>
+      <textarea id="q" placeholder="Hoď sem téma… třeba 'škola je pain, co s tím' 😭" aria-label="Napiš zprávu Tykáčovi"></textarea>
+      <button id="send" type="submit" aria-label="Odeslat zprávu">Pošli</button>
     </form>
     <div class="row">
       <div class="left">
@@ -154,7 +177,10 @@ function typingBubble(){
 }
 
 // první lehce drzej opener:
-msg('assistant', "Čau, tak co řešíš? Hoď to sem, žádný slohy – jedeme short & spicy.");
+// First message with delay
+setTimeout(() => {
+  msg('assistant', "Čau, tak co řešíš? Hoď to sem, žádný slohy – jedeme short & spicy.");
+}, 1000);
 
 async function apiChat(q){
   const r = await fetch('/.netlify/functions/chat?mode='+encodeURIComponent(MODE), {
