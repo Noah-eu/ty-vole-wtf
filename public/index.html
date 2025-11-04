@@ -870,11 +870,18 @@ function applyReplacements(s, pairs){
 function translateLocal(text, direction){
   let s = String(text||'');
   if (!s.trim()) return "";
+  
+  console.log('[translateLocal] Input:', text, 'Direction:', direction);
+  
   if (direction === 'normal_to_gz'){
+    const original = s;
     s = applyReplacements(s, CZ2GZ_PHRASES);
+    console.log('[translateLocal] After CZ2GZ_PHRASES:', s);
     s = applyReplacements(s, CZ2GZ_WORDS);
+    console.log('[translateLocal] After CZ2GZ_WORDS:', s);
     // Přidej Gen-Z struktury a fillery do věty
     s = addGenZFlair(s);
+    console.log('[translateLocal] Final result:', s);
     return s;
   }
   if (direction === 'gz_to_normal'){
