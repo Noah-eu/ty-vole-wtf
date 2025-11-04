@@ -25,7 +25,7 @@ export async function handler(event, context) {
       "Skibidi používej jako filler/vatu (ne pochvalu) – např. 'skibidi... ok' nebo 'skibidi vata'. " +
       "Můžeš mixovat běžné anglicismy (based, cringe, rizz, mid, L, drip). " +
       "Vyhni se explicitním urážkám a obsahu 18+. " +
-      "Odpověz 1–3 krátkými větami nebo odrážkami. Bez otázek, pokud to uživatel nechce.";
+      "Odpověz MAX 1–2 krátkými větami. Žádné dlouhé odpovědi. Bez otázek, pokud to uživatel nechce.";
 
     const SYSTEM_PROMPT =
       (cfg?.modes?.[MODE]?.systemPrompt) || DEFAULT_PROMPT;
@@ -39,7 +39,8 @@ export async function handler(event, context) {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
       body: JSON.stringify({
         model: MODEL_NAME,
-        temperature: 0.8,
+        temperature: 0.7,
+        max_tokens: 150,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'system', content: "Nevyptávej se. Když už otázka, tak jen na explicitní žádost uživatele." },
