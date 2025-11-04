@@ -1031,21 +1031,39 @@ async function init(){
     const text = compose();
     await setQuoteTyped(text);
   };
-  document.getElementById('copy').onclick=async()=>{
-    await navigator.clipboard.writeText(location.href);
-    const c=document.getElementById('copy'); c.textContent='Zkopčeno ✅'; setTimeout(()=>c.textContent='Zkopči link',1100);
-  };
-  document.getElementById('share').onclick=async()=>{
-    try{
-      if(navigator.share){
-        await navigator.share({title:'TY VOLE .wtf',text:document.getElementById('quote').textContent,url:location.href});
-      } else {
+  // Copy button (guarded)
+  const copyEl = document.getElementById('copy');
+  if (copyEl) {
+    copyEl.onclick = async () => {
+      try {
         await navigator.clipboard.writeText(location.href);
+      } catch (e) {
+        console.warn('Clipboard write failed', e);
       }
-      const s=document.getElementById('share');
-      s.textContent='Odesláno ✅'; setTimeout(()=>s.textContent='Pošli dál',1100);
-    }catch{}
-  };
+      const c = document.getElementById('copy'); if (c) { const prev = c.textContent; c.textContent = 'Zkopčeno ✅'; setTimeout(()=>{ c.textContent = prev; }, 1100); }
+    };
+  }
+
+  // Share button - prefer #shareMain, fallback to #share (guarded)
+  (function(){
+    const shareEl = document.getElementById('shareMain') || document.getElementById('share');
+    if (!shareEl) return;
+    shareEl.onclick = async () => {
+      try{
+        const quote = (document.getElementById('quote') && document.getElementById('quote').textContent) || '';
+        if (navigator.share){
+          await navigator.share({title:'TY VOLE .wtf', text: quote, url: location.href});
+        } else {
+          await navigator.clipboard.writeText(location.href);
+        }
+        const prev = shareEl.textContent;
+        shareEl.textContent = 'Odesláno ✅';
+        setTimeout(()=>{ shareEl.textContent = prev; }, 1100);
+      }catch(e){
+        console.warn('Share failed', e);
+      }
+    };
+  })();
 
   // Translator bottom sheet
   const sheet=document.getElementById('sheet'), back=document.getElementById('backdrop');
