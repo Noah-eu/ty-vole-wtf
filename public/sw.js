@@ -1,75 +1,45 @@
-// sw.js
-const CACHE_VERSION = 'v1.0.3';
-const STATIC_CACHE = `static-${CACHE_VERSION}`;
-const RUNTIME_CACHE = 'runtime';
-
-// Získej base path z location service workeru
-const BASE = self.registration.scope;
-
-// Přednačti základ - použij relativní cesty
-const PRECACHE = [
-  './',
-  './index.html',
-  './chat.html',
-  './manifest.webmanifest',
-  './brand/icon-192.png',
-  './brand/icon-512.png',
-  './brand/icon-1024.png',
-  './brand/icon-180.png',
-  './brand/icon-32.png',
-  './brand/icon-16.png',
-  './offline.html'
+// sw.js - PWA Service Worker v2
+const CACHE = 'tvl-pwa-v2';
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/chat.html',
+  '/manifest.webmanifest',
+  '/brand/icon-192.png',
+  '/brand/icon-512.png',
+  '/brand/icon-1024.png',
+  '/brand/icon-180.png',
+  '/offline.html'
 ];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(STATIC_CACHE).then((c) => c.addAll(PRECACHE).catch(e => console.error('Precache failed:', e))));
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter(k => ![STATIC_CACHE, RUNTIME_CACHE].includes(k)).map(k => caches.delete(k)))
-    )
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => c.addAll(ASSETS))
+      .then(() => self.skipWaiting())
   );
-  self.clients.claim();
 });
 
-// Navigace = network-first s fallbackem na cache
-// Statika z PRECACHE = cache-first
-// Ostatní = stale-while-revalidate
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  const url = new URL(req.url);
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
+  );
+});
 
-  if (req.mode === 'navigate') {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          caches.open(RUNTIME_CACHE).then((c) => c.put(req, res.clone()));
-          return res;
-        })
-        .catch(async () => (await caches.match(req)) || caches.match('./offline.html'))
-    );
-    return;
-  }
-
-  if (PRECACHE.includes(url.pathname)) {
-    event.respondWith(caches.match(req).then((c) => c || fetch(req)));
-    return;
-  }
-
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      const fetchPromise = fetch(req)
-        .then((netRes) => {
-          if (netRes && netRes.status === 200 && netRes.type === 'basic') {
-            caches.open(RUNTIME_CACHE).then((c) => c.put(req, netRes.clone()));
-          }
-          return netRes;
-        })
-        .catch(() => cached);
-      return cached || fetchPromise;
-    })
+self.addEventListener('fetch', (e) => {
+  if (e.request.method !== 'GET') return;
+  
+  e.respondWith(
+    caches.match(e.request)
+      .then(hit => hit || fetch(e.request).then(r => {
+        const copy = r.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copy));
+        return r;
+      }))
+      .catch(() => caches.match('/index.html'))
   );
 });
