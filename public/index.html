@@ -390,6 +390,23 @@
   <button id="install-app" style="display:none" class="btn btn-tertiary" aria-label="Nainstalovat aplikaci">
     📲 Nainstalovat appku
   </button>
+  
+  <!-- Debug: Force show button for testing (remove in production) -->
+  <button id="pwa-debug" style="display:none;position:fixed;bottom:120px;right:18px;z-index:10" class="btn btn-tertiary" onclick="
+    const btn = document.getElementById('install-app');
+    const sw = navigator.serviceWorker;
+    const manifest = document.querySelector('link[rel=manifest]');
+    console.log('=== PWA Debug Info ===');
+    console.log('Install button exists:', !!btn);
+    console.log('Install button display:', btn?.style.display);
+    console.log('ServiceWorker supported:', 'serviceWorker' in navigator);
+    console.log('ServiceWorker controller:', sw?.controller);
+    sw?.getRegistration().then(r => console.log('SW registration:', r));
+    console.log('Manifest link:', manifest?.href);
+    console.log('HTTPS:', location.protocol === 'https:');
+    console.log('beforeinstallprompt fired:', window.deferredPrompt !== undefined);
+    if(btn) btn.style.display = 'inline-flex';
+  ">🔧 PWA Debug</button>
 
   <div class="cta footer-cta">
     <a href="/chat.html">Mám i chat, bro 😭 <span class="arrow">→</span></a>
@@ -1377,13 +1394,30 @@ if ('serviceWorker' in navigator) {
 let deferredPrompt = null;
 
 window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('[PWA] beforeinstallprompt event fired');
   e.preventDefault();
   deferredPrompt = e;
-  const btn = document.getElementById('install-app');
-  if (btn) btn.style.display = 'inline-flex';
+  
+  // Show button immediately if DOM ready, otherwise wait
+  const showButton = () => {
+    const btn = document.getElementById('install-app');
+    if (btn) {
+      console.log('[PWA] Showing install button');
+      btn.style.display = 'inline-flex';
+    } else {
+      console.warn('[PWA] Install button not found in DOM');
+    }
+  };
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', showButton);
+  } else {
+    showButton();
+  }
 });
 
 window.addEventListener('appinstalled', () => {
+  console.log('[PWA] App installed');
   const btn = document.getElementById('install-app');
   if (btn) btn.style.display = 'none';
   deferredPrompt = null;
@@ -1399,10 +1433,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const btn = document.getElementById('install-app');
   if (btn) {
     btn.addEventListener('click', async () => {
-      if (!deferredPrompt) return;
+      if (!deferredPrompt) {
+        console.warn('[PWA] No deferred prompt available');
+        return;
+      }
       
+      console.log('[PWA] Showing install prompt');
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
+      console.log('[PWA] User choice:', outcome);
       
       // Track install prompt outcome
       if (window.analytics && window.analytics.trackEvent) {
@@ -1412,7 +1451,27 @@ document.addEventListener('DOMContentLoaded', () => {
       deferredPrompt = null;
       btn.style.display = 'none';
     });
+    
+    console.log('[PWA] Install button click handler attached');
+  } else {
+    console.warn('[PWA] Install button not found during DOMContentLoaded');
   }
+  
+  // Show debug button in dev mode
+  if (location.hostname === 'localhost' || location.search.includes('debug')) {
+    const debugBtn = document.getElementById('pwa-debug');
+    if (debugBtn) debugBtn.style.display = 'inline-flex';
+  }
+  
+  // Global deferredPrompt access for debugging
+  window.deferredPrompt = deferredPrompt;
+  
+  // Log initial PWA state
+  console.log('[PWA] Initial state:', {
+    sw: 'serviceWorker' in navigator,
+    https: location.protocol === 'https:',
+    installButton: !!document.getElementById('install-app')
+  });
 });
 </script>
 
