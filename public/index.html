@@ -273,6 +273,16 @@
     z-index:2;
   }
   
+  /* PWA Install button - appears below card, above footer-cta */
+  #install-app{
+    position:fixed;
+    right:18px;
+    bottom:calc(18px + 90px); /* above footer-cta */
+    width:min(380px,calc(100% - 36px));
+    z-index:3;
+    margin:0 0 10px 0;
+  }
+  
   .footer-cta{
     border:1px solid color-mix(in oklab, var(--cyan), transparent 60%);
     border-radius:20px;
@@ -375,6 +385,11 @@
       </footer>
     </div>
   </div>
+
+  <!-- PWA Install Button (hidden until beforeinstallprompt) -->
+  <button id="install-app" style="display:none" class="btn btn-tertiary" aria-label="Nainstalovat aplikaci">
+    📲 Nainstalovat appku
+  </button>
 
   <div class="cta footer-cta">
     <a href="/chat.html">Mám i chat, bro 😭 <span class="arrow">→</span></a>
@@ -1357,6 +1372,48 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(console.error);
   });
 }
+
+// PWA Install prompt handler
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('install-app');
+  if (btn) btn.style.display = 'inline-flex';
+});
+
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('install-app');
+  if (btn) btn.style.display = 'none';
+  deferredPrompt = null;
+  
+  // Track installation via analytics
+  if (window.analytics && window.analytics.trackEvent) {
+    window.analytics.trackEvent('pwa_installed');
+  }
+});
+
+// Install button click handler
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('install-app');
+  if (btn) {
+    btn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      // Track install prompt outcome
+      if (window.analytics && window.analytics.trackEvent) {
+        window.analytics.trackEvent('pwa_install_prompt', { outcome });
+      }
+      
+      deferredPrompt = null;
+      btn.style.display = 'none';
+    });
+  }
+});
 </script>
 
 <!-- Share System Scripts - defer ensures DOM is ready -->
