@@ -1,17 +1,13 @@
 {
-  "name": "TY VOLE.wtf",
-  "short_name": "TY VOLE",
-  "start_url": "./?source=pwa",
-  "scope": "./",
+  "name": "TY VOLE",
+  "short_name": "TVL",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b0b11",
-  "theme_color": "#111111",
-  "description": "Gen-Z hlášky, chat a překladač Gen-Z ↔ normální čeština.",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
   "icons": [
-    { "src": "icons/icon-192.png",        "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png",        "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/maskable-192.png",    "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/maskable-512.png",    "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-    { "src": "apple-touch-icon.png",      "sizes": "180x180", "type": "image/png", "purpose": "any" }
+    { "src": "/brand/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/brand/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/brand/icon-1024.png", "sizes": "1024x1024", "type": "image/png", "purpose": "maskable any" }
   ]
 }

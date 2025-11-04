@@ -1,0 +1,11 @@
+{
+  "name": "ty-vole-wtf",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:icons": "node scripts/build-icons.mjs"
+  },
+  "devDependencies": {
+    "sharp": "^0.32.0"
+  }
+}
