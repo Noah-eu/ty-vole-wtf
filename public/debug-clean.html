@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PWA Debug Cleaner</title>
+<style>
+body {
+  font-family: system-ui;
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: #0A0A0A;
+  color: #fff;
+}
+button {
+  background: #2dd4bf;
+  color: #000;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+button:hover {
+  background: #34d9c4;
+}
+#output {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #111;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+.log {
+  margin: 0.25rem 0;
+}
+.success { color: #2dd4bf; }
+.error { color: #ff6b6b; }
+</style>
+</head>
+<body>
+
+<h1>🧹 PWA Debug Cleaner</h1>
+<p>Toto smaže všechny SW, cache a localStorage PWA hodnoty. Po kliknutí refreshni stránku.</p>
+
+<button onclick="cleanAll()">VYČISTIT VŠE</button>
+
+<div id="output"></div>
+
+<script>
+const output = document.getElementById('output');
+
+function log(msg, type = '') {
+  const div = document.createElement('div');
+  div.className = `log ${type}`;
+  div.textContent = msg;
+  output.appendChild(div);
+}
+
+async function cleanAll() {
+  output.innerHTML = '';
+  log('🧹 Zahajuji čištění...');
+
+  // 1. Unregister all service workers
+  if ('serviceWorker' in navigator) {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      log(`📦 Nalezeno ${registrations.length} SW registrací`);
+      
+      for (const reg of registrations) {
+        await reg.unregister();
+        log(`✅ Odregistrován SW: ${reg.scope}`, 'success');
+      }
+    } catch (err) {
+      log(`❌ Chyba při odregistraci SW: ${err.message}`, 'error');
+    }
+  } else {
+    log('⚠️ Service Worker API není k dispozici');
+  }
+
+  // 2. Delete all caches
+  if ('caches' in window) {
+    try {
+      const cacheNames = await caches.keys();
+      log(`🗄️ Nalezeno ${cacheNames.length} cache úložišť`);
+      
+      for (const name of cacheNames) {
+        await caches.delete(name);
+        log(`✅ Smazán cache: ${name}`, 'success');
+      }
+    } catch (err) {
+      log(`❌ Chyba při mazání cache: ${err.message}`, 'error');
+    }
+  } else {
+    log('⚠️ Cache API není k dispozici');
+  }
+
+  // 3. Clear PWA-related localStorage
+  try {
+    const pwaKeys = Object.keys(localStorage).filter(k => 
+      k.includes('pwa') || k.includes('PWA') || k.includes('install')
+    );
+    log(`🔑 Nalezeno ${pwaKeys.length} PWA localStorage klíčů`);
+    
+    pwaKeys.forEach(key => {
+      localStorage.removeItem(key);
+      log(`✅ Smazán localStorage: ${key}`, 'success');
+    });
+  } catch (err) {
+    log(`❌ Chyba při mazání localStorage: ${err.message}`, 'error');
+  }
+
+  // 4. Clear PWA-related sessionStorage
+  try {
+    const sessionKeys = Object.keys(sessionStorage).filter(k => 
+      k.includes('pwa') || k.includes('PWA') || k.includes('install')
+    );
+    log(`🔑 Nalezeno ${sessionKeys.length} PWA sessionStorage klíčů`);
+    
+    sessionKeys.forEach(key => {
+      sessionStorage.removeItem(key);
+      log(`✅ Smazán sessionStorage: ${key}`, 'success');
+    });
+  } catch (err) {
+    log(`❌ Chyba při mazání sessionStorage: ${err.message}`, 'error');
+  }
+
+  log('');
+  log('✅ HOTOVO. Nyní refreshni stránku (Ctrl+R nebo Cmd+R).', 'success');
+  log('💡 Po refreshi otevři DevTools → Application → Manifest a zkontroluj zelené checkmarky.', 'success');
+}
+</script>
+
+</body>
+</html>

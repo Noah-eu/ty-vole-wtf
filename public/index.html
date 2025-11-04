@@ -23,14 +23,14 @@
 <meta name="twitter:image" content="https://ty-vole.wtf/icons/og-image.png">
 
 <!-- PWA + ikony -->
-<link rel="manifest" href="/manifest.webmanifest">
-<meta name="theme-color" content="#0A0A0A">
-<link rel="apple-touch-icon" sizes="180x180" href="/brand/icon-180.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/brand/icon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/brand/icon-16.png">
+<link rel="manifest" href="/manifest.webmanifest?v=4">
+<meta name="theme-color" content="#111111">
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.png?v=4">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-192.png?v=4">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-192.png?v=4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TY VOLE">
+<meta name="apple-mobile-web-app-title" content="ty-vole">
 
 <!-- Share system CSS -->
 <link rel="stylesheet" href="lib/share.css">
@@ -1459,7 +1459,28 @@ if ('serviceWorker' in navigator) {
 </script>
 
 <!-- PWA Install Banner -->
-<script src="/install.js"></script>
+<script src="/install.js?v=4"></script>
+
+<!-- PWA Diagnostic Logs (temporary) -->
+<script>
+if ('serviceWorker' in navigator) {
+  console.log('[PWA] Display mode:', window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser');
+  
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    console.log('[PWA] SW registered:', reg.scope);
+  }).catch(err => {
+    console.error('[PWA] SW registration failed:', err);
+  });
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('[PWA] beforeinstallprompt fired ✅', e);
+});
+
+window.addEventListener('appinstalled', () => {
+  console.log('[PWA] appinstalled event ✅');
+});
+</script>
 
 </body>
 </html>
