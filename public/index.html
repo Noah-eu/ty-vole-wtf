@@ -1132,11 +1132,11 @@ if ('serviceWorker' in navigator) {
 <script src="lib/ab-test.js" defer></script>
 <script src="lib/share.js" defer></script>
 
-<script>
-// Initialize share system after page load
-document.addEventListener('DOMContentLoaded', () => {
+<script defer>
+// Initialize share system - defer ensures DOM + other scripts are ready
+(() => {
   // Track A/B test variant assignment
-  window.abTest.trackCTAVariant();
+  if (window.abTest) window.abTest.trackCTAVariant();
   
   // Update CTA text based on A/B variant and language
   const shareMainBtn = document.getElementById('shareMain');
@@ -1147,10 +1147,14 @@ document.addEventListener('DOMContentLoaded', () => {
   
   function updateCTATexts() {
     // Update all button texts with RANDOM Gen-Z variants! 🔥
+    if (!window.i18n || !window.i18n.getRandomButtonText) {
+      console.warn('i18n not ready, keeping fallback texts');
+      return;
+    }
+    
     try {
-      // Share button gets random text from A/B test
+      // Each button gets random Gen-Z text on EVERY page load
       shareMainText.textContent = window.i18n.getRandomButtonText('share');
-      // Download and copy get random texts too
       downloadText.textContent = window.i18n.getRandomButtonText('download');
       copyText.textContent = window.i18n.getRandomButtonText('copyLink');
     } catch (e) {
@@ -1159,6 +1163,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function showMicrocopy() {
+    if (!window.i18n || !window.i18n.getRandomMicrocopy) return;
+    
     const text = window.i18n.getRandomMicrocopy();
     ctaMicrocopy.textContent = text;
     ctaMicrocopy.style.display = 'block';
@@ -1215,7 +1221,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }, 1000);
-});
+})();
 </script>
 
 </body>
