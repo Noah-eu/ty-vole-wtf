@@ -1146,11 +1146,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const ctaMicrocopy = document.getElementById('ctaMicrocopy');
   
   function updateCTATexts() {
-    // Update all button texts with i18n
+    // Update all button texts with RANDOM Gen-Z variants! 🔥
     try {
-      shareMainText.textContent = window.abTest.getCTAText();
-      downloadText.textContent = window.i18n.t('cta.download');
-      copyText.textContent = window.i18n.t('cta.copyLink');
+      // Share button gets random text from A/B test
+      shareMainText.textContent = window.i18n.getRandomButtonText('share');
+      // Download and copy get random texts too
+      downloadText.textContent = window.i18n.getRandomButtonText('download');
+      copyText.textContent = window.i18n.getRandomButtonText('copyLink');
     } catch (e) {
       console.error('Error updating CTA texts:', e);
     }
@@ -1167,7 +1169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 10);
   }
   
-  // Update texts immediately (scripts have defer so they're loaded)
+  // Update texts immediately with random variants (scripts have defer so they're loaded)
   updateCTATexts();
   
   // Share button - main CTA

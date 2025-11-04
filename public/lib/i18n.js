@@ -7,6 +7,37 @@ const translations = {
     'cta.copyShare': 'Drop do chatu 💀',
     'cta.download': 'Bake it 🍰',
     'cta.copyLink': 'Boomer sharing mode',
+    // Random variants for button texts (Gen-Z vibes)
+    'cta.share.random': [
+      'Drop do chatu 💀',
+      'Pošli to bestie 👻',
+      'Send to bestie 🚀',
+      'Hoď to do DMs 📲',
+      'Sdílej nebo L 💅',
+      'Share to slay 🔥',
+      'Spready the tea ☕',
+      'Drop the bomb 💣'
+    ],
+    'cta.download.random': [
+      'Bake it 🍰',
+      'Screenshot moment 📸',
+      'Download fr fr 💾',
+      'Save to gallery 🖼️',
+      'Stáhni vibe 📥',
+      'Get the pic 🎨',
+      'Grab it now 🤌',
+      'Take screenshot 🤳'
+    ],
+    'cta.copyLink.random': [
+      'Boomer sharing mode',
+      'Copy link (old school) 🔗',
+      'Zkopíruj URL 🗿',
+      'Klasika - copy link 👴',
+      'Link mode activated 🦖',
+      'Copy paste gang 📋',
+      'Manual share lol 🤓',
+      'Old but gold 💎'
+    ],
     'toast.copied': 'Zkopírováno — běž to poslat 🔥',
     'toast.downloaded': 'Baked! 📥',
     'toast.shareSuccess': 'Dropped! 🎉',
@@ -35,6 +66,37 @@ const translations = {
     'cta.copyShare': 'Drop to chat 💀',
     'cta.download': 'Bake it 🍰',
     'cta.copyLink': 'Boomer sharing mode',
+    // Random variants for button texts (Gen-Z vibes)
+    'cta.share.random': [
+      'Drop to chat 💀',
+      'Send to bestie 👻',
+      'Share the vibe 🚀',
+      'Hit the DMs 📲',
+      'Share or L 💅',
+      'Share to slay 🔥',
+      'Spill the tea ☕',
+      'Drop the bomb 💣'
+    ],
+    'cta.download.random': [
+      'Bake it 🍰',
+      'Screenshot moment 📸',
+      'Download fr fr 💾',
+      'Save to gallery 🖼️',
+      'Get the vibe 📥',
+      'Grab the pic 🎨',
+      'Snag it now 🤌',
+      'Take screenshot 🤳'
+    ],
+    'cta.copyLink.random': [
+      'Boomer sharing mode',
+      'Copy link (old school) 🔗',
+      'Copy URL 🗿',
+      'Classic copy link 👴',
+      'Link mode activated 🦖',
+      'Copy paste gang 📋',
+      'Manual share lol 🤓',
+      'Old but gold 💎'
+    ],
     'toast.copied': 'Copied — go roast someone 🔥',
     'toast.downloaded': 'Baked! 📥',
     'toast.shareSuccess': 'Dropped! 🎉',
@@ -108,6 +170,17 @@ function getRandomMicrocopy() {
   return options[Math.floor(Math.random() * options.length)];
 }
 
+// Get random button text (Gen-Z variants)
+function getRandomButtonText(buttonType) {
+  const key = `cta.${buttonType}.random`;
+  const options = t(key);
+  if (Array.isArray(options)) {
+    return options[Math.floor(Math.random() * options.length)];
+  }
+  // Fallback to static text
+  return t(`cta.${buttonType}`);
+}
+
 // Switch language
 function setLanguage(lang) {
   if (translations[lang]) {
@@ -126,6 +199,7 @@ function getCurrentLanguage() {
 window.i18n = {
   t,
   getRandomMicrocopy,
+  getRandomButtonText,
   setLanguage,
   getCurrentLanguage
 };
