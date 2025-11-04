@@ -11,8 +11,32 @@
     --card:#11121a; --accent:#9DFF00; --cyan:#00F0FF; --ink-dark:#0c0c10;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Inter,Roboto,Arial}
-  .wrap{height:100dvh;display:grid;grid-template-rows:auto 1fr auto}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Inter,Roboto,Arial;position:relative;overflow:hidden}
+  
+  /* MEGA BACKGROUND WORDMARK */
+  .bg-wordmark{
+    position:fixed; inset:0; display:flex; flex-direction:column; justify-content:space-between;
+    pointer-events:none; z-index:0; overflow:hidden; padding:5vh 0;
+  }
+  .bg-wordmark span{
+    font-weight:900; white-space:nowrap;
+    font-size:18vh;
+    letter-spacing:-0.8vw;
+    color:#ffe0f0;
+    opacity:.28;
+    text-shadow:0 18px 90px rgba(255,224,240,.6);
+    user-select:none;
+  }
+  .bg-top{
+    align-self:flex-start;
+    transform:translateX(-8vw) rotate(-4deg) scaleX(0.7) scaleY(2.5);
+  }
+  .bg-bottom{
+    align-self:flex-end;
+    transform:translateX(8vw) rotate(3deg) scaleX(0.7) scaleY(2.5);
+  }
+  
+  .wrap{height:100dvh;display:grid;grid-template-rows:auto 1fr auto;position:relative;z-index:1}
   header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02);backdrop-filter:saturate(120%) blur(6px)}
   header a{color:var(--accent);text-decoration:none;font-weight:900}
   header .title{font-weight:900;letter-spacing:.01em}
@@ -38,6 +62,12 @@
 </style>
 </head>
 <body>
+<!-- big background wordmark -->
+<div class="bg-wordmark">
+  <span class="bg-top">TY VOLE</span>
+  <span class="bg-bottom">.WTF</span>
+</div>
+
 <div class="wrap">
   <header>
     <a href="/">&larr; zpět</a>
