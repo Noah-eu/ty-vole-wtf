@@ -1392,6 +1392,7 @@ if ('serviceWorker' in navigator) {
 
 // PWA Install prompt handler
 let deferredPrompt = null;
+let installButtonShown = false;
 
 window.addEventListener('beforeinstallprompt', (e) => {
   console.log('[PWA] beforeinstallprompt event fired');
@@ -1401,10 +1402,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
   // Show button immediately if DOM ready, otherwise wait
   const showButton = () => {
     const btn = document.getElementById('install-app');
-    if (btn) {
-      console.log('[PWA] Showing install button');
+    if (btn && !installButtonShown) {
+      console.log('[PWA] Showing install button (via beforeinstallprompt)');
       btn.style.display = 'inline-flex';
-    } else {
+      installButtonShown = true;
+    } else if (!btn) {
       console.warn('[PWA] Install button not found in DOM');
     }
   };
@@ -1421,6 +1423,7 @@ window.addEventListener('appinstalled', () => {
   const btn = document.getElementById('install-app');
   if (btn) btn.style.display = 'none';
   deferredPrompt = null;
+  installButtonShown = false;
   
   // Track installation via analytics
   if (window.analytics && window.analytics.trackEvent) {
@@ -1434,22 +1437,39 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn) {
     btn.addEventListener('click', async () => {
       if (!deferredPrompt) {
-        console.warn('[PWA] No deferred prompt available');
+        console.warn('[PWA] No deferred prompt available - showing fallback instructions');
+        
+        // Fallback: Pokud Chrome neposkytl prompt, zobraz instrukce
+        const fallbackMsg = 'Pro instalaci použij menu prohlížeče (⋮) → "Nainstalovat aplikaci" nebo "Přidat na plochu"';
+        alert(fallbackMsg);
+        
+        // Track fallback click
+        if (window.analytics && window.analytics.trackEvent) {
+          window.analytics.trackEvent('pwa_install_click_no_prompt');
+        }
         return;
       }
       
       console.log('[PWA] Showing install prompt');
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log('[PWA] User choice:', outcome);
-      
-      // Track install prompt outcome
-      if (window.analytics && window.analytics.trackEvent) {
-        window.analytics.trackEvent('pwa_install_prompt', { outcome });
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('[PWA] User choice:', outcome);
+        
+        // Track install prompt outcome
+        if (window.analytics && window.analytics.trackEvent) {
+          window.analytics.trackEvent('pwa_install_prompt', { outcome });
+        }
+        
+        if (outcome === 'accepted') {
+          btn.style.display = 'none';
+          installButtonShown = false;
+        }
+        
+        deferredPrompt = null;
+      } catch (err) {
+        console.error('[PWA] Prompt error:', err);
       }
-      
-      deferredPrompt = null;
-      btn.style.display = 'none';
     });
     
     console.log('[PWA] Install button click handler attached');
@@ -1458,7 +1478,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   // Show debug button in dev mode
-  if (location.hostname === 'localhost' || location.search.includes('debug')) {
+  const isDebugMode = location.hostname === 'localhost' || location.search.includes('debug');
+  if (isDebugMode) {
     const debugBtn = document.getElementById('pwa-debug');
     if (debugBtn) debugBtn.style.display = 'inline-flex';
   }
@@ -1467,11 +1488,47 @@ document.addEventListener('DOMContentLoaded', () => {
   window.deferredPrompt = deferredPrompt;
   
   // Log initial PWA state
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const isPWAEligible = 'serviceWorker' in navigator && !isIOS && !isStandalone;
+  
   console.log('[PWA] Initial state:', {
     sw: 'serviceWorker' in navigator,
     https: location.protocol === 'https:',
-    installButton: !!document.getElementById('install-app')
+    installButton: !!document.getElementById('install-app'),
+    isIOS: isIOS,
+    alreadyInstalled: isStandalone,
+    willShowAfter45s: isPWAEligible
   });
+  
+  // Fallback: Show install button after timeout if not shown yet
+  // and app is eligible (not iOS, not already installed, SW supported)
+  if (isPWAEligible) {
+    const timeout = isDebugMode ? 5000 : 45000; // 5s in debug, 45s in prod
+    console.log(`[PWA] Will show install button after ${timeout/1000}s if not shown via beforeinstallprompt`);
+    
+    setTimeout(() => {
+      const btn = document.getElementById('install-app');
+      if (btn && !installButtonShown) {
+        console.log(`[PWA] Showing install button (${timeout/1000}s timeout fallback)`);
+        btn.style.display = 'inline-flex';
+        installButtonShown = true;
+        
+        // Track fallback show
+        if (window.analytics && window.analytics.trackEvent) {
+          window.analytics.trackEvent('pwa_button_shown_fallback', { 
+            timeout_seconds: timeout/1000 
+          });
+        }
+      } else if (installButtonShown) {
+        console.log('[PWA] Button already shown via beforeinstallprompt, skipping fallback');
+      }
+    }, timeout);
+  } else if (isIOS) {
+    console.log('[PWA] iOS detected - use Share > Add to Home Screen');
+  } else if (isStandalone) {
+    console.log('[PWA] App already installed/running in standalone mode');
+  }
 });
 </script>
 
