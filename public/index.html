@@ -273,16 +273,6 @@
     z-index:2;
   }
   
-  /* PWA Install button - appears below card, above footer-cta */
-  #install-app{
-    position:fixed;
-    right:18px;
-    bottom:calc(18px + 90px); /* above footer-cta */
-    width:min(380px,calc(100% - 36px));
-    z-index:3;
-    margin:0 0 10px 0;
-  }
-  
   .footer-cta{
     border:1px solid color-mix(in oklab, var(--cyan), transparent 60%);
     border-radius:20px;
@@ -385,11 +375,6 @@
       </footer>
     </div>
   </div>
-
-  <!-- PWA Install Button - shows ONLY when beforeinstallprompt fires -->
-  <button id="install-app" style="display:none" class="btn btn-primary" aria-label="Nainstalovat aplikaci">
-    📲 Nainstalovat appku
-  </button>
 
   <div class="cta footer-cta">
     <a href="/chat.html">Mám i chat, bro 😭 <span class="arrow">→</span></a>
@@ -1366,89 +1351,13 @@ if (document.readyState === 'loading') {
   init();
 }
 
-// ========== PWA Implementation ==========
-
-// 1. Service Worker Registration
+// Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js', { scope: '/' })
-      .then(() => console.log('[PWA] Service Worker registered'))
-      .catch(err => console.error('[PWA] SW registration failed:', err));
+    navigator.serviceWorker.register('/sw.js')
+      .catch(console.error);
   });
 }
-
-// 2. PWA Diagnostics (always run)
-function dumpPWADebug() {
-  const info = {
-    https: location.protocol === 'https:',
-    hasManifestLink: !!document.querySelector('link[rel="manifest"]'),
-    swInNavigator: 'serviceWorker' in navigator,
-    standalone: window.matchMedia('(display-mode: standalone)').matches,
-    isIOS: /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
-  };
-  console.table(info);
-  window.__PWA_DEBUG__ = info;
-  return info;
-}
-
-// 3. Install Button Handler - ONLY shows when beforeinstallprompt fires
-let deferredPrompt = null;
-
-function setupPWAInstall() {
-  const btn = document.getElementById('install-app');
-  if (btn) btn.style.display = 'none'; // Hidden by default
-  
-  // Show button ONLY when Chrome fires the event
-  window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('[PWA] ✓ beforeinstallprompt event fired - showing install button');
-    e.preventDefault();
-    deferredPrompt = e;
-    if (btn) btn.style.display = 'inline-flex';
-  });
-  
-  // Hide button after installation
-  window.addEventListener('appinstalled', () => {
-    console.log('[PWA] ✓ App installed successfully');
-    if (btn) btn.style.display = 'none';
-    deferredPrompt = null;
-    
-    // Track installation
-    if (window.analytics && window.analytics.trackEvent) {
-      window.analytics.trackEvent('pwa_installed');
-    }
-  });
-  
-  // Click handler
-  if (btn) {
-    btn.addEventListener('click', async () => {
-      if (!deferredPrompt) {
-        console.warn('[PWA] No deferred prompt - this should not happen');
-        return; // Don't show fallback - if no prompt, button shouldn't be visible
-      }
-      
-      console.log('[PWA] Triggering install prompt');
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log('[PWA] User choice:', outcome);
-      
-      // Track outcome
-      if (window.analytics && window.analytics.trackEvent) {
-        window.analytics.trackEvent('pwa_install_prompt', { outcome });
-      }
-      
-      if (outcome === 'accepted') {
-        btn.style.display = 'none';
-      }
-      deferredPrompt = null;
-    });
-  }
-}
-
-// Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-  dumpPWADebug();
-  setupPWAInstall();
-});
 </script>
 
 <!-- Share System Scripts - defer ensures DOM is ready -->
@@ -1548,6 +1457,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1000);
 })();
 </script>
+
+<!-- PWA Install Banner -->
+<script src="/install.js"></script>
 
 </body>
 </html>
