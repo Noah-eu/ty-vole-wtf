@@ -59,7 +59,7 @@
     --cyan:#27F1E2;     /* měkčí tyrkys */
     --pink:#FF5FA6;
 
-    --card:#121212;
+    --card: rgba(18,18,18,.70); /* poloprůhledné! */
     --radius:18px;
     --gap:22px;
     
@@ -74,8 +74,20 @@
   *{box-sizing:border-box}
   
   html, body{
-    background: linear-gradient(180deg, var(--bg-0), var(--bg-1) 60%, var(--bg-2));
+    /* Jemně pohyblivý gradient pozadí */
+    background: radial-gradient(120% 120% at 10% 0%, #0d0d0d 0%, #070707 45%, #0e0e0e 100%);
+    background-size: 140% 140%;
     color: var(--text);
+  }
+  
+  @media (prefers-reduced-motion:no-preference){
+    body{
+      animation: bgShift 16s ease-in-out infinite alternate;
+    }
+    @keyframes bgShift{
+      from{ background-position: 0% 0%; }
+      to  { background-position: 100% 50%; }
+    }
   }
   
   body{
@@ -117,33 +129,48 @@
   .chip{border:1px solid var(--line);color:var(--muted);background:#1a1a1a;padding:8px 12px;border-radius:999px;font-size:13px;transition: all .2s ease;}
   .chip.btn{cursor:pointer;color:var(--ink-dark);background:linear-gradient(90deg,var(--lime),#CFFF85);border:0;font-weight:900}
   
-  /* Active chip with pulse animation */
+  /* Active chip with softer pulse animation */
   .chip-active{
     background: linear-gradient(90deg,var(--lime),#CFFF85);
     color:#031;
     font-weight:900;
     border:0;
+    box-shadow: 0 0 0 2px rgba(184,255,77,.25) inset;
   }
   
   @media (prefers-reduced-motion:no-preference){
     @keyframes pulse-glow{
-      0%,100%{ box-shadow:0 0 0 0 rgba(184,255,77,.35); }
-      50%{ box-shadow:0 0 0 8px rgba(184,255,77,.0); }
+      0%,100%{ box-shadow:0 0 0 2px rgba(184,255,77,.28) inset; }
+      50%{ box-shadow:0 0 0 8px rgba(184,255,77,0) inset; }
     }
     .chip-active{
       animation: pulse-glow 2.2s ease-in-out infinite;
     }
   }
 
+  /* Karta - průsvitná bez černého rámečku */
   .card{
-    background:var(--card);
+    background: var(--card); /* poloprůhledné rgba(18,18,18,.70) */
+    border: none !important;
+    outline: none !important;
     border-radius: var(--radius);
     padding: 18px;
-    box-shadow:0 22px 60px rgba(0,0,0,.38);
+    backdrop-filter: blur(6px) saturate(1.05); /* sklo efekt */
+    -webkit-backdrop-filter: blur(6px) saturate(1.05);
+    box-shadow: 0 6px 26px rgba(0,0,0,.35);
     max-width: 680px;
     margin-inline:auto;
   }
   .card + .card{ margin-top: var(--gap); }
+  
+  /* Zrušit tvrdé překrytí pokud existuje */
+  .card::before,
+  .section::before,
+  .wrapper::before{
+    background: transparent !important;
+    box-shadow: none !important;
+    opacity: 0 !important;
+  }
   h1{margin:0 0 6px;font-size:clamp(28px,7vw,56px);line-height:1.1;letter-spacing:-.02em}
   .subtitle{color:var(--muted);font-weight:600;font-size:14px}
   .quote{margin:18px 0 6px;font-weight:900;font-size:clamp(22px,4.5vw,40px);letter-spacing:-.015em; min-height:2.4em}
@@ -176,11 +203,21 @@
     }
   }
   
-  /* Primary – hlavní akce (Drop/Share) */
+  /* Primary – hlavní akce (Drop/Share) s neon glow */
   .btn-primary{
     background: linear-gradient(90deg, var(--lime), #CFFF85);
-    color:#081;
-    box-shadow:0 10px 30px rgba(184,255,77,.15);
+    color:#072;
+    border:none;
+    box-shadow:
+      0 10px 28px rgba(184,255,77,.18),
+      0 0 0 2px rgba(184,255,77,.18) inset;
+    transform: translateZ(0);
+  }
+  
+  @media (prefers-reduced-motion:no-preference){
+    .btn-primary:hover{
+      filter: drop-shadow(0 0 10px rgba(184,255,77,.35));
+    }
   }
   
   /* Secondary – download */
@@ -394,18 +431,38 @@ async function loadLexicon(){
   }
 }
 
+// Bezpečné dosazení placeholderů s fallbackem
+function fillPlaceholders(template, dict = {}) {
+  // Nahraď známé klíče {key} → value
+  let out = template.replace(/\{(\w+)\}/g, (_, key) => {
+    const val = dict[key];
+    return (val ?? '').toString();
+  });
+  
+  // Fallback: cokoliv zbyde ve složených závorkách zahodit
+  out = out.replace(/\{[^}]+\}/g, '').replace(/\s{2,}/g, ' ').trim();
+  
+  // Kosmetika: odstranit zbytky čárek/teček po vyhození placeholderu
+  out = out.replace(/\s*([,;:.!?])\s*/g, '$1 ').replace(/\s+$/, '');
+  
+  return out;
+}
+
 function compose(){
   if (Math.random() < 0.8 && L.templates.length){
     const tpl = uniquePick(L.templates);
-    return tpl
-      .replace("{opener}", uniquePick(L.openers))
-      .replace("{tones_pos}", uniquePick(L.tones_pos))
-      .replace("{tones_mid}", uniquePick(L.tones_mid))
-      .replace("{tones_neg}", uniquePick(L.tones_neg))
-      .replace("{verbs}", uniquePick(L.verbs))
-      .replace("{nouns}", uniquePick(L.nouns))
-      .replace("{actions}", uniquePick(L.actions))
-      .replace("{emote}", uniquePick(L.emotes));
+    
+    // Bezpečné dosazení s fallbacky
+    return fillPlaceholders(tpl, {
+      opener: uniquePick(L.openers || ['']),
+      tones_pos: uniquePick(L.tones_pos || ['']),
+      tones_mid: uniquePick(L.tones_mid || ['']),
+      tones_neg: uniquePick(L.tones_neg || ['']),
+      verbs: uniquePick(L.verbs || ['']),
+      nouns: uniquePick(L.nouns || ['']),
+      actions: uniquePick(L.actions || ['']),
+      emote: uniquePick(L.emotes || [''])
+    });
   }
   return uniquePick(L.quotes.length ? L.quotes : ["No cap, další."]);
 }
