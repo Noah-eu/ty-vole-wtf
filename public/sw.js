@@ -1,19 +1,18 @@
-// sw.js - PWA Service Worker v1.0.6
-const CACHE_VERSION = 'v1.0.6';
+// sw.js - PWA Service Worker v1.0.5
+const CACHE_VERSION = 'v1.0.5';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = 'runtime';
 
-const ASSETS = [
+const PRECACHE = [
   '/',
   '/index.html',
-  '/chat.html',
-  '/manifest.webmanifest?v=6',
-  '/icons/icon-192.png?v=6',
-  '/icons/icon-512.png?v=6',
-  '/icons/maskable-192.png?v=6',
-  '/icons/maskable-512.png?v=6',
-  '/offline.html'
+  '/offline.html',
+  '/manifest.webmanifest?v=5',
+  '/icons/icon-192.v5.png',
+  '/icons/icon-512.v5.png'
 ];
+
+const ASSETS = PRECACHE;
 
 self.addEventListener('install', (e) => {
   console.log('[SW] install', CACHE_VERSION);
