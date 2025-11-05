@@ -117,16 +117,14 @@ class DailySong {
   render(state, song = null) {
     if (state === 'loading') {
       this.container.innerHTML = `
-        <div class="daily-song-card loading">
-          <div class="daily-song-label">
-            <span class="label-text skeleton">Loading...</span>
-          </div>
-          <div class="album-cover-wrapper">
-            <div class="album-cover skeleton"></div>
-          </div>
-          <div class="song-info">
-            <div class="song-title skeleton">Loading title...</div>
-            <div class="song-artist skeleton">Loading artist...</div>
+        <div class="daily-song-compact">
+          <div class="text-xs opacity-70 mb-1">🎵 Loading...</div>
+          <div class="flex items-center gap-3">
+            <div class="w-20 h-20 bg-gray-200 rounded-md animate-pulse"></div>
+            <div class="flex-1">
+              <div class="h-4 bg-gray-200 rounded w-3/4 mb-2 animate-pulse"></div>
+              <div class="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+            </div>
           </div>
         </div>
       `;
@@ -135,16 +133,9 @@ class DailySong {
 
     if (state === 'error') {
       this.container.innerHTML = `
-        <div class="daily-song-card error">
-          <div class="daily-song-label">
-            <span class="label-text">Song dne</span>
-          </div>
-          <div class="error-message">
-            <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <p>Nepodařilo se načíst song dne.</p>
-          </div>
+        <div class="daily-song-compact error">
+          <div class="text-xs opacity-70 mb-1">🎵 Song dne</div>
+          <div class="text-sm text-red-600">Nepodařilo se načíst song dne.</div>
         </div>
       `;
       return;
@@ -154,53 +145,51 @@ class DailySong {
       const hasPreview = !!song.previewUrl;
       const canNavigateBack = this.currentIndex < this.history.length - 1;
       const canNavigateForward = this.currentIndex > 0;
+      const hasCover = !!song.albumCoverUrl;
 
       this.container.innerHTML = `
-        <div class="daily-song-card">
-          <div class="daily-song-header">
-            <div class="daily-song-label">
-              <span class="label-text">Song dne</span>
-              <span class="label-separator">•</span>
-              <span class="label-date">${this.formatDate(song.date)}</span>
-            </div>
-            ${this.history.length > 1 ? `
-              <div class="history-nav">
-                <button class="nav-btn ${!canNavigateBack ? 'disabled' : ''}" 
-                        onclick="window.dailySongInstance?.navigateHistory(1)"
-                        ${!canNavigateBack ? 'disabled' : ''}>
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                  </svg>
-                </button>
-                <button class="nav-btn ${!canNavigateForward ? 'disabled' : ''}"
-                        onclick="window.dailySongInstance?.navigateHistory(-1)"
-                        ${!canNavigateForward ? 'disabled' : ''}>
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
-                </button>
-              </div>
-            ` : ''}
-          </div>
-
-          <div class="album-cover-wrapper">
-            <a href="${song.spotifyUrl}" target="_blank" rel="noopener noreferrer" class="album-cover-link">
-              <img src="${song.albumCoverUrl}" alt="${song.title}" class="album-cover" loading="lazy" />
+        <div class="daily-song-compact">
+          <div class="text-xs opacity-70 mb-1">🎵 Song dne • ${this.formatDate(song.date)}</div>
+          <div class="flex items-center gap-3">
+            <div class="relative overflow-hidden rounded-md" style="width: 80px; height: 80px; flex-shrink: 0;">
+              <a href="${song.spotifyUrl}" target="_blank" rel="noopener noreferrer" title="Otevřít na Spotify" class="block w-full h-full">
+                ${hasCover ? `
+                  <img src="${song.albumCoverUrl}" 
+                       alt="${song.title} — ${song.artists}" 
+                       class="w-full h-full object-cover" 
+                       loading="lazy" />
+                ` : `
+                  <div class="w-full h-full bg-gray-100 flex items-center justify-center text-xs opacity-60 text-center p-2">
+                    no cover
+                  </div>
+                `}
+              </a>
               ${hasPreview ? `
-                <button class="play-btn" onclick="event.preventDefault(); event.stopPropagation(); window.dailySongInstance?.togglePlay('${song.previewUrl}')">
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
-                  </svg>
+                <button class="play-preview-btn" 
+                        onclick="event.preventDefault(); event.stopPropagation(); window.dailySongInstance?.togglePlay('${song.previewUrl}')"
+                        title="${this.isPlaying ? 'Pause' : 'Preview'}">
+                  ${this.isPlaying ? 'Pause' : 'Preview'}
                 </button>
               ` : ''}
-            </a>
-          </div>
+            </div>
+            
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm font-semibold truncate" title="${song.title}">${song.title}</h3>
+              <p class="text-xs opacity-80 truncate" title="${song.artists}">${song.artists}</p>
+            </div>
 
-          <div class="song-info">
-            <a href="${song.spotifyUrl}" target="_blank" rel="noopener noreferrer" class="song-title-link">
-              <h3 class="song-title" title="${song.title}">${this.truncate(song.title, 50)}</h3>
-            </a>
-            <p class="song-artist" title="${song.artists}">${this.truncate(song.artists, 60)}</p>
+            ${this.history.length > 1 ? `
+              <div class="flex gap-1 ml-auto">
+                <button class="nav-btn-compact ${!canNavigateBack ? 'disabled' : ''}" 
+                        onclick="event.preventDefault(); event.stopPropagation(); window.dailySongInstance?.navigateHistory(1)"
+                        ${!canNavigateBack ? 'disabled' : ''}
+                        title="Starší">←</button>
+                <button class="nav-btn-compact ${!canNavigateForward ? 'disabled' : ''}"
+                        onclick="event.preventDefault(); event.stopPropagation(); window.dailySongInstance?.navigateHistory(-1)"
+                        ${!canNavigateForward ? 'disabled' : ''}
+                        title="Novější">→</button>
+              </div>
+            ` : ''}
           </div>
         </div>
       `;

@@ -1,53 +1,175 @@
-/* public/lib/daily-song.css - Song of the Day styles */
+/* public/lib/daily-song.css - Song of the Day styles (compact) */
 
-.daily-song-card {
-  max-width: 28rem; /* max-w-lg */
-  margin: 0 auto 2rem;
-  padding: 1.5rem;
+.daily-song-compact {
+  max-width: 42rem; /* max-w-2xl for wider horizontal layout */
+  margin: 0 auto 1.5rem;
+  padding: 0.75rem;
   background: rgba(18, 18, 18, 0.72);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-radius: 1.125rem; /* rounded-xl */
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border-radius: 0.75rem; /* rounded-xl */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.daily-song-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+.daily-song-compact .text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
 }
 
-.daily-song-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.daily-song-compact .text-sm {
   font-size: 0.875rem;
-  font-weight: 600;
-  color: #BDBDBD;
+  line-height: 1.25rem;
 }
 
-.label-separator {
-  color: rgba(255, 255, 255, 0.3);
+.daily-song-compact .opacity-70 {
+  opacity: 0.7;
 }
 
-.label-date {
-  color: #F4F4F4;
+.daily-song-compact .opacity-80 {
+  opacity: 0.8;
 }
 
-.history-nav {
+.daily-song-compact .mb-1 {
+  margin-bottom: 0.25rem;
+}
+
+.daily-song-compact .flex {
   display: flex;
+}
+
+.daily-song-compact .items-center {
+  align-items: center;
+}
+
+.daily-song-compact .gap-1 {
   gap: 0.25rem;
 }
 
-.nav-btn {
+.daily-song-compact .gap-3 {
+  gap: 0.75rem;
+}
+
+.daily-song-compact .flex-1 {
+  flex: 1 1 0%;
+}
+
+.daily-song-compact .min-w-0 {
+  min-width: 0;
+}
+
+.daily-song-compact .ml-auto {
+  margin-left: auto;
+}
+
+.daily-song-compact .truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.daily-song-compact .font-semibold {
+  font-weight: 600;
+}
+
+.daily-song-compact .rounded-md {
+  border-radius: 0.375rem;
+}
+
+.daily-song-compact .relative {
+  position: relative;
+}
+
+.daily-song-compact .overflow-hidden {
+  overflow: hidden;
+}
+
+.daily-song-compact .block {
+  display: block;
+}
+
+.daily-song-compact .w-full {
+  width: 100%;
+}
+
+.daily-song-compact .h-full {
+  height: 100%;
+}
+
+.daily-song-compact .object-cover {
+  object-fit: cover;
+}
+
+.nav-btn-compact {
   appearance: none;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #F4F4F4;
-  padding: 0.375rem;
-  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-btn-compact:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-btn-compact.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.play-preview-btn {
+  position: absolute;
+  bottom: 0.25rem;
+  right: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #000;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.play-preview-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: scale(1.05);
+}
+
+/* Loading states */
+.daily-song-compact .animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.daily-song-compact .bg-gray-200 {
+  background-color: rgba(229, 229, 229, 0.2);
+}
+
+.daily-song-compact .bg-gray-100 {
+  background-color: rgba(243, 244, 246, 0.1);
+}
+
+.daily-song-compact.error .text-red-600 {
+  color: #dc2626;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;

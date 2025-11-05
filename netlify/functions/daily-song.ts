@@ -136,6 +136,53 @@ function getDailyIndex(arrayLength: number): number {
   return Math.floor(seededRandom(seed) * arrayLength);
 }
 
+function monthsBetweenUTC(releaseDate?: string): number {
+  if (!releaseDate) return 999;
+  try {
+    const release = new Date(releaseDate);
+    const now = new Date();
+    const diffMs = now.getTime() - release.getTime();
+    return diffMs / (1000 * 60 * 60 * 24 * 30.44);
+  } catch {
+    return 999;
+  }
+}
+
+async function ensureAlbumCovers(
+  accessToken: string,
+  tracks: SpotifyTrack[]
+): Promise<Record<string, string | null>> {
+  const map: Record<string, string | null> = {};
+  
+  // First pass: collect existing covers
+  for (const t of tracks) {
+    const cover = t.album?.images?.[0]?.url || null;
+    map[t.id] = cover;
+  }
+  
+  // Find tracks without covers
+  const needCovers = tracks.filter(t => !t.album?.images?.length);
+  
+  // Fetch missing covers
+  for (const track of needCovers) {
+    try {
+      const response = await fetch(
+        `https://api.spotify.com/v1/tracks/${track.id}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      
+      if (response.ok) {
+        const data = await response.json() as SpotifyTrack;
+        map[track.id] = data?.album?.images?.[0]?.url || null;
+      }
+    } catch (error) {
+      console.error(`Failed to fetch cover for track ${track.id}:`, error);
+    }
+  }
+  
+  return map;
+}
+
 async function getSpotifyToken(
   clientId: string,
   clientSecret: string
@@ -191,6 +238,10 @@ function filterTrack(
 
   // Popularity >= 70
   if (track.popularity < 70) return false;
+
+  // Recency filter: ≤ 3 months
+  const monthsOld = monthsBetweenUTC(track.album?.release_date);
+  if (monthsOld > 3) return false;
 
   // Exclude Czech/Slovak artists (simple check on artist names)
   const artistNames = track.artists.map(a => a.name.toLowerCase()).join(" ");
@@ -306,9 +357,22 @@ export const handler: Handler = async (
       };
     }
 
+    // Ensure all tracks have album covers
+    const coverMap = await ensureAlbumCovers(token, filteredTracks);
+
     // Select daily track
     const selectedTrack = selectDailyTrack(filteredTracks);
-    const response = formatTrackResponse(selectedTrack);
+    
+    // Format response with ensured cover
+    const response: DailySongResponse = {
+      id: selectedTrack.id,
+      title: selectedTrack.name,
+      artists: selectedTrack.artists.map(a => a.name).join(", "),
+      albumCoverUrl: coverMap[selectedTrack.id] || "",
+      spotifyUrl: selectedTrack.external_urls.spotify,
+      previewUrl: selectedTrack.preview_url,
+      date: new Date().toISOString().split("T")[0]
+    };
 
     return {
       statusCode: 200,
