@@ -11,7 +11,7 @@
 <meta property="og:url" content="https://ty-vole.wtf/">
 <meta property="og:title" content="TY VOLE .wtf — instant vibe generator">
 <meta property="og:description" content="Gen-Z hlášky, chat a překladač. Posílej s rozvahou. 🔥">
-<meta property="og:image" content="https://ty-vole.wtf/icons/og-image.png">
+<meta property="og:image" content="/brand/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 
@@ -25,31 +25,74 @@
 <!-- PWA + ikony -->
 <link rel="manifest" href="/manifest.webmanifest?v=6">
 <meta name="theme-color" content="#111111">
-<link rel="apple-touch-icon" href="/icons/icon-192.png?v=6">
-<link rel="icon" href="/icons/icon-192.png?v=6" sizes="192x192">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.png?v=6">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-192.png?v=6">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-192.png?v=6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TY VOLE">
+<meta name="apple-mobile-web-app-title" content="ty-vole">
 
 <!-- Share system CSS -->
 <link rel="stylesheet" href="lib/share.css">
 
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://plausible.io/js/pa-XhYv5mHfTkNZArOLGPADs.js"></script>
+<script>
+  window.plausible = window.plausible || function() {
+    (plausible.q = plausible.q || []).push(arguments)
+  }, plausible.init = plausible.init || function(i) {
+    plausible.o = i || {};
+  };
+  plausible.init()
+</script>
+
 <style>
   :root{
-    --bg:#0b0b11; --ink:#f3f3f8; --muted:#a7a7b6; --line:#252536;
-    --card:#11121a; --accent:#9DFF00; --cyan:#00F0FF; --ink-dark:#0c0c10;
-    --pink:#ff63b8;
+    /* New design system colors */
+    --bg-0:#0A0A0A;
+    --bg-1:#080808;
+    --bg-2:#0E0E0E;
+    --text:#F4F4F4;
+    --muted:#BDBDBD;
+
+    --lime:#B8FF4D;     /* jemnější zelená */
+    --cyan:#27F1E2;     /* měkčí tyrkys */
+    --pink:#FF5FA6;
+
+    --card: rgba(18,18,18,.70); /* poloprůhledné! */
+    --radius:18px;
+    --gap:22px;
+    
+    /* Legacy compatibility */
+    --ink:var(--text);
+    --bg:var(--bg-0);
+    --accent:var(--lime);
+    --ink-dark:#0c0c10;
+    --line:#252536;
   }
+  
   *{box-sizing:border-box}
+  
+  html, body{
+    /* Jemně pohyblivý gradient pozadí */
+    background: radial-gradient(120% 120% at 10% 0%, #0d0d0d 0%, #070707 45%, #0e0e0e 100%);
+    background-size: 140% 140%;
+    color: var(--text);
+  }
+  
+  @media (prefers-reduced-motion:no-preference){
+    body{
+      animation: bgShift 16s ease-in-out infinite alternate;
+    }
+    @keyframes bgShift{
+      from{ background-position: 0% 0%; }
+      to  { background-position: 100% 50%; }
+    }
+  }
+  
   body{
-    margin:0; color:var(--ink);
+    margin:0;
     font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial;
-    background:
-      radial-gradient(1200px 600px at 75% 5%, rgba(0,240,255,.06), transparent 60%),
-      radial-gradient(900px 520px at 15% 90%, rgba(157,255,0,.05), transparent 55%),
-      var(--bg);
     min-height:100dvh; max-height:100dvh; display:grid; place-items:center; padding:28px;
     position:fixed; width:100%; overflow:hidden;
   }
@@ -83,21 +126,120 @@
   .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(90deg,var(--accent),var(--cyan));box-shadow:0 0 16px rgba(157,255,0,.7)}
   .brand span{opacity:.66}
   .chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .chip{border:1px solid var(--line);color:var(--muted);background:rgba(255,255,255,.02);padding:8px 12px;border-radius:999px;font-size:13px}
-  .chip.btn{cursor:pointer;color:var(--ink-dark);background:linear-gradient(90deg,var(--accent),var(--cyan));border:0;font-weight:900}
+  .chip{border:1px solid var(--line);color:var(--muted);background:#1a1a1a;padding:8px 12px;border-radius:999px;font-size:13px;transition: all .2s ease;}
+  .chip.btn{cursor:pointer;color:var(--ink-dark);background:linear-gradient(90deg,var(--lime),#CFFF85);border:0;font-weight:900}
+  
+  /* Active chip with softer pulse animation */
+  .chip-active{
+    background: linear-gradient(90deg,var(--lime),#CFFF85);
+    color:#031;
+    font-weight:900;
+    border:0;
+    box-shadow: 0 0 0 2px rgba(184,255,77,.25) inset;
+  }
+  
+  @media (prefers-reduced-motion:no-preference){
+    @keyframes pulse-glow{
+      0%,100%{ box-shadow:0 0 0 2px rgba(184,255,77,.28) inset; }
+      50%{ box-shadow:0 0 0 8px rgba(184,255,77,0) inset; }
+    }
+    .chip-active{
+      animation: pulse-glow 2.2s ease-in-out infinite;
+    }
+  }
 
-  .card{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));padding:26px;box-shadow:0 22px 60px rgba(0,0,0,.38)}
+  /* Karta - průsvitná bez černého rámečku */
+  .card{
+    background: var(--card); /* poloprůhledné rgba(18,18,18,.70) */
+    border: none !important;
+    outline: none !important;
+    border-radius: var(--radius);
+    padding: 18px;
+    backdrop-filter: blur(6px) saturate(1.05); /* sklo efekt */
+    -webkit-backdrop-filter: blur(6px) saturate(1.05);
+    box-shadow: 0 6px 26px rgba(0,0,0,.35);
+    max-width: 680px;
+    margin-inline:auto;
+  }
+  .card + .card{ margin-top: var(--gap); }
+  
+  /* Zrušit tvrdé překrytí pokud existuje */
+  .card::before,
+  .section::before,
+  .wrapper::before{
+    background: transparent !important;
+    box-shadow: none !important;
+    opacity: 0 !important;
+  }
   h1{margin:0 0 6px;font-size:clamp(28px,7vw,56px);line-height:1.1;letter-spacing:-.02em}
   .subtitle{color:var(--muted);font-weight:600;font-size:14px}
   .quote{margin:18px 0 6px;font-weight:900;font-size:clamp(22px,4.5vw,40px);letter-spacing:-.015em; min-height:2.4em}
   .trans{color:var(--muted);font-size:15px;margin-top:2px}
+  /* Section spacing */
+  .section { padding: 0 var(--gap); margin: var(--gap) 0; }
+  
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-  button{appearance:none;border:0;cursor:pointer;font-weight:900;padding:12px 16px;border-radius:14px;transition:all .2s ease}
-  .primary{color:var(--ink-dark);background:linear-gradient(90deg,var(--accent),var(--cyan))}
-  .ghost{color:var(--ink);background:transparent;border:1px solid var(--line)}
+  
+  /* Button system - 3 hierarchy levels */
+  button, .btn{
+    appearance:none;
+    border:0;
+    cursor:pointer;
+    font-weight:700;
+    padding:14px 18px;
+    border-radius:14px;
+    line-height:1;
+    transition: transform .15s ease, box-shadow .2s ease;
+  }
+  
+  .btn:focus-visible, button:focus-visible{
+    outline:2px solid color-mix(in oklab, var(--text), transparent 60%);
+    outline-offset:2px;
+  }
+  
+  @media (prefers-reduced-motion:no-preference){
+    .btn:hover, button:hover{
+      transform: translateY(-1px);
+    }
+  }
+  
+  /* Primary – hlavní akce (Drop/Share) s neon glow */
+  .btn-primary{
+    background: linear-gradient(90deg, var(--lime), #CFFF85);
+    color:#072;
+    border:none;
+    box-shadow:
+      0 10px 28px rgba(184,255,77,.18),
+      0 0 0 2px rgba(184,255,77,.18) inset;
+    transform: translateZ(0);
+  }
+  
+  @media (prefers-reduced-motion:no-preference){
+    .btn-primary:hover{
+      filter: drop-shadow(0 0 10px rgba(184,255,77,.35));
+    }
+  }
+  
+  /* Secondary – download */
+  .btn-secondary{
+    background: linear-gradient(90deg, var(--cyan), #7DF7EB);
+    color:#062;
+    box-shadow:0 10px 30px rgba(39,241,226,.12);
+  }
+  
+  /* Tertiary – copy link / boomer mode */
+  .btn-tertiary{
+    background: transparent;
+    color: var(--text);
+    border:1px solid color-mix(in oklab, var(--text), transparent 75%);
+  }
+  
+  /* Legacy compat */
+  .primary{color:var(--ink-dark);background:linear-gradient(90deg,var(--lime),var(--cyan))}
+  .ghost{color:var(--text);background:transparent;border:1px solid var(--line)}
   .tiny{font-size:13px;padding:8px 12px}
   
-  /* CTA tlačítka grid - barevné pro mobil */
+  /* CTA tlačítka grid - používá hierarchy systém */
   .btn-group{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -106,47 +248,8 @@
     margin-top:8px;
   }
   
-  /* První tlačítko (Drop do chatu) - accent zelená */
-  #shareMain{
-    background:linear-gradient(135deg, var(--accent), #7acc00);
-    color:var(--ink-dark);
-    font-size:15px;
-    padding:16px 20px;
-    box-shadow:0 4px 16px rgba(157,255,0,.3);
-    border:0;
-  }
-  #shareMain:hover{
-    transform:translateY(-2px);
-    box-shadow:0 6px 20px rgba(157,255,0,.4);
-  }
-  
-  /* Druhé tlačítko (Bake it) - cyan modrá */
-  #downloadCard{
-    background:linear-gradient(135deg, var(--cyan), #00c4d4);
-    color:var(--ink-dark);
-    font-size:15px;
-    padding:16px 20px;
-    box-shadow:0 4px 16px rgba(0,240,255,.3);
-    border:0;
-  }
-  #downloadCard:hover{
-    transform:translateY(-2px);
-    box-shadow:0 6px 20px rgba(0,240,255,.4);
-  }
-  
-  /* Třetí tlačítko (Boomer mode) - pink */
   #copy{
-    background:linear-gradient(135deg, var(--pink), #ff3d9a);
-    color:var(--ink);
-    font-size:15px;
-    padding:16px 20px;
-    box-shadow:0 4px 16px rgba(255,99,184,.3);
-    border:0;
-    grid-column:1 / -1; /* Na celou šířku */
-  }
-  #copy:hover{
-    transform:translateY(-2px);
-    box-shadow:0 6px 20px rgba(255,99,184,.4);
+    grid-column:1 / -1; /* Tertiary přes celou šířku */
   }
   
   /* Responzivní - na úzkém mobilu stack vertikálně */
@@ -167,21 +270,42 @@
   .cta{
     position:fixed;right:18px;bottom:18px;
     width:min(380px,calc(100% - 36px));
-    border-radius:28px;
-    padding:18px 24px;
-    background:linear-gradient(rgba(11,11,17,.98), rgba(11,11,17,.98)) padding-box,
-               linear-gradient(135deg, var(--accent), var(--cyan)) border-box;
-    border:2px solid transparent;
-    backdrop-filter:saturate(140%) blur(8px);
-    box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(157,255,0,.2) inset;
     z-index:2;
+  }
+  
+  .footer-cta{
+    border:1px solid color-mix(in oklab, var(--cyan), transparent 60%);
+    border-radius:20px;
+    padding:16px;
+    background:rgba(18,18,18,.92);
+    backdrop-filter:saturate(140%) blur(8px);
     transition:transform .2s ease, box-shadow .2s ease;
   }
-  .cta:hover{
+  
+  .footer-cta:hover{
     transform:translateY(-2px);
-    box-shadow:0 24px 70px rgba(0,0,0,.6), 0 0 0 1px rgba(157,255,0,.3) inset;
+    box-shadow:0 24px 70px rgba(0,0,0,.6);
   }
-  .cta a{display:block;color:var(--accent);font-weight:900;text-decoration:none;font-size:18px;letter-spacing:-0.01em}
+  
+  .footer-cta a{
+    display:block;
+    color:var(--cyan);
+    font-weight:900;
+    text-decoration:none;
+    font-size:18px;
+    letter-spacing:-0.01em;
+  }
+  
+  @media (prefers-reduced-motion:no-preference){
+    @keyframes arrow-bounce{
+      0%,100%{ transform:translateX(0);}
+      50%{ transform:translateX(4px);}
+    }
+    .footer-cta .arrow{
+      display:inline-block;
+      animation: arrow-bounce 1.4s ease-in-out infinite;
+    }
+  }
   .cta small{display:block;color:var(--muted);margin-top:6px}
   
   /* bottom sheet (translator) */
@@ -205,10 +329,14 @@
 
   <div class="wrap">
     <header>
-      <div class="brand"><div class="dot"></div><div>TY&nbsp;VOLE<span>.wtf</span></div></div>
+      <div class="brand">
+        <img src="/brand/tvl-logo.svg" alt="TY VOLE" aria-label="TY VOLE" style="height:28px;display:inline-block;">
+        <div class="dot"></div>
+        <div>TY&nbsp;VOLE<span>.wtf</span></div>
+      </div>
       <div class="chips">
         <div class="chip">#skibidi</div><div class="chip">#rizz</div><div class="chip">#based</div><div class="chip">#drip</div>
-        <button id="btnSheet" class="chip btn">Skibidi překladač</button>
+        <button id="btnSheet" class="chip btn chip-active" aria-label="Otevřít Skibidi překladač">Skibidi překladač</button>
       </div>
     </header>
 
@@ -224,15 +352,15 @@
         </label>
       </div>
       
-      <!-- Barevné CTA tlačítka v gridu -->
+      <!-- CTA tlačítka - 3-level hierarchy -->
       <div class="btn-group">
-        <button id="shareMain" title="Sdílej kartu do chatu">
+        <button id="shareMain" class="btn btn-primary" aria-label="Sdílet kartu do chatu">
           <span id="shareMainText">Drop do chatu 💀</span>
         </button>
-        <button id="downloadCard" title="Stáhnout jako obrázek">
+        <button id="downloadCard" class="btn btn-secondary" aria-label="Stáhnout kartu jako PNG">
           <span id="downloadText">Bake it 🍰</span>
         </button>
-        <button id="copy" title="Zkopíruje URL">
+        <button id="copy" class="btn btn-tertiary" aria-label="Zkopírovat odkaz">
           <span id="copyText">Boomer sharing mode</span>
         </button>
       </div>
@@ -248,8 +376,8 @@
     </div>
   </div>
 
-  <div class="cta">
-    <a href="/chat.html">Mám i chat, bro 😭 →</a>
+  <div class="cta footer-cta">
+    <a href="/chat.html">Mám i chat, bro 😭 <span class="arrow">→</span></a>
   </div>
 
   <!-- Translator bottom sheet -->
@@ -307,18 +435,38 @@ async function loadLexicon(){
   }
 }
 
+// Bezpečné dosazení placeholderů s fallbackem
+function fillPlaceholders(template, dict = {}) {
+  // Nahraď známé klíče {key} → value
+  let out = template.replace(/\{(\w+)\}/g, (_, key) => {
+    const val = dict[key];
+    return (val ?? '').toString();
+  });
+  
+  // Fallback: cokoliv zbyde ve složených závorkách zahodit
+  out = out.replace(/\{[^}]+\}/g, '').replace(/\s{2,}/g, ' ').trim();
+  
+  // Kosmetika: odstranit zbytky čárek/teček po vyhození placeholderu
+  out = out.replace(/\s*([,;:.!?])\s*/g, '$1 ').replace(/\s+$/, '');
+  
+  return out;
+}
+
 function compose(){
   if (Math.random() < 0.8 && L.templates.length){
     const tpl = uniquePick(L.templates);
-    return tpl
-      .replace("{opener}", uniquePick(L.openers))
-      .replace("{tones_pos}", uniquePick(L.tones_pos))
-      .replace("{tones_mid}", uniquePick(L.tones_mid))
-      .replace("{tones_neg}", uniquePick(L.tones_neg))
-      .replace("{verbs}", uniquePick(L.verbs))
-      .replace("{nouns}", uniquePick(L.nouns))
-      .replace("{actions}", uniquePick(L.actions))
-      .replace("{emote}", uniquePick(L.emotes));
+    
+    // Bezpečné dosazení s fallbacky
+    return fillPlaceholders(tpl, {
+      opener: uniquePick(L.openers || ['']),
+      tones_pos: uniquePick(L.tones_pos || ['']),
+      tones_mid: uniquePick(L.tones_mid || ['']),
+      tones_neg: uniquePick(L.tones_neg || ['']),
+      verbs: uniquePick(L.verbs || ['']),
+      nouns: uniquePick(L.nouns || ['']),
+      actions: uniquePick(L.actions || ['']),
+      emote: uniquePick(L.emotes || [''])
+    });
   }
   return uniquePick(L.quotes.length ? L.quotes : ["No cap, další."]);
 }
@@ -371,91 +519,119 @@ const CZ2GZ_WORDS = [
   [/flow/gi, 'flow'],
   
   // SPECIFICKÉ FRÁZE NEJDŘÍV (před jednotlivými slovy!)
-  [/trapn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)\s+vtip/gi, 'dad joke'],
-  [/strach\s+(z|ze)\s+zme(š|s)k(á|a)n(í|ého|ímu|ím|ém)/gi, 'FOMO'],
-  [/nejlep(ší|šího|šímu|ším|šem)\s+(k(á|a)mo(š|s|še|ši|šem|šovi)|kamar(á|a)d(a|y|u|em|ovi|ka|ce|ku|kou)?)/gi, 'bestie'],
+  [/trapn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)?\s+vtip/gi, 'dad joke'],
+  [/strach\s+(z|ze)\s+zme(š|s)k(á|a)n(í|ého|ímu|ím|ém)?/gi, 'FOMO'],
+  [/nejlep(ší|šího|šímu|ším|šem)?\s+(k(á|a)mo(š|s|še|ši|šem|šovi)?|kamar(á|a)d(a|y|u|em|ovi|ka|ce|ku|kou)?)/gi, 'bestie'],
   [/vztah\s+nevztah/gi, 'situationship'],
-  [/mimo\s+realit(u|y|ě)/gi, 'delulu'],
+  [/mimo\s+realit(u|y|ě)?/gi, 'delulu'],
   [/hniloba\s+mozku/gi, 'brain rot'],
-  [/star(ší|šího)\s+generac(e|i)/gi, 'boomer'],
-  [/tr(á|a)vit\s+(č|c)as\s+s\s+p(ř|r)(á|a)teli/gi, 'felit'],
-  [/u(č|c)en(í|ého|ímu|ím|ém)\s+nejde/gi, 'academic victim'],
-  [/varovn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)\s+sign(á|a)l/gi, 'red flag'],
-  [/pozitivn(í|ího|ímu|ím|ém|á|ou|é|i)\s+sign(á|a)l/gi, 'green flag'],
-  [/neutr(á|a)ln(í|ího|ímu|ím|ém|á|ou|é|i)\s+sign(á|a)l/gi, 'beige flag'],
+  [/star(ší|šího)?\s+generac(e|i)/gi, 'boomer'],
+  [/tr(á|a)vit\s+(č|c)as\s+s\s+p(ř|r)(á|a)teli/gi, 'hangout'],
+  [/u(č|c)en(í|ého|ímu|ím|ém)?\s+nejde/gi, 'academic victim'],
+  [/varovn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)?\s+sign(á|a)l/gi, 'red flag'],
+  [/pozitivn(í|ího|ímu|ím|ém|á|ou|é|i)?\s+sign(á|a)l/gi, 'green flag'],
+  [/neutr(á|a)ln(í|ího|ímu|ím|ém|á|ou|é|i)?\s+sign(á|a)l/gi, 'beige flag'],
   
-  // DELŠÍ VÝRAZY před kratšími
-  [/(vý|vy)born(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'bussin'],
-  [/perfektn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'slay'],
-  [/legend(á|a)rn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'goated'],
-  [/autentick(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'based'],
-  [/toxick(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'toxic'],
-  [/trapn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'cringe'],
-  [/divn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'skibidi'],
-  [/průměrn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'mid'],
-  [/nudn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'mid'],
-  [/zamilov(á|a)n(í|ého|ímu|ím|ém|á|ou|é|i)/gi, 'crush'],
-  [/bl(á|a)zniv(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'goofy'],
-  [/absurdn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'skibidi'],
-  [/z(á|a)bavn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'lit'],
-  [/podez(ř|r)el(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'sus'],
-  [/p(ř|r)ecitliv(ě|e)l(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'snowflake'],
-  [/ignorov(á|a)n(í|ého|ímu|ím|ém)/gi, 'ghosting'],
-  [/manipulac(e|i)/gi, 'gaslighting'],
-  [/ne(ú|u)sp(ě|e)(š|s)n(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'fail'],
-  [/elegant(n|t)(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'classy'],
-  [/zru(š|s)en(ý|y|ého|ému|ým|ém|á|ou|é|e)/gi, 'cancelled'],
-  [/unik(á|a)tn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'sigma'],
-  [/nez(á|a)visl(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'sigma'],
-  [/naivn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'delulu'],
-  [/(š|s)(t|ť)astn(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'blessed'],
-  [/eleg(á|a)ntn(í|ího|ímu|ím|ém|á|ou|é|i)/gi, 'drip'],
-  [/sm(ě|e)(š|s)n(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'goofy'],
+  // DELŠÍ VÝRAZY před kratšími - ZJEDNODUŠENÉ regex (matchují víc tvarů)
+  [/\b(v[yý]born[yýáéěíóúůaouei]+|vybornej|vyborny|výborné|výborný)\b/gi, 'bussin'],
+  [/\bperfektn[íěéaouei]+\b/gi, 'slay'],
+  [/\blegend[aá]rn[íěéaouei]+\b/gi, 'goated'],
+  [/\bautentick[yýáéaouei]+\b/gi, 'based'],
+  [/\btoxick[yýáéaouei]+\b/gi, 'toxic'],
+  [/\btrapn[yýáéěíaouei]+\b/gi, 'cringe'],
+  [/\bdivn[yýáéěíaouei]+\b/gi, 'skibidi'],
+  [/\bpr[uů]m[ěe]rn[yýáéěíaouei]+\b/gi, 'mid'],
+  [/\bnudn[yýáéěíaouei]+\b/gi, 'mid'],
+  [/\bzamilovan[yýáéěíaouei]+\b/gi, 'crush'],
+  [/\bbl[aá]zniv[yýáéěíaouei]+\b/gi, 'goofy'],
+  [/\babsurdn[íěéaouei]+\b/gi, 'unhinged'],
+  [/\bz[aá]bavn[yýáéěíaouei]+\b/gi, 'lit'],
+  [/\bpodez[rř]el[yýáéěíaouei]+\b/gi, 'sus'],
+  [/\bp[rř]ecitliv[ěeě]l[yýáéěíaouei]+\b/gi, 'snowflake'],
+  [/\bignorov[aá]n[íěéaouei]+\b/gi, 'ghosting'],
+  [/\bmanipulac[ei]\b/gi, 'gaslighting'],
+  [/\bne[uú]sp[ěe][šs]n[yýáéěíaouei]+\b/gi, 'fail'],
+  [/\belegant(n[íěéaouei]+)?\b/gi, 'classy'],
+  [/\bzru[šs]en[yýáéěíaouei]+\b/gi, 'cancelled'],
+  [/\bunik[aá]tn[íěéaouei]+\b/gi, 'sigma'],
+  [/\bnez[aá]visl[yýáéěíaouei]+\b/gi, 'sigma'],
+  [/\bnaivn[íěéaouei]+\b/gi, 'delulu'],
+  [/\b[šs][tť]astn[yýáéěíaouei]+\b/gi, 'blessed'],
+  [/\beleg[aá]ntn[íěéaouei]+\b/gi, 'drip'],
+  [/\bsm[ěe][šs]n[yýáéěíaouei]+\b/gi, 'goofy'],
   
-  // KRATŠÍ OBECNÉ VÝRAZY až nakonec
-  [/dobr(ý|ého|ému|ým|ém|á|ou|é|e|y|i)/gi, 'valid'],
-  [/super/gi, 'fire'],
-  [/hodn(ě|e)/gi, 'mega'],
-  [/dost/gi, 'lowkey'],
-  [/opravdu/gi, 'fr'],
-  [/v(á|a)žn(ě|e)/gi, 'fr'],
+  // NEJBĚŽNĚJŠÍ slova - MUST MATCH!
+  [/\bdobr[yýáéěíaouei]+\b/gi, 'fire'],
+  [/\b[šs]patn[yýáéěíaouei]+\b/gi, 'mid'],
+  [/\bkr[aá]sn[yýáéěíaouei]+\b/gi, 'fire'],
+  [/\bsuper\b/gi, 'bussin'],
+  [/\bhezk[yýáéěíaouei]+\b/gi, 'cute'],
+  [/\b[šs]karedn[yýáéěíaouei]+\b/gi, 'ugly'],
+  [/\bhodn[ěe]\b/gi, 'hella'],
+  [/\bdost\b/gi, 'lowkey'],
+  [/\bmoc\b/gi, 'too much'],
+  [/\bm[aá]lo\b/gi, 'not enough'],
+  [/\bopravdu\b/gi, 'fr'],
+  [/\bv[aá][žz]n[ěe]\b/gi, 'fr'],
+  [/\bup[rř][íi]mn[ěe]\b/gi, 'ngl'],
   [/upř(í|i)mn(ě|e)/gi, 'ngl'],
-  [/charism(a|y|u|ou|e|ě)/gi, 'rizz'],
-  [/drb(y|ů|ám|ami|a)/gi, 'tea'],
-  [/n(á|a)lad(a|y|u|ou|ě)/gi, 'vibe'],
-  [/atmosf(é|e)ra/gi, 'vibe'],
-  [/styl/gi, 'drip'],
-  [/vibe/gi, 'vibe'],
+  [/\bcharism[ayuoueě]+\b/gi, 'rizz'],
+  [/\bdrb[yuoaáůámami]+\b/gi, 'tea'],
+  [/\bn[aá]lad[ayuouě]+\b/gi, 'vibe'],
+  [/\batmosf[eé]r[ayuouě]+\b/gi, 'vibe'],
+  [/\bstyl\b/gi, 'drip'],
+  [/\bvibe\b/gi, 'vibe'],
   
-  // Akce a verba
-  [/pos(í|i)lit/gi, 'buffnout'],
-  [/oslabit/gi, 'nerfnout'],
-  [/opravit/gi, 'fixnout'],
-  [/(ž|z)vatlat/gi, 'yapping'],
-  [/brblat/gi, 'yapping'],
-  [/pop(í|i)jet/gi, 'felit'],
-  [/chlad(n|ň)a/gi, 'chill'],
-  [/p(ř|r)edv(á|a)d(ě|e)t\s+se/gi, 'flex'],
-  [/chlubi(t\s+se|l|la|li)/gi, 'flex'],
-  [/provokovat|provokuje|provokoval|provokovali/gi, 'trolling'],
+  // BĚŽNÁ SLOVA - dělej, je, to, mám, jsi...
+  [/\bjsem\b/gi, 'jsem'],
+  [/\bje(s|š)t[ěe]\b/gi, 'ještě'],
+  [/\bte[dď]\b/gi, 'rn'],
+  [/\bpr[aá]v[ěe]\b/gi, 'rn'],
+  [/\bte[dď]ka\b/gi, 'rn'],
+  [/\bm[aá]m\b/gi, 'got'],
+  [/\bnem[aá]m\b/gi, "ain't got"],
+  [/\bd[ěe]l[aá][mš]\b/gi, 'doing'],
+  [/\bjde(s|š)?\b/gi, 'going'],
+  [/\bvidí(m|š)\b/gi, 'see'],
+  [/\brozum[íi][mš]\b/gi, 'cap'],
+  [/\bmysl[íi][mš]\b/gi, 'mean'],
+  [/\bch(ce|t[ěe])[mš]?\b/gi, 'want'],
+  [/\bpot[rř]ebu(je|ji)[mš]?\b/gi, 'need'],
+  [/\bm[uů][žz]e(me|te|š)?\b/gi, 'can'],
+  [/\bmus[íi][mš]\b/gi, 'gotta'],
+  
+  // Akce a verba - ZJEDNODUŠENÉ
+  [/\bpos[íi]lit\b/gi, 'buff'],
+  [/\boslabit\b/gi, 'nerf'],
+  [/\bopravit\b/gi, 'fix'],
+  [/\b[žz]vatlat\b/gi, 'yap'],
+  [/\bbrblat\b/gi, 'yap'],
+  [/\bpop[íi]jet\b/gi, 'hang out'],
+  [/\bchlad(n[aá]|nou)\b/gi, 'chill'],
+  [/\bp[rř]edv[aá]d[ěe]t\s+se\b/gi, 'flex'],
+  [/\bchlub(it\s+se|il|ila|ili)\b/gi, 'flexing'],
+  [/\bprovokovat|provokuje|provokoval|provokovali\b/gi, 'trolling'],
+  [/\bml(uv)[íi][mš]\b/gi, 'talkin'],
+  [/\b[rř][íi]k[aá][mš]\b/gi, 'sayin'],
+  [/\bvid[ěe]l(a|i)?\b/gi, 'saw'],
+  [/\bsly[šs]el(a|i)?\b/gi, 'heard'],
   
   // Jednoduché výrazy
-  [/extrémn(ě|e)/gi, 'AF'],
-  [/(nejlep(ší|ší)|nej)/gi, 'GOAT'],
-  [/chyba/gi, 'fail'],
-  [/selh(á|a)n(í|ého|ímu|ím|ém)/gi, 'fail'],
-  [/podiv(í|i)n/gi, 'weirdo'],
-  [/nesmysln(ý|ého|ému|ým|ém|á|ou|é|e|y|i)\s+p(ř|r)(í|i)sp(ě|e)vek/gi, 'shitpost'],
-  [/cool/gi, 'fire'],
-  [/h(ř|r)(í|i)(š|s)n(í|ího|ímu|ím|ém|á|ou|é|i)k/gi, 'lil bro'],
-  [/sestra|sestřička/gi, 'lil sis'],
-  [/bratr|brácha/gi, 'bro'],
-  [/kamar(á|a)d/gi, 'homie'],
-  [/kámoš/gi, 'bestie'],
-  [/hit/gi, 'banger'],
-  [/l(ž|z)e/gi, 'cap'],
-  [/nepravda/gi, 'cap'],
-  [/pravda/gi, 'no cap']
+  [/\bextr[eé]mn[ěe]\b/gi, 'AF'],
+  [/\bnejlep[šs][íi]\b/gi, 'GOAT'],
+  [/\bchyba\b/gi, 'L'],
+  [/\bselh[aá]n[íi]\b/gi, 'fail'],
+  [/\bpodiv[íi]n\b/gi, 'weirdo'],
+  [/\bcool\b/gi, 'fire'],
+  [/\bh[rř][íi][šs]n[íi]k\b/gi, 'lil bro'],
+  [/\bsestra|sest[rř]i[čc]ka\b/gi, 'sis'],
+  [/\bbratr|br[aá]cha\b/gi, 'bro'],
+  [/\bkamar[aá]d\b/gi, 'homie'],
+  [/\bk[aá]mo[šs]\b/gi, 'bestie'],
+  [/\bhit\b/gi, 'banger'],
+  [/\bl[žz]e\b/gi, 'cap'],
+  [/\bnepravda\b/gi, 'cap'],
+  [/\bpravda\b/gi, 'facts']
 ];
 
 // Slovník s vysvětleními pro Gen-Z výrazy
@@ -871,11 +1047,18 @@ function applyReplacements(s, pairs){
 function translateLocal(text, direction){
   let s = String(text||'');
   if (!s.trim()) return "";
+  
+  console.log('[translateLocal] Input:', text, 'Direction:', direction);
+  
   if (direction === 'normal_to_gz'){
+    const original = s;
     s = applyReplacements(s, CZ2GZ_PHRASES);
+    console.log('[translateLocal] After CZ2GZ_PHRASES:', s);
     s = applyReplacements(s, CZ2GZ_WORDS);
+    console.log('[translateLocal] After CZ2GZ_WORDS:', s);
     // Přidej Gen-Z struktury a fillery do věty
     s = addGenZFlair(s);
+    console.log('[translateLocal] Final result:', s);
     return s;
   }
   if (direction === 'gz_to_normal'){
@@ -1168,10 +1351,11 @@ if (document.readyState === 'loading') {
   init();
 }
 
-// PWA SW registrace
+// Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(console.error);
+    navigator.serviceWorker.register('/sw.js')
+      .catch(console.error);
   });
 }
 </script>
@@ -1272,6 +1456,30 @@ if ('serviceWorker' in navigator) {
     }
   }, 1000);
 })();
+</script>
+
+<!-- PWA Install Banner -->
+<script src="/install.js?v=5"></script>
+
+<!-- PWA Diagnostic Logs (temporary) -->
+<script>
+if ('serviceWorker' in navigator) {
+  console.log('[PWA] Display mode:', window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser');
+  
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    console.log('[PWA] SW registered:', reg.scope);
+  }).catch(err => {
+    console.error('[PWA] SW registration failed:', err);
+  });
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  console.log('[PWA] beforeinstallprompt fired ✅', e);
+});
+
+window.addEventListener('appinstalled', () => {
+  console.log('[PWA] appinstalled event ✅');
+});
 </script>
 
 </body>

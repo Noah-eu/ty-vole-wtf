@@ -70,3 +70,21 @@ window.analytics = analytics;
 
 // Export provider info for debugging
 window.analytics.provider = analyticsProvider;
+
+// Global button click tracking
+document.addEventListener("click", (event) => {
+  const target = event.target.closest("button");
+  if (!target) return;
+
+  // Get meaningful label
+  const label =
+    target.id ||
+    target.name ||
+    target.dataset?.action ||
+    target.innerText?.trim().slice(0, 50) ||
+    "unknown_button";
+
+  // Track button click with Plausible
+  trackEvent("button_click", { label });
+});
+
