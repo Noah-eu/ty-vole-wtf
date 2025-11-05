@@ -68,6 +68,13 @@
     --accent:var(--lime);
     --ink-dark:#0c0c10;
     --line:#252536;
+    
+    /* Translator specific */
+    --tvl-green:#22ff99;
+    --tvl-green-2:#00ffaa;
+    --card-bg:#0e0e0e;
+    --field-bg:#1a1a1a;
+    --border:#333;
   }
   
   *{box-sizing:border-box}
@@ -307,6 +314,63 @@
   }
   .cta small{display:block;color:var(--muted);margin-top:6px}
   
+  /* Translator AI card - unified design */
+  .translator{
+    margin:0;
+    background:var(--card-bg);
+    border:1px solid color-mix(in oklab, var(--tvl-green) 30%, #0b7);
+    border-radius:16px;
+    padding:1rem;
+    box-shadow:0 0 15px rgba(34,255,153,.15);
+    transition:box-shadow .3s ease, transform .2s ease;
+  }
+
+  .translator:hover{ box-shadow:0 0 25px rgba(34,255,153,.25); }
+
+  .translator.translated{ animation: tvl-glow .9s ease; }
+  @keyframes tvl-glow{
+    0%{ box-shadow:0 0 0 rgba(34,255,153,0); }
+    30%{ box-shadow:0 0 28px rgba(34,255,153,.45); }
+    100%{ box-shadow:0 0 15px rgba(34,255,153,.15); }
+  }
+
+  .translator-inner{ display:flex; flex-direction:column; gap:.75rem; }
+  .translator-inputs{ display:flex; flex-direction:column; gap:.75rem; }
+
+  .translator textarea{
+    width:100%;
+    background:var(--field-bg);
+    color:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:.75rem 1rem;
+    font:16px/1.5 "Inter",system-ui,sans-serif;
+    resize:none;
+    min-height:80px;
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .translator textarea:focus{
+    border-color:var(--tvl-green);
+    outline:none;
+    box-shadow:0 0 0 3px color-mix(in oklab, var(--tvl-green) 30%, transparent);
+  }
+
+  .translator-actions{
+    display:flex; justify-content:flex-end; gap:.5rem;
+  }
+
+  .translator-actions button{
+    background:linear-gradient(90deg, var(--tvl-green), var(--tvl-green-2));
+    color:#000; font-weight:600;
+    border:0; border-radius:10px; padding:.6rem 1.2rem;
+    cursor:pointer; transition:transform .08s ease, opacity .2s ease;
+  }
+  .translator-actions button:hover{ transform:scale(1.05); opacity:.92; }
+
+  #bClear{
+    background:#262626; color:#fff; border:1px solid var(--border);
+  }
+  
   /* bottom sheet (translator) */
   .sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none; z-index:10;}
   .sheet{position:fixed;left:0;right:0;bottom:0;max-height:70dvh;background:#11121a;border-top:1px solid var(--line);border-radius:18px 18px 0 0;transform:translateY(100%);transition:.2s ease-out; z-index:11;}
@@ -383,26 +447,25 @@
   <div class="sheet-backdrop" id="backdrop"></div>
   <section class="sheet" id="sheet">
     <div class="head">
-      <strong>Překladač Gen-Z ↔ normální</strong>
-      <div>
+      <div style="display:flex;justify-content:flex-end;width:100%;">
         <button id="closeSheet" class="ghost tiny">Zavřít</button>
       </div>
     </div>
     <div class="body">
-      <div class="cols">
-        <div>
-          <div class="subtitle">Normální → Gen-Z</div>
-          <textarea id="tNorm" placeholder="Napiš normálně…"></textarea>
+      <section id="translator-box" class="translator">
+        <div class="translator-inner">
+          <div class="translator-inputs">
+            <textarea id="tNorm" placeholder="Napiš cokoliv…" rows="2"></textarea>
+            <textarea id="tGenz" placeholder="…sem spadne překlad 💬" rows="2" readonly></textarea>
+          </div>
+
+          <div class="translator-actions">
+            <button id="bTranslate" type="button">Přeložit 🔁</button>
+            <button id="bClear" type="button">Smazat 🗑️</button>
+          </div>
         </div>
-        <div>
-          <div class="subtitle">Gen-Z → Normální</div>
-          <textarea id="tGenz" placeholder="Nebo Gen-Z…"></textarea>
-        </div>
-      </div>
-      <div style="text-align:center;margin-top:16px;display:flex;gap:12px;justify-content:center;align-items:center;">
-        <button id="bTranslate" class="primary" style="min-width:200px;">Přeložit ↔️</button>
-        <button id="bClear" class="ghost" style="min-width:140px;">🗑️ Smaž text</button>
-      </div>
+      </section>
+      
       <div id="explanation" style="margin-top:16px;padding:12px;background:rgba(157,255,0,.05);border:1px solid rgba(157,255,0,.2);border-radius:12px;display:none;">
         <div style="font-weight:700;margin-bottom:8px;color:var(--accent);">💡 Co to znamená?</div>
         <div id="explanationText" style="font-size:14px;line-height:1.6;color:var(--muted);"></div>
@@ -1284,6 +1347,15 @@ async function init(){
   const explanationDiv = document.getElementById('explanation');
   const explanationText = document.getElementById('explanationText');
   
+  // Funkce pro glow animaci překladače
+  function tvlPulseTranslatorBox(){
+    const box = document.getElementById('translator-box');
+    if(!box) return;
+    box.classList.remove('translated'); // re-trigger
+    void box.offsetWidth; // force reflow
+    box.classList.add('translated');
+  }
+  
   // Funkce pro zobrazení vysvětlení
   function showExplanation(text){
     if(!text || !text.trim()) {
@@ -1321,18 +1393,21 @@ async function init(){
     if(normVal && !genzVal){
       // Překlad z normální do Gen-Z
       tGenz.value = await translate(normVal, 'normal_to_gz');
+      tvlPulseTranslatorBox();
     } else if(genzVal && !normVal){
       // Překlad z Gen-Z do normální + zobraz vysvětlení
       tNorm.value = await translate(genzVal, 'gz_to_normal');
       showExplanation(genzVal);
+      tvlPulseTranslatorBox();
     } else if(normVal && genzVal){
       // Oba jsou vyplněné - přelož Gen-Z do normální (priorita vysvětlení)
       tNorm.value = await translate(genzVal, 'gz_to_normal');
       showExplanation(genzVal);
+      tvlPulseTranslatorBox();
     }
   };
   
-  // Tlačítko "Smaž text" - vymaže obě textová pole
+  // Tlačítko "Smazat" - vymaže obě textová pole
   document.getElementById('bClear').onclick=()=>{
     tNorm.value = '';
     tGenz.value = '';

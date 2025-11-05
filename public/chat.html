@@ -163,6 +163,16 @@
   .row{max-width:960px;margin:8px auto 0 auto;display:flex;gap:10px;align-items:center;justify-content:space-between}
   .left{display:flex;gap:10px;align-items:center}
   .hint{color:var(--muted);font-size:12px}
+  
+  /* Typewriter cursor animace */
+  .tvl-cursor::after{
+    content:'';
+    display:inline-block;
+    width:10px; height:1.1em; margin-left:2px;
+    border-right:2px solid #9ae6b4;
+    animation:tvl-blink .9s step-end infinite;
+  }
+  @keyframes tvl-blink{ 50%{ border-right-color:transparent; } }
 </style>
 </head>
 <body>
@@ -210,6 +220,25 @@ const elMode = document.getElementById('modeChip');
 let MODE = (localStorage.getItem('chatMode') || 'edgy'); // edgy by default
 let SHOW_TRANSLATION = localStorage.getItem('chatTrans') === '1';
 
+// Typewriter utility - píše text po znacích do elementu
+async function typeInto(el, text, cps = 30){
+  // cps = chars per second
+  const delay = 1000 / Math.max(1, cps);
+  el.textContent = '';
+  for (let i = 0; i < text.length; i++){
+    el.textContent += text[i];
+    await new Promise(r => setTimeout(r, delay));
+  }
+}
+
+function attachBlinkCursor(el){
+  el.classList.add('tvl-cursor');
+}
+
+function detachBlinkCursor(el){
+  el.classList.remove('tvl-cursor');
+}
+
 elTrans.checked = SHOW_TRANSLATION;
 elTrans.onchange = () => {
   SHOW_TRANSLATION = elTrans.checked;
@@ -249,6 +278,39 @@ function msg(role, html, translated=''){
   return b;
 }
 
+// Vytvoří bublinu pro AI zprávu s typewriter efektem
+async function msgTyped(role, text, translated='', cps = 28){
+  const row = document.createElement('div');
+  row.className = 'msg ' + (role === 'user' ? 'you':'ai');
+
+  const pfp = document.createElement('div');
+  pfp.className = 'pfp';
+  pfp.textContent = role === 'user' ? 'U' : 'T';
+
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  
+  row.appendChild(pfp);
+  row.appendChild(b);
+  elLog.appendChild(row);
+  
+  // Typewriter efekt s blikajícím kurzorem
+  attachBlinkCursor(b);
+  await typeInto(b, text, cps);
+  detachBlinkCursor(b);
+  
+  // Přidej překlad pokud existuje
+  if (translated){
+    const t = document.createElement('div');
+    t.className = 'trans';
+    t.textContent = '↳ Překlad: ' + translated;
+    b.appendChild(t);
+  }
+  
+  elLog.scrollTop = elLog.scrollHeight;
+  return b;
+}
+
 function typingBubble(){
   const el = msg('assistant', '<span class="typing"></span>');
   return {
@@ -257,10 +319,9 @@ function typingBubble(){
   };
 }
 
-// první lehce drzej opener:
-// First message with delay
-setTimeout(() => {
-  msg('assistant', "Čau, tak co řešíš? Hoď to sem, žádný slohy – jedeme short & spicy.");
+// první lehce drzej opener s typewriter efektem
+setTimeout(async () => {
+  await msgTyped('assistant', "Čau, tak co řešíš? Hoď to sem, žádný slohy – jedeme short & spicy.", '', 35);
 }, 1000);
 
 async function apiChat(q){
@@ -297,12 +358,24 @@ elForm.onsubmit = async (e) => {
     const data = await apiChat(q);
     let reply = (data.reply || '').trim();
     if(!reply) reply = "Mid otázka, zkus konkrétněji.";
+    
+    // Smažeme "loading" bublinu
+    live.set('');
+    const bubble = live;
+    
+    // Vytvoříme novou zprávu s typewriter efektem
     let translated = '';
     if(SHOW_TRANSLATION){
       translated = await apiTranslate(reply);
     }
-    live.set(reply + (translated ? `<div class="trans">↳ Překlad: ${translated}</div>` : ''));
-    live.done();
+    
+    // Odstraníme loading bublinu z DOMu
+    const loadingMsg = bubble.parentElement?.parentElement;
+    if(loadingMsg) loadingMsg.remove();
+    
+    // Vytvoříme novou zprávu s typewriter animací
+    await msgTyped('assistant', reply, translated, 28);
+    
   }catch(e){
     live.set("Rip, spadla síť. Dej ještě jednou.");
   }
