@@ -355,6 +355,15 @@
     box-shadow:0 0 0 3px color-mix(in oklab, var(--tvl-green) 30%, transparent);
   }
 
+  .translator-label{
+    color:#9ae6b4;
+    font:600 13px/1.2 Inter,system-ui,sans-serif;
+    margin-top:.25rem;
+    margin-bottom:.35rem;
+    display:block;
+    letter-spacing:.2px;
+  }
+
   .translator-actions{
     display:flex; justify-content:flex-end; gap:.5rem;
   }
@@ -367,7 +376,7 @@
   }
   .translator-actions button:hover{ transform:scale(1.05); opacity:.92; }
 
-  #bClear{
+  #clearBtn{
     background:#262626; color:#fff; border:1px solid var(--border);
   }
   
@@ -455,13 +464,15 @@
       <section id="translator-box" class="translator">
         <div class="translator-inner">
           <div class="translator-inputs">
-            <textarea id="tNorm" placeholder="Napiš cokoliv…" rows="2"></textarea>
-            <textarea id="tGenz" placeholder="…sem spadne překlad 💬" rows="2" readonly></textarea>
+            <label for="ta-normal" class="translator-label">Normál</label>
+            <textarea id="ta-normal" placeholder="Napiš běžnou češtinou…" rows="3"></textarea>
+
+            <label for="ta-skibidi" class="translator-label">Skibidi</label>
+            <textarea id="ta-skibidi" placeholder="Napiš skibidi / Gen-Z style…" rows="3"></textarea>
           </div>
 
           <div class="translator-actions">
-            <button id="bTranslate" type="button">Přeložit 🔁</button>
-            <button id="bClear" type="button">Smazat 🗑️</button>
+            <button id="clearBtn" type="button">Smazat 🗑️</button>
           </div>
         </div>
       </section>
@@ -1343,79 +1354,70 @@ async function init(){
   document.getElementById('btnSheet').onclick=openSheet;
   document.getElementById('closeSheet').onclick=closeSheet; back.onclick=closeSheet;
 
-  const tNorm=document.getElementById('tNorm'), tGenz=document.getElementById('tGenz');
-  const explanationDiv = document.getElementById('explanation');
-  const explanationText = document.getElementById('explanationText');
-  
-  // Funkce pro glow animaci překladače
-  function tvlPulseTranslatorBox(){
-    const box = document.getElementById('translator-box');
-    if(!box) return;
-    box.classList.remove('translated'); // re-trigger
-    void box.offsetWidth; // force reflow
-    box.classList.add('translated');
-  }
-  
-  // Funkce pro zobrazení vysvětlení
-  function showExplanation(text){
-    if(!text || !text.trim()) {
-      explanationDiv.style.display='none';
-      return;
+  // === Obousměrný automatický překladač ===
+  (() => {
+    const $normal  = document.getElementById('ta-normal');
+    const $skibidi = document.getElementById('ta-skibidi');
+    const $clear   = document.getElementById('clearBtn');
+    
+    if (!$normal || !$skibidi) return; // safety guard
+
+    // ochrana proti nekonečné smyčce při zrcadlení
+    let isUpdating = false;
+
+    // jednoduchý debounce
+    const debounce = (fn, ms = 250) => {
+      let t; 
+      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+    };
+    
+    // Funkce pro glow animaci překladače
+    function pulseGlow(){
+      const box = document.getElementById('translator-box');
+      if (!box) return;
+      box.classList.remove('translated');
+      void box.offsetWidth; // reflow
+      box.classList.add('translated');
     }
-    
-    const words = text.toLowerCase().match(/\b[\w\s-]+\b/g) || [];
-    const explanations = [];
-    
-    // Najdi všechny Gen-Z výrazy a jejich vysvětlení
-    for(const word of words){
-      const cleanWord = word.trim();
-      if(GZ2CZ_EXPLANATIONS[cleanWord]){
-        explanations.push(`<strong>${cleanWord}:</strong> ${GZ2CZ_EXPLANATIONS[cleanWord]}`);
-      }
+
+    // === Překladové funkce (používají existující translate()) ===
+    async function toSkibidi(text){
+      if (!text.trim()) return '';
+      return await translate(text, 'normal_to_gz');
     }
-    
-    if(explanations.length > 0){
-      explanationText.innerHTML = explanations.join('<br><br>');
-      explanationDiv.style.display='block';
-    } else {
-      explanationDiv.style.display='none';
+
+    async function toNormal(text){
+      if (!text.trim()) return '';
+      return await translate(text, 'gz_to_normal');
     }
-  }
-  
-  // Jedno tlačítko pro překlad v obou směrech
-  document.getElementById('bTranslate').onclick=async()=>{ 
-    const normVal = tNorm.value.trim();
-    const genzVal = tGenz.value.trim();
-    
-    // Schovat vysvětlení při začátku překladu
-    explanationDiv.style.display='none';
-    
-    if(normVal && !genzVal){
-      // Překlad z normální do Gen-Z
-      tGenz.value = await translate(normVal, 'normal_to_gz');
-      tvlPulseTranslatorBox();
-    } else if(genzVal && !normVal){
-      // Překlad z Gen-Z do normální + zobraz vysvětlení
-      tNorm.value = await translate(genzVal, 'gz_to_normal');
-      showExplanation(genzVal);
-      tvlPulseTranslatorBox();
-    } else if(normVal && genzVal){
-      // Oba jsou vyplněné - přelož Gen-Z do normální (priorita vysvětlení)
-      tNorm.value = await translate(genzVal, 'gz_to_normal');
-      showExplanation(genzVal);
-      tvlPulseTranslatorBox();
-    }
-  };
-  
-  // Tlačítko "Smazat" - vymaže obě textová pole
-  document.getElementById('bClear').onclick=()=>{
-    tNorm.value = '';
-    tGenz.value = '';
-    explanationDiv.style.display='none';
-    explanationText.textContent='';
-    // Focus na první pole pro pohodlí
-    tNorm.focus();
-  };
+
+    // === Handlery vstupů ===
+    const handleNormalInput = debounce(async () => {
+      if (isUpdating) return;
+      isUpdating = true;
+      const src = $normal.value;
+      $skibidi.value = await toSkibidi(src);
+      pulseGlow(); // vizualizace překladu
+      isUpdating = false;
+    }, 220);
+
+    const handleSkibidiInput = debounce(async () => {
+      if (isUpdating) return;
+      isUpdating = true;
+      const src = $skibidi.value;
+      $normal.value = await toNormal(src);
+      pulseGlow();
+      isUpdating = false;
+    }, 220);
+
+    $normal.addEventListener('input', handleNormalInput);
+    $skibidi.addEventListener('input', handleSkibidiInput);
+
+    $clear?.addEventListener('click', () => {
+      $normal.value = '';
+      $skibidi.value = '';
+    });
+  })();
 }
 
 // Initialize when DOM is ready
