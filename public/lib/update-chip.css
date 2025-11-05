@@ -1,0 +1,121 @@
+/* public/lib/update-chip.css */
+/* PWA Update Chip Styles */
+
+.update-chip {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 9998; /* Below install banner (9999) but above most content */
+  
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  padding: 0.625rem 1rem;
+  border-radius: 9999px;
+  
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid #333333;
+  
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Inter', Arial, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+  
+  cursor: pointer;
+  user-select: none;
+  
+  transition: all 0.2s ease;
+  
+  /* Ensure it's above other content */
+  -webkit-tap-highlight-color: transparent;
+}
+
+.update-chip:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.update-chip:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.update-chip-icon {
+  font-size: 1rem;
+  line-height: 1;
+  animation: rotate-icon 2s linear infinite;
+}
+
+@keyframes rotate-icon {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.update-chip-text {
+  white-space: nowrap;
+}
+
+/* Updating state */
+.update-chip-updating {
+  background: #1a1a1a;
+  color: #999999;
+  cursor: wait;
+  pointer-events: none;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid #333333;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .update-chip {
+    bottom: 5rem; /* Above mobile nav if present */
+    right: 0.75rem;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+  
+  .update-chip-text {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .update-chip-icon {
+    animation: none;
+  }
+  
+  .update-chip {
+    transition: none;
+  }
+}
+
+/* Dark mode support (already dark, but explicit) */
+@media (prefers-color-scheme: dark) {
+  .update-chip {
+    background: #000000;
+    color: #ffffff;
+    border-color: #333333;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .update-chip {
+    border: 2px solid #ffffff;
+  }
+}

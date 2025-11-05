@@ -37,6 +37,9 @@
 <!-- DailySong CSS -->
 <link rel="stylesheet" href="lib/daily-song.css">
 
+<!-- Update Chip CSS -->
+<link rel="stylesheet" href="lib/update-chip.css">
+
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-XhYv5mHfTkNZArOLGPADs.js"></script>
 <script>
@@ -1433,13 +1436,7 @@ if (document.readyState === 'loading') {
   init();
 }
 
-// Service Worker Registration
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .catch(console.error);
-  });
-}
+// Service Worker Registration is now handled by update-chip.js
 </script>
 
 <!-- Share System Scripts - defer ensures DOM is ready -->
@@ -1450,6 +1447,9 @@ if ('serviceWorker' in navigator) {
 
 <!-- Daily Song Script -->
 <script src="lib/daily-song.js" defer></script>
+
+<!-- Update Chip Script -->
+<script src="lib/update-chip.js" defer></script>
 
 <script defer>
 // Initialize share system - defer ensures DOM + other scripts are ready
@@ -1547,15 +1547,15 @@ if ('serviceWorker' in navigator) {
 <script src="/install.js?v=5"></script>
 
 <!-- PWA Diagnostic Logs (temporary) -->
+<!-- === PWA Update Chip === -->
+<!-- Update chip is now handled by lib/update-chip.js + lib/update-chip.css -->
+<!-- Container for the floating update chip -->
+<div id="update-chip"></div>
+
 <script>
+// PWA logging (kept for debugging)
 if ('serviceWorker' in navigator) {
   console.log('[PWA] Display mode:', window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser');
-  
-  navigator.serviceWorker.register('/sw.js').then(reg => {
-    console.log('[PWA] SW registered:', reg.scope);
-  }).catch(err => {
-    console.error('[PWA] SW registration failed:', err);
-  });
 }
 
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -1566,87 +1566,7 @@ window.addEventListener('appinstalled', () => {
   console.log('[PWA] appinstalled event ✅');
 });
 </script>
-
-<!-- === PWA Update Toast === -->
-<style>
-#pwa-update-toast {
-  position: fixed;
-  left: 1rem; right: 1rem; bottom: 1rem;
-  z-index: 9999;
-  display: none;
-  background: #111;
-  color: #fff;
-  border: 1px solid #333;
-  border-radius: 12px;
-  padding: .9rem 1rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,.4);
-  font: 14px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-  justify-content: space-between;
-  align-items: center;
-}
-#pwa-update-toast button {
-  margin-left: .8rem;
-  border: 0;
-  border-radius: 10px;
-  padding: .5rem .9rem;
-  background: linear-gradient(90deg, #22ff99, #00ffaa);
-  color: #000;
-  font-weight: 600;
-  cursor: pointer;
-}
-</style>
-
-<div id="pwa-update-toast">
-  Nová verze aplikace je k dispozici. 
-  <button id="pwa-update-apply">Aktualizovat</button>
-</div>
-
-<script>
-(async () => {
-  if (!('serviceWorker' in navigator)) return;
-
-  const toast = document.getElementById('pwa-update-toast');
-  const btn = document.getElementById('pwa-update-apply');
-
-  const showToast = () => toast.style.display = 'flex';
-  const hideToast = () => toast.style.display = 'none';
-
-  // Registrace nebo získání existujícího SW
-  const reg = await navigator.serviceWorker.register('/sw.js');
-
-  // Funkce, která nabídne update, pokud je SW waiting
-  function offerUpdate(reg) {
-    if (!reg.waiting) return;
-    showToast();
-    btn.onclick = () => {
-      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-    };
-  }
-
-  // Když se najde nová verze SW
-  reg.addEventListener('updatefound', () => {
-    const newSW = reg.installing;
-    newSW?.addEventListener('statechange', () => {
-      if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-        offerUpdate(reg);
-      }
-    });
-  });
-
-  // Pokud už máme waiting SW při načtení
-  offerUpdate(reg);
-
-  // Jakmile se aktivuje nový SW, reload
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    hideToast();
-    window.location.reload();
-  });
-
-  // Volitelné: pravidelně zkus update
-  setInterval(() => reg.update().catch(()=>{}), 30 * 60 * 1000);
-})();
-</script>
-<!-- === /PWA Update Toast === -->
+<!-- === /PWA Update Chip === -->
 
 </body>
 </html>
