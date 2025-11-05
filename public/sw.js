@@ -1,5 +1,5 @@
-// sw.js - PWA Service Worker v1.0.4
-const CACHE_VERSION = 'v1.0.4';
+// sw.js - PWA Service Worker v1.0.5
+const CACHE_VERSION = 'v1.0.5';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = 'runtime';
 
@@ -7,11 +7,11 @@ const ASSETS = [
   '/',
   '/index.html',
   '/chat.html',
-  '/manifest.webmanifest?v=4',
-  '/icons/icon-192.png?v=4',
-  '/icons/icon-512.png?v=4',
-  '/icons/maskable-192.png?v=4',
-  '/icons/maskable-512.png?v=4',
+  '/manifest.webmanifest?v=5',
+  '/icons/icon-192.png?v=5',
+  '/icons/icon-512.png?v=5',
+  '/icons/maskable-192.png?v=5',
+  '/icons/maskable-512.png?v=5',
   '/offline.html'
 ];
 
