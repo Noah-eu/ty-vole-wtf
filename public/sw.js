@@ -1,25 +1,22 @@
 // sw.js
-const CACHE_VERSION = 'v1.0.2';
+const CACHE_VERSION = 'v1.0.6';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const RUNTIME_CACHE = 'runtime';
 
 // Získej base path z location service workeru
 const BASE = self.registration.scope;
 
-// Přednačti základ - použij relativní cesty
+// Přednačti základ - použij absolutní cesty s verzí
 const PRECACHE = [
-  './',
-  './index.html',
-  './chat.html',
-  './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/maskable-192.png',
-  './icons/maskable-512.png',
-  './apple-touch-icon.png',
-  './favicon-32.png',
-  './favicon-16.png',
-  './offline.html'
+  '/',
+  '/index.html',
+  '/chat.html',
+  '/offline.html',
+  '/manifest.webmanifest?v=6',
+  '/icons/icon-192.png?v=6',
+  '/icons/icon-512.png?v=6',
+  '/icons/maskable-192.png?v=6',
+  '/icons/maskable-512.png?v=6'
 ];
 
 self.addEventListener('install', (event) => {

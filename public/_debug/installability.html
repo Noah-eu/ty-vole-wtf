@@ -1,0 +1,124 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PWA Installability Debug</title>
+<style>
+  body{margin:0;padding:20px;font:14px/1.5 system-ui;background:#0b0b11;color:#f3f3f8}
+  pre{white-space:pre-wrap;background:#11121a;padding:16px;border-radius:8px;border:1px solid #252536}
+  h1{font-size:20px;margin:0 0 16px}
+</style>
+<h1>PWA Installability Debug</h1>
+<pre id="log"></pre>
+<script>
+(async () => {
+  const log = (...a) => { 
+    console.log(...a); 
+    document.getElementById('log').textContent += a.join(' ') + '\n'; 
+  };
+
+  // 1) Základní stav
+  log('URL:', location.href);
+  log('display-mode standalone?', matchMedia('(display-mode: standalone)').matches || navigator.standalone === true);
+  log('SW supported?', 'serviceWorker' in navigator);
+  log('');
+
+  // 2) SW registrace
+  if ('serviceWorker' in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      log('SW registration exists?', !!reg);
+      if (reg) {
+        log('SW scope:', reg.scope);
+        log('SW active?', !!reg.active);
+        log('SW installing?', !!reg.installing);
+        log('SW waiting?', !!reg.waiting);
+      }
+    } catch(e) {
+      log('SW registration error:', e.message);
+    }
+  }
+  log('');
+
+  // 3) Manifest fetch + rychlá kontrola
+  const link = document.querySelector('link[rel="manifest"]') || 
+               document.querySelector('link[href*="manifest"]');
+  log('Manifest link found?', !!link);
+  log('Manifest link href:', link && link.href);
+  
+  if (link) {
+    try {
+      const r = await fetch(link.href, { cache: 'no-store' });
+      log('Manifest HTTP', r.status, r.ok ? 'OK' : 'FAIL');
+      
+      if (r.ok) {
+        try {
+          const m = await r.json();
+          log('Manifest parsed OK');
+          log('  id:', m.id || '(not set)');
+          log('  name:', m.name);
+          log('  start_url:', m.start_url);
+          log('  scope:', m.scope);
+          log('  display:', m.display);
+          log('  icons count:', (m.icons || []).length);
+          if (m.icons && m.icons.length > 0) {
+            log('  icons:');
+            m.icons.forEach(i => log('    -', i.src, i.sizes));
+          }
+        } catch(e) { 
+          log('Manifest parse error:', e.message); 
+        }
+      }
+    } catch(e) {
+      log('Manifest fetch error:', e.message);
+    }
+  } else {
+    log('⚠️ NO MANIFEST LINK TAG FOUND - check <link rel="manifest">');
+  }
+  log('');
+
+  // 4) Eventy
+  log('Waiting for install events...');
+  window.addEventListener('beforeinstallprompt', (e) => {
+    log('✅ EVENT: beforeinstallprompt FIRED');
+    log('  platforms:', e.platforms);
+  });
+  
+  window.addEventListener('appinstalled', () => {
+    log('✅ EVENT: appinstalled FIRED');
+  });
+
+  // 5) Icon checks
+  log('');
+  log('Checking icon availability...');
+  const iconUrls = [
+    '/icons/icon-192.png?v=6',
+    '/icons/icon-512.png?v=6',
+    '/icons/maskable-192.png?v=6',
+    '/icons/maskable-512.png?v=6'
+  ];
+  
+  for (const url of iconUrls) {
+    try {
+      const r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+      log('  ', url, '→', r.status, r.ok ? '✅' : '❌');
+    } catch(e) {
+      log('  ', url, '→ ERROR:', e.message);
+    }
+  }
+
+  // 6) Malé zpoždění a info
+  log('');
+  setTimeout(() => {
+    log('---');
+    log('If beforeinstallprompt didn\'t fire after some interaction,');
+    log('Chrome still considers not-installable or throttled.');
+    log('');
+    log('Common issues:');
+    log('- Missing manifest "id" field');
+    log('- Icons not accessible (check URLs above)');
+    log('- Service Worker not registered or scope mismatch');
+    log('- Already installed (check display-mode at top)');
+    log('- Chrome throttling (clear site data & retry)');
+  }, 4000);
+})();
+</script>
