@@ -9,45 +9,46 @@ class DailySong {
       return;
     }
 
-    this.currentIndex = 0;
-    this.history = this.loadHistory();
+    this.picks = []; // Array of 3 songs for today
+    this.currentPickIndex = 0; // Which of the 3 songs we're showing (0-2)
+    this.date = null;
     this.audio = null;
     this.isPlaying = false;
 
     this.init();
   }
 
-  loadHistory() {
-    try {
-      const stored = localStorage.getItem('dailySongHistory');
-      return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  saveHistory(song) {
-    try {
-      // Add to beginning, keep max 7 entries
-      const history = [song, ...this.history.filter(s => s.date !== song.date)].slice(0, 7);
-      this.history = history;
-      localStorage.setItem('dailySongHistory', JSON.stringify(history));
-    } catch (e) {
-      console.error('Failed to save song history:', e);
-    }
+  isDev() {
+    // Check if running on localhost or 127.0.0.1
+    return window.location.hostname === 'localhost' || 
+           window.location.hostname === '127.0.0.1' ||
+           window.location.hostname === '';
   }
 
   async init() {
     this.render('loading');
 
     try {
-      const response = await fetch('/.netlify/functions/daily-song');
+      // Add cache-bust in dev mode
+      const url = this.isDev() 
+        ? '/.netlify/functions/daily-song?ts=' + Date.now()
+        : '/.netlify/functions/daily-song';
+      
+      const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      const song = await response.json();
-      this.saveHistory(song);
-      this.currentIndex = 0;
-      this.render('loaded', song);
+      const data = await response.json();
+      
+      // Handle new format: { date, seed, picks: [...] }
+      this.picks = data.picks || [];
+      this.date = data.date;
+      this.currentPickIndex = 0;
+      
+      if (this.picks.length === 0) {
+        throw new Error('No picks received');
+      }
+      
+      this.render('loaded');
     } catch (error) {
       console.error('Failed to load daily song:', error);
       this.render('error');
@@ -98,12 +99,10 @@ class DailySong {
       : '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>';
   }
 
-  navigateHistory(direction) {
-    const newIndex = this.currentIndex + direction;
-    if (newIndex < 0 || newIndex >= this.history.length) return;
+  navigatePick(index) {
+    if (index < 0 || index >= this.picks.length) return;
 
-    this.currentIndex = newIndex;
-    const song = this.history[this.currentIndex];
+    this.currentPickIndex = index;
 
     // Stop playing if switching songs
     if (this.audio) {
@@ -111,10 +110,10 @@ class DailySong {
       this.isPlaying = false;
     }
 
-    this.render('loaded', song);
+    this.render('loaded');
   }
 
-  render(state, song = null) {
+  render(state) {
     if (state === 'loading') {
       this.container.innerHTML = `
         <div class="daily-song-compact">
@@ -134,28 +133,27 @@ class DailySong {
     if (state === 'error') {
       this.container.innerHTML = `
         <div class="daily-song-compact error">
-          <div class="text-xs opacity-70 mb-1">🎵 Song dne</div>
-          <div class="text-sm text-red-600">Nepodařilo se načíst song dne.</div>
+          <div class="text-xs opacity-70 mb-1">🎵 Dnešní tracky</div>
+          <div class="text-sm text-red-600">Nepodařilo se načíst dnešní tracky.</div>
         </div>
       `;
       return;
     }
 
-    if (state === 'loaded' && song) {
-      const hasPreview = !!song.previewUrl;
-      const canNavigateBack = this.currentIndex < this.history.length - 1;
-      const canNavigateForward = this.currentIndex > 0;
-      const hasCover = !!song.albumCoverUrl;
+    if (state === 'loaded' && this.picks.length > 0) {
+      const current = this.picks[this.currentPickIndex];
+      const hasPreview = !!current.previewUrl;
+      const hasCover = !!current.albumCoverUrl;
 
       this.container.innerHTML = `
         <div class="daily-song-compact">
-          <div class="text-xs opacity-70 mb-1">🎵 Song dne • ${this.formatDate(song.date)}</div>
+          <div class="text-xs opacity-70 mb-1">🎵 Dnešní tracky • ${this.formatDate(this.date)}</div>
           <div class="flex items-center gap-3">
             <div class="relative overflow-hidden rounded-md" style="width: 80px; height: 80px; flex-shrink: 0;">
-              <a href="${song.spotifyUrl}" target="_blank" rel="noopener noreferrer" title="Otevřít na Spotify" class="block w-full h-full">
+              <a href="${current.spotifyUrl}" target="_blank" rel="noopener noreferrer" title="Otevřít na Spotify" class="block w-full h-full">
                 ${hasCover ? `
-                  <img src="${song.albumCoverUrl}" 
-                       alt="${song.title} — ${song.artists}" 
+                  <img src="${current.albumCoverUrl}" 
+                       alt="${current.title} — ${current.artists}" 
                        class="w-full h-full object-cover" 
                        loading="lazy" />
                 ` : `
@@ -166,7 +164,7 @@ class DailySong {
               </a>
               ${hasPreview ? `
                 <button class="play-preview-btn" 
-                        onclick="event.preventDefault(); event.stopPropagation(); window.dailySongInstance?.togglePlay('${song.previewUrl}')"
+                        onclick="event.preventDefault(); event.stopPropagation(); window.dailySongInstance?.togglePlay('${current.previewUrl}')"
                         title="${this.isPlaying ? 'Pause' : 'Preview'}">
                   ${this.isPlaying ? 'Pause' : 'Preview'}
                 </button>
@@ -174,22 +172,21 @@ class DailySong {
             </div>
             
             <div class="flex-1 min-w-0">
-              <h3 class="text-sm font-semibold truncate" title="${song.title}">${song.title}</h3>
-              <p class="text-xs opacity-80 truncate" title="${song.artists}">${song.artists}</p>
+              <h3 class="text-sm font-semibold truncate" title="${current.title}">${current.title}</h3>
+              <p class="text-xs opacity-80 truncate" title="${current.artists}">${current.artists}</p>
+              ${this.picks.length > 1 ? `
+                <div class="flex items-center gap-1 mt-1">
+                  ${this.picks.map((_, i) => `
+                    <button
+                      onclick="event.preventDefault(); event.stopPropagation(); window.dailySongInstance?.navigatePick(${i})"
+                      class="w-1.5 h-1.5 rounded-full transition-colors ${i === this.currentPickIndex ? 'bg-black/70' : 'bg-black/25'}"
+                      aria-label="Track ${i + 1}"
+                      title="${this.picks[i].title}">
+                    </button>
+                  `).join('')}
+                </div>
+              ` : ''}
             </div>
-
-            ${this.history.length > 1 ? `
-              <div class="flex gap-1 ml-auto">
-                <button class="nav-btn-compact ${!canNavigateBack ? 'disabled' : ''}" 
-                        onclick="event.preventDefault(); event.stopPropagation(); window.dailySongInstance?.navigateHistory(1)"
-                        ${!canNavigateBack ? 'disabled' : ''}
-                        title="Starší">←</button>
-                <button class="nav-btn-compact ${!canNavigateForward ? 'disabled' : ''}"
-                        onclick="event.preventDefault(); event.stopPropagation(); window.dailySongInstance?.navigateHistory(-1)"
-                        ${!canNavigateForward ? 'disabled' : ''}
-                        title="Novější">→</button>
-              </div>
-            ` : ''}
           </div>
         </div>
       `;
