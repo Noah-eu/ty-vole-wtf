@@ -385,5 +385,86 @@ elForm.onsubmit = async (e) => {
 <!-- PWA Install Banner -->
 <script src="/install.js?v=5"></script>
 
+<!-- === PWA Update Toast === -->
+<style>
+#pwa-update-toast {
+  position: fixed;
+  left: 1rem; right: 1rem; bottom: 1rem;
+  z-index: 9999;
+  display: none;
+  background: #111;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: .9rem 1rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  font: 14px system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+  justify-content: space-between;
+  align-items: center;
+}
+#pwa-update-toast button {
+  margin-left: .8rem;
+  border: 0;
+  border-radius: 10px;
+  padding: .5rem .9rem;
+  background: linear-gradient(90deg, #22ff99, #00ffaa);
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+}
+</style>
+
+<div id="pwa-update-toast">
+  Nová verze aplikace je k dispozici. 
+  <button id="pwa-update-apply">Aktualizovat</button>
+</div>
+
+<script>
+(async () => {
+  if (!('serviceWorker' in navigator)) return;
+
+  const toast = document.getElementById('pwa-update-toast');
+  const btn = document.getElementById('pwa-update-apply');
+
+  const showToast = () => toast.style.display = 'flex';
+  const hideToast = () => toast.style.display = 'none';
+
+  // Registrace nebo získání existujícího SW
+  const reg = await navigator.serviceWorker.register('/sw.js');
+
+  // Funkce, která nabídne update, pokud je SW waiting
+  function offerUpdate(reg) {
+    if (!reg.waiting) return;
+    showToast();
+    btn.onclick = () => {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    };
+  }
+
+  // Když se najde nová verze SW
+  reg.addEventListener('updatefound', () => {
+    const newSW = reg.installing;
+    newSW?.addEventListener('statechange', () => {
+      if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+        offerUpdate(reg);
+      }
+    });
+  });
+
+  // Pokud už máme waiting SW při načtení
+  offerUpdate(reg);
+
+  // Jakmile se aktivuje nový SW, reload
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    hideToast();
+    window.location.reload();
+  });
+
+  // Volitelné: pravidelně zkus update
+  setInterval(() => reg.update().catch(()=>{}), 30 * 60 * 1000);
+})();
+</script>
+<!-- === /PWA Update Toast === -->
+
 </body>
 </html>
