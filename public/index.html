@@ -34,6 +34,9 @@
 <!-- Share system CSS -->
 <link rel="stylesheet" href="lib/share.css">
 
+<!-- DailySong CSS -->
+<link rel="stylesheet" href="lib/daily-song.css">
+
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-XhYv5mHfTkNZArOLGPADs.js"></script>
 <script>
@@ -411,6 +414,9 @@
         <button id="btnSheet" class="chip btn chip-active" aria-label="Otevřít Skibidi překladač">Skibidi překladač</button>
       </div>
     </header>
+
+    <!-- Daily Song of the Day -->
+    <div id="daily-song"></div>
 
     <div class="card">
       <div class="subtitle">Instant vibe generator</div>
@@ -1441,6 +1447,9 @@ if ('serviceWorker' in navigator) {
 <script src="lib/analytics.js" defer></script>
 <script src="lib/ab-test.js" defer></script>
 <script src="lib/share.js" defer></script>
+
+<!-- Daily Song Script -->
+<script src="lib/daily-song.js" defer></script>
 
 <script defer>
 // Initialize share system - defer ensures DOM + other scripts are ready

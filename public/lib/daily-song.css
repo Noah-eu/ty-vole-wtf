@@ -1,0 +1,241 @@
+/* public/lib/daily-song.css - Song of the Day styles */
+
+.daily-song-card {
+  max-width: 28rem; /* max-w-lg */
+  margin: 0 auto 2rem;
+  padding: 1.5rem;
+  background: rgba(18, 18, 18, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 1.125rem; /* rounded-xl */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.daily-song-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.daily-song-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #BDBDBD;
+}
+
+.label-separator {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.label-date {
+  color: #F4F4F4;
+}
+
+.history-nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.nav-btn {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #F4F4F4;
+  padding: 0.375rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-btn:hover:not(.disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-btn.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.album-cover-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  margin-bottom: 1rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.album-cover-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.album-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.album-cover-link:hover .album-cover {
+  transform: scale(1.03);
+}
+
+.play-btn {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  width: 3rem;
+  height: 3rem;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.play-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+.play-btn svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.song-info {
+  text-align: center;
+}
+
+.song-title-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.song-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #F4F4F4;
+  margin: 0 0 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+.song-title-link:hover .song-title {
+  color: #27F1E2;
+}
+
+.song-artist {
+  font-size: 0.9375rem;
+  color: #BDBDBD;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Loading state */
+.daily-song-card.loading .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.375rem;
+  color: transparent;
+}
+
+.daily-song-card.loading .album-cover {
+  background: rgba(255, 255, 255, 0.05);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Error state */
+.daily-song-card.error {
+  text-align: center;
+}
+
+.error-message {
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: #BDBDBD;
+}
+
+.error-icon {
+  width: 3rem;
+  height: 3rem;
+  color: #ff6b6b;
+}
+
+.error-message p {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .daily-song-card {
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .song-title {
+    font-size: 1.125rem;
+  }
+
+  .song-artist {
+    font-size: 0.875rem;
+  }
+
+  .play-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .play-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}

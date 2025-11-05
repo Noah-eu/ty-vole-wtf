@@ -2,6 +2,9 @@
   publish = "public"
   functions = "netlify/functions"
 
+[functions]
+  node_bundler = "esbuild"
+
 # === Headers (cache + content-type pro manifest, SW, ikony) ===
 
 [[headers]]
@@ -29,6 +32,11 @@
   for = "/icons/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/.netlify/functions/daily-song"
+  [headers.values]
+    Cache-Control = "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400"
 
 # Pokud bys někdy používal SPA routing, povol fallback:
 # [[redirects]]
