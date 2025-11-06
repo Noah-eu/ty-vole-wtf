@@ -1,0 +1,27 @@
+# Service Worker - no cache to prevent update storms
+/service-worker.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/sw.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+# Assets - immutable for cache busting
+/lib/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/icons/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/brand/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Manifest and index
+/manifest.webmanifest
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: application/manifest+json
+
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
+/offline.html
+  Cache-Control: public, max-age=31536000, immutable

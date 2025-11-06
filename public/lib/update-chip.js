@@ -2,7 +2,7 @@
 // PWA Update Detection and UI Chip
 
 class UpdateChip {
-  constructor(containerId, swUrl = '/sw.js') {
+  constructor(containerId, swUrl = '/service-worker.js') {
     this.container = document.getElementById(containerId);
     if (!this.container) {
       console.error(`UpdateChip: Container #${containerId} not found`);
@@ -31,20 +31,23 @@ class UpdateChip {
       // Listen for updates
       this.setupUpdateDetection();
 
-      // Check for updates periodically (every 15 seconds)
+      // Check for updates periodically (every 10 minutes, only when visible)
       this.updateCheckInterval = setInterval(() => {
-        this.checkForUpdate();
-      }, 15000);
-
-      // Check for updates when page becomes visible
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
+        if (document.visibilityState === 'visible') {
           this.checkForUpdate();
         }
-      });
+      }, 10 * 60 * 1000); // 10 minutes
 
-      // Initial check
-      this.checkForUpdate();
+      // Check for updates when page becomes visible (debounced)
+      let visibilityTimeout;
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          clearTimeout(visibilityTimeout);
+          visibilityTimeout = setTimeout(() => {
+            this.checkForUpdate();
+          }, 2000); // Wait 2s after becoming visible
+        }
+      });
     } catch (error) {
       console.error('[UpdateChip] SW registration failed:', error);
     }
@@ -75,15 +78,21 @@ class UpdateChip {
       }
     });
 
-    // Listen for controller change (after skipWaiting)
+    // Listen for controller change (after skipWaiting) with debounce
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       console.log('[UpdateChip] Controller changed - reloading');
-      // Prevent multiple reloads
-      if (!this.isReloading) {
-        this.isReloading = true;
+      
+      // Debounce: only reload once per 5 seconds
+      const lastReload = sessionStorage.getItem('lastReloadTs');
+      const now = Date.now();
+      
+      if (!lastReload || (now - parseInt(lastReload)) > 5000) {
+        sessionStorage.setItem('lastReloadTs', now.toString());
         window.location.reload();
+      } else {
+        console.log('[UpdateChip] Reload skipped - too soon after last reload');
       }
-    });
+    }, { once: true });
   }
 
   async checkForUpdate() {

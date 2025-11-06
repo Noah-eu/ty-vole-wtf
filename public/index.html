@@ -1719,47 +1719,10 @@ if (document.readyState === 'loading') {
 </div>
 
 <script>
-(function(){
-  if (!('serviceWorker' in navigator)) return;
-  
-  const chip = document.getElementById('update-chip');
-  const btn  = document.getElementById('update-chip-btn');
-  let waiting;
-  
-  navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).then(reg => {
-    if (reg.waiting) {
-      waiting = reg.waiting;
-      chip.style.display = 'block';
-    }
-    
-    reg.addEventListener('updatefound', () => {
-      const sw = reg.installing;
-      if (!sw) return;
-      
-      sw.addEventListener('statechange', () => {
-        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-          waiting = reg.waiting;
-          chip.style.display = 'block';
-        }
-      });
-    });
-    
-    navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
-    
-    btn.onclick = () => {
-      if (waiting) waiting.postMessage({type:'SKIP_WAITING'});
-    };
-    
-    // Check for updates periodically
-    setTimeout(() => reg.update(), 15000);
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') reg.update();
-    });
-  }).catch(() => {});
-  
-  // PWA logging (kept for debugging)
+// PWA logging (kept for debugging)
+if ('serviceWorker' in navigator) {
   console.log('[PWA] Display mode:', window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser');
-})();
+}
 
 window.addEventListener('beforeinstallprompt', (e) => {
   console.log('[PWA] beforeinstallprompt fired ✅', e);
