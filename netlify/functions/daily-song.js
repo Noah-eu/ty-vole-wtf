@@ -77,6 +77,32 @@ function monthsBetweenUTC(isoDate) {
   return Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30.44));
 }
 
+// Load seed tracks from SEED_TRACKS env var
+function loadSeedTracks() {
+  const raw = process.env.SEED_TRACKS || '';
+  if (!raw.trim()) return [];
+  
+  const ids = new Set();
+  
+  // Regex pro URL: /track/([A-Za-z0-9]{22})
+  const urlMatches = raw.matchAll(/track\/([A-Za-z0-9]{22})/g);
+  for (const match of urlMatches) {
+    ids.add(match[1]);
+  }
+  
+  // Regex pro bare IDs: ^[A-Za-z0-9]{22}$
+  const tokens = raw.split(/[\s,]+/);
+  for (const token of tokens) {
+    const trimmed = token.trim();
+    if (/^[A-Za-z0-9]{22}$/.test(trimmed)) {
+      ids.add(trimmed);
+    }
+  }
+  
+  // Dedupe, cap to 100
+  return Array.from(ids).slice(0, 100);
+}
+
 // Spotify OAuth
 async function getSpotifyToken() {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -110,6 +136,64 @@ async function fetchPlaylistTracks(accessToken, playlistId) {
   if (!response.ok) return [];
   const data = await response.json();
   return data.items.map(item => item.track).filter(t => t && t.id);
+}
+
+// Get recommendations from seed tracks
+async function fetchRecommendations(accessToken, seedIds, dailySeed) {
+  // Deterministically sample up to 5 seed IDs
+  const shuffled = seededShuffle(seedIds, dailySeed);
+  const seeds = shuffled.slice(0, Math.min(5, seedIds.length));
+  
+  const params = new URLSearchParams({
+    seed_tracks: seeds.join(','),
+    market: 'CZ',
+    limit: '100',
+    min_popularity: '0'
+  });
+  
+  const response = await fetch(`https://api.spotify.com/v1/recommendations?${params}`, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+  });
+  
+  if (!response.ok) return [];
+  const data = await response.json();
+  return data.tracks || [];
+}
+
+// Fetch audio features for similarity scoring
+async function fetchAudioFeatures(accessToken, trackIds) {
+  const chunks = [];
+  for (let i = 0; i < trackIds.length; i += 100) {
+    chunks.push(trackIds.slice(i, i + 100));
+  }
+  
+  const featuresMap = {};
+  for (const chunk of chunks) {
+    const response = await fetch(`https://api.spotify.com/v1/audio-features?ids=${chunk.join(',')}`, {
+      headers: { 'Authorization': `Bearer ${accessToken}` }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      data.audio_features.forEach(f => {
+        if (f) featuresMap[f.id] = f;
+      });
+    }
+  }
+  return featuresMap;
+}
+
+// Calculate similarity score from audio features
+function calculateSimilarity(features) {
+  if (!features) return 0;
+  
+  // Jednoduchý similarity score založený na "danceability" a "energy"
+  // (doporučení od Spotify API už jsou relevantní, takže jen lehká váha)
+  const danceability = features.danceability ?? 0.5;
+  const energy = features.energy ?? 0.5;
+  const valence = features.valence ?? 0.5;
+  
+  // Průměr klíčových vlastností (všechny 0-1)
+  return (danceability + energy + valence) / 3;
 }
 
 // Fetch artist genres
@@ -246,9 +330,24 @@ export async function handler(event, context) {
     // Get Spotify token
     const accessToken = await getSpotifyToken();
     
-    // Fetch from playlists
-    const playlistIds = (process.env.SPOTIFY_PLAYLIST_IDS || '37i9dQZF1DXcBWIGoYBM5M').split(',').map(s => s.trim());
-    const allTracks = [];
+    // Load seed tracks from env
+    const seedIds = loadSeedTracks();
+    const mode = seedIds.length >= 1 ? 'seed' : 'playlist';
+    
+    let allTracks = [];
+    
+    if (mode === 'seed') {
+      // SEED MODE: Use Spotify Recommendations API
+      allTracks = await fetchRecommendations(accessToken, seedIds, dailySeed);
+    } else {
+      // PLAYLIST MODE: Original behavior
+      const playlistIds = (process.env.SPOTIFY_PLAYLIST_IDS || '37i9dQZF1DXcBWIGoYBM5M').split(',').map(s => s.trim());
+      
+      for (const pid of playlistIds) {
+        const tracks = await fetchPlaylistTracks(accessToken, pid);
+        allTracks.push(...tracks);
+      }
+    }
     
     for (const pid of playlistIds) {
       const tracks = await fetchPlaylistTracks(accessToken, pid);
@@ -268,7 +367,8 @@ export async function handler(event, context) {
     
     const filtered = uniq.filter(t => {
       if (disallowExplicit && t.explicit) { counts.noExplicit++; return false; }
-      if ((t.popularity ?? 0) < DEFAULT_POP_MIN) { counts.pop++; return false; }
+      // V seed mode neaplikujeme DEFAULT_POP_MIN (recommendations už jsou relevantní)
+      if (mode === 'playlist' && (t.popularity ?? 0) < DEFAULT_POP_MIN) { counts.pop++; return false; }
       const playableCZ = (t.available_markets?.includes("CZ") || t.album?.available_markets?.includes("CZ"));
       if (REQUIRE_CZ && !playableCZ) { counts.market++; return false; }
       const isCzech = t.artists.some(a => ((artistGenresMap[a.id] || []).join(" ").toLowerCase()).match(/czech|slovak|\bcz\b/));
@@ -286,8 +386,8 @@ export async function handler(event, context) {
       if (pool.length >= 3) break;
     }
     
-    // Fallback: lower popularity threshold
-    if (pool.length < 3) {
+    // Fallback: lower popularity threshold (jen v playlist mode)
+    if (pool.length < 3 && mode === 'playlist') {
       const lo = filtered.filter(t => (t.popularity ?? 0) >= Math.min(60, DEFAULT_POP_MIN));
       pool = lo.filter(t => ageMonths(t.album?.release_date) <= WINDOWS[WINDOWS.length - 1]);
     }
@@ -295,7 +395,7 @@ export async function handler(event, context) {
     // Last resort: ignore CZ market requirement
     if (pool.length < 3 && REQUIRE_CZ) {
       pool = uniq.filter(t =>
-        (t.popularity ?? 0) >= Math.min(60, DEFAULT_POP_MIN) &&
+        (mode === 'seed' || (t.popularity ?? 0) >= Math.min(60, DEFAULT_POP_MIN)) &&
         ageMonths(t.album?.release_date) <= WINDOWS[WINDOWS.length - 1] &&
         !(t.explicit && disallowExplicit) &&
         !t.artists.some(a => ((artistGenresMap[a.id] || []).join(" ").toLowerCase()).match(/czech|slovak|\bcz\b/))
@@ -305,12 +405,31 @@ export async function handler(event, context) {
     // Ensure album covers
     const coverMap = await ensureAlbumCovers(accessToken, pool);
     
+    // Fetch audio features for seed mode scoring
+    let featuresMap = {};
+    if (mode === 'seed') {
+      const trackIds = pool.map(t => t.id);
+      featuresMap = await fetchAudioFeatures(accessToken, trackIds);
+    }
+    
     // Score and rank
-    const scored = pool.map(t => ({
-      track: t,
-      albumCoverUrl: coverMap[t.id] || null,
-      score: 0.6 * normalize(t.popularity || 0) + 0.25 * recency_boost(t.album?.release_date, 18)
-    }))
+    const scored = pool.map(t => {
+      let score;
+      if (mode === 'seed') {
+        // Seed mode: similarity + recency + popularity
+        const similarity = calculateSimilarity(featuresMap[t.id]);
+        score = 0.7 * similarity + 0.25 * recency_boost(t.album?.release_date, 18) + 0.05 * normalize(t.popularity || 0);
+      } else {
+        // Playlist mode: original scoring
+        score = 0.6 * normalize(t.popularity || 0) + 0.25 * recency_boost(t.album?.release_date, 18);
+      }
+      
+      return {
+        track: t,
+        albumCoverUrl: coverMap[t.id] || null,
+        score
+      };
+    })
     .sort((a, b) => b.score - a.score)
     .slice(0, 30);
     
@@ -356,7 +475,7 @@ export async function handler(event, context) {
         spotifyUrl: toWebUrl(w.track.id, w.track.external_urls?.spotify),
         previewUrl: (w.track.preview_url && w.track.preview_url.startsWith('http')) ? w.track.preview_url : null
       })),
-      ...(debug ? { debug: { seed: dailySeed, counts, pool: pool.length } } : {})
+      ...(debug ? { debug: { mode, seedCount: seedIds.length, seed: dailySeed, counts, pool: pool.length } } : {})
     };
     
     return resp(200, body);
