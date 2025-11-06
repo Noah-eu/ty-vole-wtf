@@ -435,6 +435,16 @@ export const handler: Handler = async (
       winners = winners.concat(extra);
     }
 
+    // Ensure we always return exactly 3 picks. If we still have <3 unique winners,
+    // pad by repeating the highest scored candidate (best effort). We avoid using
+    // static fallback hits.
+    if (winners.length < 3) {
+      const best = top[0];
+      while (winners.length < 3 && best) {
+        winners.push(best);
+      }
+    }
+
     // Helper to ensure canonical web URL
     const toWebUrl = (id: string, url?: string) => (url && url.startsWith('http')) ? url : `https://open.spotify.com/track/${id}`;
 
