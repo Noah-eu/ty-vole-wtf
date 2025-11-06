@@ -580,6 +580,12 @@ export const handler: Handler = async (
       } : {})
     };
 
+    // If we got no picks from Spotify, fallback to demo
+    if (body.picks.length === 0) {
+      console.warn("Spotify returned 0 picks, using demo tracks");
+      return getDemoResponse(qp);
+    }
+
     return {
       statusCode: 200,
       headers,
