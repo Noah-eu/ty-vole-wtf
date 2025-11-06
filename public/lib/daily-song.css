@@ -347,18 +347,24 @@
 
 /* Compact card that fits exactly 3 tiles */
 .daily-tracks {
-  display: inline-block;
+  display: block;
+  max-width: 100%;
   width: fit-content;
   margin: 0 auto 12px;
   padding: 12px;
   border-radius: 12px;
   box-shadow: 0 6px 20px rgba(0,0,0,.06);
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 .daily-tracks__row {
-  display: inline-flex;
+  display: flex;
   gap: 12px;
   align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  min-width: min-content;
 }
 
 .dtile {
@@ -484,6 +490,36 @@
   }
 
   /* 3-tile row responsive */
+  .daily-tracks {
+    padding: 8px;
+    margin: 0 auto 8px;
+  }
+
+  .daily-tracks__row {
+    gap: 8px;
+  }
+  
+  .dtile {
+    width: 70px;
+  }
+  
+  .dtile__cover {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .daily-track-meta {
+    max-width: 70px;
+  }
+  
+  .daily-track-title {
+    font-size: 0.65rem;
+  }
+  
+  .daily-track-artists {
+    font-size: 0.6rem;
+  }
+
   .daily-tracks-row {
     gap: 0.5rem;
     justify-content: flex-start;
@@ -496,17 +532,5 @@
   .daily-track-cover {
     width: 75px;
     height: 75px;
-  }
-  
-  .daily-track-meta {
-    max-width: 75px;
-  }
-  
-  .daily-track-title {
-    font-size: 0.6875rem;
-  }
-  
-  .daily-track-artists {
-    font-size: 0.625rem;
   }
 }

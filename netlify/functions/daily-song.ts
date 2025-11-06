@@ -45,6 +45,34 @@ interface DailyPicksResponse {
   };
 }
 
+// Demo fallback tracks (when no Spotify credentials)
+const DEMO_TRACKS: DailySongResponse[] = [
+  {
+    id: "6usohdchdzW9oML7VC4Uhk",
+    title: "Lose Control",
+    artists: "Teddy Swims",
+    albumCoverUrl: "https://i.scdn.co/image/ab67616d0000b273e841e1c0b3a9f3c43e8a8d60",
+    spotifyUrl: "https://open.spotify.com/track/6usohdchdzW9oML7VC4Uhk",
+    previewUrl: null
+  },
+  {
+    id: "1BxfuPKGuaTgP7aM0Bbdwr",
+    title: "Cruel Summer",
+    artists: "Taylor Swift",
+    albumCoverUrl: "https://i.scdn.co/image/ab67616d0000b273e787cffec20aa2a396a61647",
+    spotifyUrl: "https://open.spotify.com/track/1BxfuPKGuaTgP7aM0Bbdwr",
+    previewUrl: null
+  },
+  {
+    id: "0yLdNVWF3Srea0uzk55zFn",
+    title: "Flowers",
+    artists: "Miley Cyrus",
+    albumCoverUrl: "https://i.scdn.co/image/ab67616d0000b273f58248221b6fafb93e1c44be",
+    spotifyUrl: "https://open.spotify.com/track/0yLdNVWF3Srea0uzk55zFn",
+    previewUrl: null
+  }
+];
+
 // Parse SEED_TRACKS from env
 function parseSeeds(str?: string): string[] {
   if (!str) return [];
@@ -383,11 +411,19 @@ export const handler: Handler = async (
     const disallowExplicit = process.env.DISALLOW_EXPLICIT !== "false";
 
     if (!clientId || !clientSecret) {
-      console.error("Spotify credentials not configured");
+      console.warn("Spotify credentials not configured, using demo tracks");
+      const dateISO = new Date().toISOString().split("T")[0];
+      const dailySeed = getDailySeed();
+      const shuffled = seededShuffle(DEMO_TRACKS, dailySeed);
+      
       return {
-        statusCode: 500,
+        statusCode: 200,
         headers,
-        body: JSON.stringify({ error: 'Spotify credentials not configured' })
+        body: JSON.stringify({
+          date: dateISO,
+          mode: 'global' as const,
+          picks: shuffled.slice(0, 3)
+        })
       };
     }
 
