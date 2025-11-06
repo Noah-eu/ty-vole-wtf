@@ -25,3 +25,7 @@
 
 /offline.html
   Cache-Control: public, max-age=31536000, immutable
+
+# API endpoints - no cache
+/.netlify/functions/daily-song
+  Cache-Control: no-store, max-age=0

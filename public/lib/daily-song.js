@@ -10,6 +10,57 @@ if (window.__dailyTracksInit) {
   (function() {
     const isDev = location.hostname === 'localhost' || location.hostname.endsWith('.netlify.app');
 
+    // Local demo fallback tracks
+    const DEMO_TRACKS = [
+      {
+        id: "6usohdchdzW9oML7VC4Uhk",
+        title: "Lose Control",
+        artists: "Teddy Swims",
+        albumCoverUrl: "https://i.scdn.co/image/ab67616d0000b273e841e1c0b3a9f3c43e8a8d60",
+        spotifyUrl: "https://open.spotify.com/track/6usohdchdzW9oML7VC4Uhk",
+        previewUrl: null
+      },
+      {
+        id: "1BxfuPKGuaTgP7aM0Bbdwr",
+        title: "Cruel Summer",
+        artists: "Taylor Swift",
+        albumCoverUrl: "https://i.scdn.co/image/ab67616d0000b273e787cffec20aa2a396a61647",
+        spotifyUrl: "https://open.spotify.com/track/1BxfuPKGuaTgP7aM0Bbdwr",
+        previewUrl: null
+      },
+      {
+        id: "0yLdNVWF3Srea0uzk55zFn",
+        title: "Flowers",
+        artists: "Miley Cyrus",
+        albumCoverUrl: "https://i.scdn.co/image/ab67616d0000b273f58248221b6fafb93e1c44be",
+        spotifyUrl: "https://open.spotify.com/track/0yLdNVWF3Srea0uzk55zFn",
+        previewUrl: null
+      }
+    ];
+
+    function seededRandom(seed) {
+      const x = Math.sin(seed) * 10000;
+      return x - Math.floor(x);
+    }
+
+    function seededShuffle(array, seed) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(seededRandom(seed + i) * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function getDailySeed() {
+      const today = new Date();
+      return parseInt(
+        today.getUTCFullYear().toString() +
+        (today.getUTCMonth() + 1).toString().padStart(2, '0') +
+        today.getUTCDate().toString().padStart(2, '0')
+      );
+    }
+
     function apiUrlFor(dateISO) {
       const base = '/.netlify/functions/daily-song';
       const q = new URLSearchParams({ mode: 'seed', date: dateISO });
@@ -29,6 +80,57 @@ if (window.__dailyTracksInit) {
       return `${day}.${month}.${year}`;
     }
 
+    // Resilient fetch with timeout and fallback
+    async function fetchTodayTracks() {
+      const dateISO = new Date().toISOString().split('T')[0];
+      const url = apiUrlFor(dateISO);
+      
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+        
+        const response = await fetch(url, {
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          console.warn(`API returned ${response.status}, using demo tracks`);
+          return {
+            date: dateISO,
+            mode: 'demo',
+            source: 'demo',
+            picks: seededShuffle(DEMO_TRACKS, getDailySeed()).slice(0, 3)
+          };
+        }
+
+        const data = await response.json();
+        
+        // Validate response
+        if (!data.picks || !Array.isArray(data.picks) || data.picks.length === 0) {
+          console.warn('Empty picks from API, using demo tracks');
+          return {
+            date: dateISO,
+            mode: 'demo',
+            source: 'demo',
+            picks: seededShuffle(DEMO_TRACKS, getDailySeed()).slice(0, 3)
+          };
+        }
+        
+        return data;
+      } catch (error) {
+        console.warn('Failed to fetch daily tracks, using demo:', error.message);
+        return {
+          date: dateISO,
+          mode: 'demo',
+          source: 'demo',
+          picks: seededShuffle(DEMO_TRACKS, getDailySeed()).slice(0, 3)
+        };
+      }
+    }
+
     class DailySong {
       constructor(containerId) {
         this.container = document.getElementById(containerId);
@@ -39,34 +141,25 @@ if (window.__dailyTracksInit) {
 
         this.picks = [];
         this.date = null;
+        this.source = 'unknown';
         this.init();
       }
 
       async init() {
         this.render('loading');
 
-        try {
-          const dateISO = new Date().toISOString().split('T')[0];
-          const url = apiUrlFor(dateISO);
-          
-          const response = await fetch(url);
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-          const data = await response.json();
-          
-          // Handle new format: { date, mode, picks: [...] }
-          this.picks = Array.isArray(data.picks) ? data.picks.slice(0, 3) : [];
-          this.date = data.date;
-          
-          if (this.picks.length === 0) {
-            throw new Error('No picks received');
-          }
-          
-          this.render('loaded');
-        } catch (error) {
-          console.error('Failed to load daily song:', error);
-          this.render('error');
+        // Always succeeds - either API or demo tracks
+        const data = await fetchTodayTracks();
+        
+        this.picks = data.picks.slice(0, 3);
+        this.date = data.date;
+        this.source = data.source || 'unknown';
+        
+        if (this.source === 'demo') {
+          console.log('🎵 Using demo tracks (API unavailable or credentials missing)');
         }
+        
+        this.render('loaded');
       }
 
       render(state) {
@@ -79,16 +172,6 @@ if (window.__dailyTracksInit) {
                 <div class="dtile"><div class="dtile__cover bg-gray-200 animate-pulse"></div></div>
                 <div class="dtile"><div class="dtile__cover bg-gray-200 animate-pulse"></div></div>
               </div>
-            </div>
-          `;
-          return;
-        }
-
-        if (state === 'error') {
-          this.container.innerHTML = `
-            <div class="daily-tracks error">
-              <div class="text-xs opacity-70 mb-1">🎵 Dnešní tracky</div>
-              <div class="text-sm text-red-600">Nepodařilo se načíst dnešní tracky.</div>
             </div>
           `;
           return;

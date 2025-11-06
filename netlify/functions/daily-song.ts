@@ -392,13 +392,46 @@ function getCacheHeaders(noCache: boolean) {
       };
 }
 
+// Helper to return demo tracks with deterministic shuffle
+function getDemoResponse(qp: any): { statusCode: number; headers: any; body: string } {
+  const noCache = (process.env.DEBUG_NO_CACHE === 'true') || ('debug' in qp) || ('ts' in qp);
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Content-Type": "application/json",
+    "Cache-Control": "no-store, max-age=0"
+  };
+  
+  const dateISO = new Date().toISOString().split("T")[0];
+  const dailySeed = getDailySeed();
+  const shuffled = seededShuffle(DEMO_TRACKS, dailySeed);
+  
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({
+      date: dateISO,
+      mode: 'demo' as const,
+      source: 'demo',
+      picks: shuffled.slice(0, 3)
+    })
+  };
+}
+
 export const handler: Handler = async (
   event: HandlerEvent,
   context: HandlerContext
 ) => {
   const qp = event?.queryStringParameters || {};
   const noCache = (process.env.DEBUG_NO_CACHE === 'true') || ('debug' in qp) || ('ts' in qp);
-  const headers = getCacheHeaders(noCache);
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Content-Type": "application/json",
+    "Cache-Control": "no-store, max-age=0"
+  };
 
   // Handle OPTIONS preflight
   if (event.httpMethod === "OPTIONS") {
@@ -412,19 +445,7 @@ export const handler: Handler = async (
 
     if (!clientId || !clientSecret) {
       console.warn("Spotify credentials not configured, using demo tracks");
-      const dateISO = new Date().toISOString().split("T")[0];
-      const dailySeed = getDailySeed();
-      const shuffled = seededShuffle(DEMO_TRACKS, dailySeed);
-      
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify({
-          date: dateISO,
-          mode: 'global' as const,
-          picks: shuffled.slice(0, 3)
-        })
-      };
+      return getDemoResponse(qp);
     }
 
     // Parse seed tracks from env
@@ -562,14 +583,14 @@ export const handler: Handler = async (
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(body)
+      body: JSON.stringify({
+        ...body,
+        source: 'spotify'
+      })
     };
   } catch (error) {
-    console.error("Daily song error:", error);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: 'Daily song error', details: String(error) })
-    };
+    console.error("Daily song error (falling back to demo):", error);
+    // Always return 200 with demo tracks - never fail
+    return getDemoResponse(qp);
   }
 };
