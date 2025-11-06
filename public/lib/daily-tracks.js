@@ -1,5 +1,6 @@
 // public/lib/daily-tracks.js
 // Daily tracks s 30s preview, 7-day browsing, localStorage cache, oEmbed covers
+// iOS-safe: absolute URLs, no AbortController, demo fallback
 
 (function() {
   'use strict';
@@ -9,10 +10,42 @@
   
   const isDev = location.hostname === 'localhost' || location.hostname.endsWith('.netlify.app');
   
+  // Absolute API URL for iOS Safari compatibility
+  const API_DAILY_SONG = `${window.location.origin}/.netlify/functions/daily-song`;
+  
+  // Demo fallback tracks (always available)
+  const DEMO_TRACKS = [
+    {
+      id: "6usohdchdzW9oML7VC4Uhk",
+      title: "Lose Control",
+      artists: "Teddy Swims",
+      albumCoverUrl: "https://i.scdn.co/image/ab67616d0000b273e841e1c0b3a9f3c43e8a8d60",
+      spotifyUrl: "https://open.spotify.com/track/6usohdchdzW9oML7VC4Uhk",
+      previewUrl: null
+    },
+    {
+      id: "1BxfuPKGuaTgP7aM0Bbdwr",
+      title: "Cruel Summer",
+      artists: "Taylor Swift",
+      albumCoverUrl: "https://i.scdn.co/image/ab67616d0000b273e787cffec20aa2a396a61647",
+      spotifyUrl: "https://open.spotify.com/track/1BxfuPKGuaTgP7aM0Bbdwr",
+      previewUrl: null
+    },
+    {
+      id: "0yLdNVWF3Srea0uzk55zFn",
+      title: "Flowers",
+      artists: "Miley Cyrus",
+      albumCoverUrl: "https://i.scdn.co/image/ab67616d0000b273f58248221b6fafb93e1c44be",
+      spotifyUrl: "https://open.spotify.com/track/0yLdNVWF3Srea0uzk55zFn",
+      previewUrl: null
+    }
+  ];
+  
   let currentOffset = 0; // 0=dnes, 1=včera, ... max 6
   let activeAudio = null; // pouze jeden Audio instance současně
   const cache = JSON.parse(localStorage.getItem('dailyTracksCache') || '{}');
   let isLoading = false; // Guard against double-loading
+  let didInit = false; // Guard against double init (React StrictMode)
   
   // --- Helpers ---
   
@@ -32,6 +65,17 @@
     // YYYY-MM-DD → DD.MM.RRRR
     const [y, m, d] = iso.split('-');
     return `${d}.${m}.${y}`;
+  }
+  
+  // --- iOS-safe fetch with timeout (no AbortController) ---
+  
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
+    return await Promise.race([
+      fetch(url, { ...options, cache: 'no-store' }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('timeout')), timeoutMs)
+      )
+    ]);
   }
   
   // --- Cover cache (oEmbed) ---
@@ -260,20 +304,42 @@
         return;
       }
       
-      // Fetch from API
-      const url = `/.netlify/functions/daily-song?date=${date}` + (isDev ? `&ts=${Date.now()}` : '');
-      const response = await fetch(url);
+      // Fetch from API with iOS-safe timeout
+      const params = new URLSearchParams({ date });
+      if (isDev) params.set('ts', Date.now());
+      const url = `${API_DAILY_SONG}?${params.toString()}`;
       
-      if (!response.ok) {
-        console.warn('[daily-tracks] Fetch failed:', response.status);
-        root.style.display = 'none';
-        return;
+      let picks = [];
+      
+      try {
+        const response = await fetchWithTimeout(url, {
+          headers: { 'Accept': 'application/json' }
+        }, 7000);
+        
+        if (!response.ok) {
+          console.warn('[daily-tracks] Fetch failed:', response.status);
+          // Fallback to demo for today
+          if (off === 0) {
+            picks = DEMO_TRACKS;
+          }
+        } else {
+          const data = await response.json().catch(() => ({}));
+          console.info('[daily-tracks] API source:', data?.source || 'unknown');
+          picks = Array.isArray(data.picks) ? data.picks : [];
+          
+          // Fallback to demo if empty
+          if (picks.length === 0 && off === 0) {
+            console.info('[daily-tracks] Using demo fallback');
+            picks = DEMO_TRACKS;
+          }
+        }
+      } catch (error) {
+        console.warn('[daily-tracks] Fetch error:', error.message);
+        // Always show demo for today on error
+        if (off === 0) {
+          picks = DEMO_TRACKS;
+        }
       }
-      
-      const data = await response.json();
-      console.info('[daily-tracks] API source:', data?.source || 'unknown');
-      
-      let picks = Array.isArray(data.picks) ? data.picks : [];
       
       // Deduplicate by id or url
       picks = dedupeBy(picks, (p) => p.id || p.url || p.spotifyUrl).slice(0, 3);
@@ -338,6 +404,8 @@
   // --- Init ---
   
   function init() {
+    if (didInit) return;
+    didInit = true;
     initNavigation();
     loadDay(0);
   }
