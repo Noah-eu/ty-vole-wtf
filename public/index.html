@@ -329,41 +329,122 @@
     border:1px solid var(--line);
   }
   
-  .daily-tracks-grid{
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:1rem;
+  .daily-tracks-section .subtitle{
+    display:inline-block;
+    margin-bottom:1rem;
   }
   
-  .daily-track-tile{
+  .daily-nav{
+    display:inline-flex;
+    gap:.5rem;
+    margin-left:1rem;
+    vertical-align:middle;
+  }
+  
+  .daily-nav button{
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--text);
+    font-size:16px;
+    cursor:pointer;
+    transition:all .2s ease;
+  }
+  
+  .daily-nav button:hover:not(:disabled){
+    background:var(--line);
+    transform:scale(1.05);
+  }
+  
+  .daily-nav button:disabled{
+    opacity:.3;
+    cursor:not-allowed;
+  }
+  
+  .daily-tracks-grid{
+    display:flex;
+    gap:1rem;
+    justify-content:flex-start;
+  }
+  
+  .dtile{
     display:flex;
     flex-direction:column;
     gap:.5rem;
-    text-decoration:none;
-    color:var(--text);
-    transition:transform .2s ease, opacity .2s ease;
+    width:80px;
   }
   
-  .daily-track-tile:hover{
-    transform:translateY(-4px);
-    opacity:.9;
-  }
-  
-  .daily-track-tile img{
-    width:100%;
-    height:auto;
-    aspect-ratio:1;
+  .dtile__cover{
+    position:relative;
+    width:80px;
+    height:80px;
     border-radius:8px;
-    object-fit:cover;
-    box-shadow:0 4px 12px rgba(0,0,0,.3);
+    overflow:hidden;
   }
   
-  .daily-track-info{
-    font-size:12px;
+  .dtile__cover a{
+    display:block;
+    width:100%;
+    height:100%;
+  }
+  
+  .dtile__img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  
+  .dtile__placeholder{
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:10px;
+    opacity:.6;
+    background:#f1f3f5;
+    border-radius:8px;
+    color:#868e96;
+  }
+  
+  .preview-badge{
+    position:absolute;
+    right:4px;
+    bottom:4px;
+    padding:2px 6px;
+    font-size:10px;
+    border-radius:10px;
+    background:#fff;
+    color:#000;
+    box-shadow:0 1px 4px rgba(0,0,0,.2);
+    border:none;
+    cursor:pointer;
+    font-weight:600;
+    transition:transform .15s ease;
+  }
+  
+  .preview-badge:hover{
+    transform:scale(1.05);
+  }
+  
+  .preview-badge:active{
+    transform:scale(0.95);
+  }
+  
+  .preview-badge:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+  }
+  
+  .dtile__meta{
+    font-size:11px;
     line-height:1.3;
   }
   
-  .daily-track-title{
+  .dtile__title{
     font-weight:600;
     color:var(--text);
     overflow:hidden;
@@ -371,7 +452,7 @@
     white-space:nowrap;
   }
   
-  .daily-track-artists{
+  .dtile__artists{
     color:var(--muted);
     overflow:hidden;
     text-overflow:ellipsis;
@@ -380,11 +461,22 @@
   
   @media (max-width:480px){
     .daily-tracks-grid{
-      grid-template-columns:repeat(3, 1fr);
       gap:.75rem;
     }
-    .daily-track-info{
-      font-size:11px;
+    .dtile{
+      width:70px;
+    }
+    .dtile__cover{
+      width:70px;
+      height:70px;
+    }
+    .dtile__meta{
+      font-size:10px;
+    }
+    .daily-nav{
+      display:flex;
+      margin-left:0;
+      margin-top:.5rem;
     }
   }
   

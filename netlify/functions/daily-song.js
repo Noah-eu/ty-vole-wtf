@@ -134,21 +134,24 @@ async function fetchArtistGenres(accessToken, artistIds) {
   return genresMap;
 }
 
-// Ensure album covers
+// 3-stupňový fallback pro album covers
 async function ensureAlbumCovers(accessToken, tracks) {
   const coverMap = {};
   const missing = [];
+  const albumIds = new Set();
   
+  // Stupeň 1: track.album.images[0]?.url
   for (const t of tracks) {
     const cover = t.album?.images?.[0]?.url;
-    if (cover) {
+    if (cover && cover.startsWith('http')) {
       coverMap[t.id] = cover;
     } else {
-      missing.push(t.id);
+      missing.push(t);
+      if (t.album?.id) albumIds.add(t.album.id);
     }
   }
   
-  // Fetch missing covers
+  // Stupeň 2: GET /v1/tracks/{id} → album.images
   if (missing.length > 0) {
     const chunks = [];
     for (let i = 0; i < missing.length; i += 50) {
@@ -156,16 +159,56 @@ async function ensureAlbumCovers(accessToken, tracks) {
     }
     
     for (const chunk of chunks) {
-      const response = await fetch(`https://api.spotify.com/v1/tracks?ids=${chunk.join(',')}`, {
+      const ids = chunk.map(t => t.id).join(',');
+      const response = await fetch(`https://api.spotify.com/v1/tracks?ids=${ids}`, {
         headers: { 'Authorization': `Bearer ${accessToken}` }
       });
       if (response.ok) {
         const data = await response.json();
         data.tracks.forEach(t => {
           if (t?.album?.images?.[0]?.url) {
-            coverMap[t.id] = t.album.images[0].url;
+            const url = t.album.images[0].url;
+            if (url.startsWith('http')) {
+              coverMap[t.id] = url;
+              albumIds.delete(t.album.id); // už máme cover
+            }
           }
         });
+      }
+    }
+  }
+  
+  // Stupeň 3: GET /v1/albums/{id} pro zbylé album IDs
+  if (albumIds.size > 0) {
+    const albumChunks = [];
+    const albumArr = Array.from(albumIds);
+    for (let i = 0; i < albumArr.length; i += 20) {
+      albumChunks.push(albumArr.slice(i, i + 20));
+    }
+    
+    const albumCovers = {};
+    for (const chunk of albumChunks) {
+      const ids = chunk.join(',');
+      const response = await fetch(`https://api.spotify.com/v1/albums?ids=${ids}`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        data.albums.forEach(a => {
+          if (a?.images?.[0]?.url) {
+            const url = a.images[0].url;
+            if (url.startsWith('http')) {
+              albumCovers[a.id] = url;
+            }
+          }
+        });
+      }
+    }
+    
+    // Mapuj zpět na tracky
+    for (const t of missing) {
+      if (!coverMap[t.id] && t.album?.id && albumCovers[t.album.id]) {
+        coverMap[t.id] = albumCovers[t.album.id];
       }
     }
   }
@@ -178,9 +221,26 @@ export async function handler(event, context) {
     const debug = event?.queryStringParameters?.debug === '1';
     const disallowExplicit = true; // always filter explicit
     
-    // Daily seed for deterministic shuffle
-    const today = new Date();
-    const dateISO = today.toISOString().split('T')[0];
+    // Parametr date=YYYY-MM-DD (default: dnes UTC)
+    const dateParam = event?.queryStringParameters?.date;
+    let targetDate;
+    
+    if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+      // Validuj rozsah (max 7 dní zpět)
+      const requested = new Date(dateParam + 'T00:00:00Z');
+      const now = new Date();
+      const diffDays = Math.floor((now - requested) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays >= 0 && diffDays <= 6) {
+        targetDate = requested;
+      } else {
+        targetDate = new Date(); // fallback na dnes
+      }
+    } else {
+      targetDate = new Date();
+    }
+    
+    const dateISO = targetDate.toISOString().split('T')[0];
     const dailySeed = parseInt(dateISO.replace(/-/g, ''), 10);
     
     // Get Spotify token
@@ -280,8 +340,11 @@ export async function handler(event, context) {
       winners = winners.concat(fb);
     }
     
-    // Format response
-    const toWebUrl = (id, url) => (url && url.startsWith("http")) ? url : `https://open.spotify.com/track/${id}`;
+    // Format response - vždy https URL
+    const toWebUrl = (id, url) => {
+      if (url && url.startsWith("https://")) return url;
+      return `https://open.spotify.com/track/${id}`;
+    };
     
     const body = {
       date: dateISO,
@@ -289,9 +352,9 @@ export async function handler(event, context) {
         id: w.track.id,
         title: w.track.name,
         artists: w.track.artists.map(a => a.name).join(", "),
-        albumCoverUrl: w.albumCoverUrl,
+        albumCoverUrl: w.albumCoverUrl || null, // ensure fallback to null
         spotifyUrl: toWebUrl(w.track.id, w.track.external_urls?.spotify),
-        previewUrl: w.track.preview_url ?? null
+        previewUrl: (w.track.preview_url && w.track.preview_url.startsWith('http')) ? w.track.preview_url : null
       })),
       ...(debug ? { debug: { seed: dailySeed, counts, pool: pool.length } } : {})
     };
