@@ -320,6 +320,74 @@
   }
   .cta small{display:block;color:var(--muted);margin-top:6px}
   
+  /* Daily Tracks */
+  .daily-tracks-section{
+    margin:2rem 0;
+    padding:1.5rem;
+    background:var(--card);
+    border-radius:var(--radius);
+    border:1px solid var(--line);
+  }
+  
+  .daily-tracks-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:1rem;
+  }
+  
+  .daily-track-tile{
+    display:flex;
+    flex-direction:column;
+    gap:.5rem;
+    text-decoration:none;
+    color:var(--text);
+    transition:transform .2s ease, opacity .2s ease;
+  }
+  
+  .daily-track-tile:hover{
+    transform:translateY(-4px);
+    opacity:.9;
+  }
+  
+  .daily-track-tile img{
+    width:100%;
+    height:auto;
+    aspect-ratio:1;
+    border-radius:8px;
+    object-fit:cover;
+    box-shadow:0 4px 12px rgba(0,0,0,.3);
+  }
+  
+  .daily-track-info{
+    font-size:12px;
+    line-height:1.3;
+  }
+  
+  .daily-track-title{
+    font-weight:600;
+    color:var(--text);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  
+  .daily-track-artists{
+    color:var(--muted);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  
+  @media (max-width:480px){
+    .daily-tracks-grid{
+      grid-template-columns:repeat(3, 1fr);
+      gap:.75rem;
+    }
+    .daily-track-info{
+      font-size:11px;
+    }
+  }
+  
   /* Translator AI card - unified design */
   .translator{
     margin:0;
@@ -455,6 +523,12 @@
         </div>
       </footer>
     </div>
+
+    <!-- Daily Tracks Section -->
+    <section id="daily-tracks" class="daily-tracks-section" style="display:none;">
+      <div class="subtitle" style="margin-bottom:1rem;">Today's Fresh Tracks 🎵</div>
+      <div class="daily-tracks-grid"></div>
+    </section>
   </div>
 
   <div class="cta footer-cta">
@@ -1567,6 +1641,9 @@ window.addEventListener('appinstalled', () => {
 });
 </script>
 <!-- === /PWA Update Chip === -->
+
+<!-- Daily Tracks -->
+<script src="/lib/daily-tracks.js" defer></script>
 
 </body>
 </html>
