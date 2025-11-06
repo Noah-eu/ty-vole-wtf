@@ -486,6 +486,50 @@ export const handler: Handler = async (
       const shuffled = deterministicShuffle(seedTracksEnv);
       const picks = shuffled.slice(0, 3);
       
+      // Try to fetch metadata from Spotify if credentials available
+      const clientId = process.env.SPOTIFY_CLIENT_ID;
+      const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+      
+      let enrichedPicks: Array<{
+        id: string;
+        title: string;
+        artists: string;
+        albumCoverUrl: string | null;
+        spotifyUrl: string;
+        previewUrl: string | null;
+      }> = picks.map(p => ({
+        id: p.id,
+        title: p.id,
+        artists: 'Unknown',
+        albumCoverUrl: null as string | null,
+        spotifyUrl: p.url,
+        previewUrl: null as string | null
+      }));
+      
+      if (clientId && clientSecret) {
+        try {
+          const token = await getSpotifyToken(clientId, clientSecret);
+          const ids = picks.map(p => p.id).join(',');
+          const response = await fetch(`https://api.spotify.com/v1/tracks?ids=${ids}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          if (response.ok) {
+            const data = await response.json() as { tracks: SpotifyTrack[] };
+            enrichedPicks = data.tracks.filter(Boolean).map(t => ({
+              id: t.id,
+              title: t.name,
+              artists: t.artists.map(a => a.name).join(', '),
+              albumCoverUrl: t.album?.images?.[0]?.url || null,
+              spotifyUrl: toWebUrl(t.id, t.external_urls?.spotify),
+              previewUrl: t.preview_url ?? null
+            }));
+          }
+        } catch (error) {
+          console.warn('Failed to enrich SEED_TRACKS with Spotify metadata:', error);
+        }
+      }
+      
       return {
         statusCode: 200,
         headers,
@@ -493,14 +537,7 @@ export const handler: Handler = async (
           date: dateISO,
           mode: 'seed-env' as const,
           source: 'seed-env',
-          picks: picks.map(p => ({
-            id: p.id,
-            title: p.id, // Will be enriched if we fetch from Spotify later
-            artists: 'Unknown',
-            albumCoverUrl: null,
-            spotifyUrl: p.url,
-            previewUrl: null
-          }))
+          picks: enrichedPicks
         })
       };
     }
