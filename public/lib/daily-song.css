@@ -377,6 +377,14 @@
 
 .dtile__cover a { display: block; width: 100%; height: 100%; pointer-events: auto; }
 
+.dtile__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+}
+
 .no-pointer { pointer-events: none; }
 
 .daily-track-tile {
