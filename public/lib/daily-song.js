@@ -37,7 +37,7 @@ class DailySong {
       const data = await response.json();
       
       // Handle new format: { date, seed, picks: [...] }
-      this.picks = data.picks || [];
+  this.picks = Array.isArray(data.picks) ? data.picks.slice(0, 3) : [];
       this.date = data.date;
       
       if (this.picks.length === 0) {
@@ -49,6 +49,10 @@ class DailySong {
       console.error('Failed to load daily song:', error);
       this.render('error');
     }
+  }
+
+  toWebUrl(id, url) {
+    return (url && url.startsWith('http')) ? url : `https://open.spotify.com/track/${id}`;
   }
 
   formatDate(dateString) {
@@ -93,19 +97,19 @@ class DailySong {
       // Render all 3 picks in a row
       const tilesHTML = this.picks.map((pick) => {
         const hasCover = !!pick.albumCoverUrl;
-        const hasPreview = !!pick.previewUrl;
-        
+        const href = this.toWebUrl(pick.id, pick.spotifyUrl);
+
         return `
-          <div class="daily-track-tile">
-            <div class="daily-track-cover">
-              <a href="${pick.spotifyUrl}" target="_blank" rel="noopener noreferrer" title="Otevřít ve Spotify">
+          <div class="dtile">
+            <div class="dtile__cover">
+              <a href="${href}" target="_blank" rel="noopener noreferrer" title="Otevřít ve Spotify">
                 ${hasCover ? `
                   <img src="${pick.albumCoverUrl}" 
                        alt="${pick.title} — ${pick.artists}" 
                        class="daily-track-img" 
                        loading="lazy" />
                 ` : `
-                  <div class="daily-track-placeholder">no cover</div>
+                  <div class="daily-track-placeholder no-pointer">no cover</div>
                 `}
               </a>
             </div>
@@ -118,9 +122,9 @@ class DailySong {
       }).join('');
 
       this.container.innerHTML = `
-        <div class="daily-song-compact">
+        <div class="daily-tracks">
           <div class="text-xs opacity-70 mb-1">🎵 Dnešní tracky • ${this.formatDate(this.date)}</div>
-          <div class="daily-tracks-row">
+          <div class="daily-tracks__row">
             ${tilesHTML}
           </div>
         </div>

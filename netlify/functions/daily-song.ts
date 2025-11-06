@@ -267,9 +267,7 @@ function filterTrack(
   // Popularity >= 70
   if (track.popularity < 70) return false;
 
-  // Recency filter: ≤ 3 months
-  const monthsOld = monthsBetweenUTC(track.album?.release_date);
-  if (monthsOld > 3) return false;
+  // NOTE: recency is applied later in staged windows (3/6/12/24 months)
 
   // Exclude Czech/Slovak artists (simple check on artist names)
   const artistNames = track.artists.map(a => a.name.toLowerCase()).join(" ");
@@ -281,10 +279,9 @@ function filterTrack(
 function scoreTrack(track: SpotifyTrack): number {
   const popularity = track.popularity;
   
-  // Recency boost (≤3 months)
-  const releaseDate = new Date(track.album.release_date);
-  const now = new Date();
-  const monthsAgo = (now.getTime() - releaseDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+  // Recency boost (prefer more recent releases). We'll compute monthsBetweenUTC
+  const monthsAgo = monthsBetweenUTC(track.album?.release_date);
+  // recencyBoost scales from 100 (just released) to 0 (>=3 months)
   const recencyBoost = monthsAgo <= 3 ? (3 - monthsAgo) / 3 * 100 : 0;
 
   // Score: 0.6*popularity + 0.25*recency + 0.1*diversity(0) + 0.05*novelty(0)
@@ -296,26 +293,28 @@ function selectDailyTracks(tracks: SpotifyTrack[], coverMap: Record<string, stri
   const scored = tracks.map(track => ({
     track,
     score: scoreTrack(track),
-    albumCoverUrl: coverMap[track.id] || ""
+    albumCoverUrl: coverMap[track.id] ?? null
   }));
 
-  // Filter out tracks without covers and sort by score descending
+  // Sort by score descending and take top 30
   const top = scored
-    .filter(s => s.albumCoverUrl)
     .sort((a, b) => b.score - a.score)
     .slice(0, 30);
 
-  if (top.length === 0) {
-    // Fallback if no tracks with covers
-    return tracks.slice(0, 3);
-  }
-
-  // Shuffle top candidates with daily seed
   const dailySeed = getDailySeed();
   const shuffled = seededShuffle(top, dailySeed);
 
-  // Return exactly 3 winners
-  const winners = shuffled.slice(0, Math.min(3, shuffled.length));
+  // Pick up to 3 winners from shuffled
+  let winners = shuffled.slice(0, Math.min(3, shuffled.length));
+
+  // If we have fewer than 3, fill from top (highest score) excluding already chosen
+  if (winners.length < 3) {
+    const extra = top
+      .filter(x => !winners.some(w => w.track.id === x.track.id))
+      .slice(0, 3 - winners.length);
+    winners = winners.concat(extra);
+  }
+
   return winners.map(w => w.track);
 }
 
@@ -327,7 +326,7 @@ function formatTrackResponse(track: SpotifyTrack): DailySongResponse {
     title: track.name,
     artists: track.artists.map(a => a.name).join(", "),
     albumCoverUrl: albumCover?.url || "",
-    spotifyUrl: track.external_urls.spotify,
+    spotifyUrl: track.external_urls?.spotify,
     previewUrl: track.preview_url,
     date: new Date().toISOString().split("T")[0]
   };
@@ -367,21 +366,11 @@ export const handler: Handler = async (
     const disallowExplicit = process.env.DISALLOW_EXPLICIT !== "false";
 
     if (!clientId || !clientSecret) {
-      console.warn("Spotify credentials not configured, using fallback");
-      const dailySeed = getDailySeed();
-      const shuffled = seededShuffle(FALLBACK_SONGS, dailySeed);
-      const fallbackPicks = shuffled.slice(0, 3);
-      
-      const response: DailyPicksResponse = {
-        date: new Date().toISOString().split("T")[0],
-        seed: dailySeed,
-        picks: fallbackPicks
-      };
-      
+      console.error("Spotify credentials (SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET) are not configured");
       return {
-        statusCode: 200,
+        statusCode: 500,
         headers,
-        body: JSON.stringify(response)
+        body: JSON.stringify({ error: 'Spotify credentials not configured' })
       };
     }
 
@@ -397,77 +386,87 @@ export const handler: Handler = async (
       allTracks.push(...tracks);
     }
 
-    // Filter tracks
-    const filteredTracks = allTracks.filter(track =>
-      filterTrack(track, disallowExplicit)
-    );
+    // Filter tracks by basic rules (explicit, popularity, CZ market, no CZ/SK artists)
+    let filteredTracks = allTracks.filter(track => filterTrack(track, disallowExplicit));
 
-    if (filteredTracks.length === 0) {
-      console.warn("No tracks passed filters, using fallback");
-      const dailySeed = getDailySeed();
-      const shuffled = seededShuffle(FALLBACK_SONGS, dailySeed);
-      const fallbackPicks = shuffled.slice(0, 3);
-      
-      const response: DailyPicksResponse = {
-        date: new Date().toISOString().split("T")[0],
-        seed: dailySeed,
-        picks: fallbackPicks
-      };
-      
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify(response)
-      };
+    // Never consider tracks older than 24 months
+    filteredTracks = filteredTracks.filter(t => monthsBetweenUTC(t.album?.release_date) <= 24);
+
+    // Helper: withinMonths
+    function withinMonths(dateISO?: string, limit = 3) {
+      const m = monthsBetweenUTC(dateISO);
+      return m >= 0 && m <= limit;
     }
 
-    // Ensure all tracks have album covers
-    const coverMap = await ensureAlbumCovers(token, filteredTracks);
+    // Staged windowing: 3 -> 6 -> 12 -> 24
+    let pool = filteredTracks.filter(t => withinMonths(t.album?.release_date, 3));
+    let windowUsed = 3;
+    if (pool.length < 3) {
+      pool = filteredTracks.filter(t => withinMonths(t.album?.release_date, 6));
+      windowUsed = 6;
+    }
+    if (pool.length < 3) {
+      pool = filteredTracks.filter(t => withinMonths(t.album?.release_date, 12));
+      windowUsed = 12;
+    }
+    if (pool.length < 3) {
+      pool = filteredTracks.filter(t => withinMonths(t.album?.release_date, 24));
+      windowUsed = 24;
+    }
 
-    // Select 3 daily tracks
-    const selectedTracks = selectDailyTracks(filteredTracks, coverMap);
-    
-    // Format response with ensured covers
+    // If still <3, fall back to filteredTracks (already limited to <=24 months)
+    if (pool.length < 3) {
+      pool = filteredTracks;
+    }
+
+    // Ensure album covers for pool (fetch missing ones)
+    const coverMap = await ensureAlbumCovers(token, pool);
+
+    // Build scored top list (use coverMap where available)
     const dailySeed = getDailySeed();
+
+    const scored = pool.map(t => ({ track: t, score: scoreTrack(t), albumCoverUrl: coverMap[t.id] ?? null }));
+    const top = scored.sort((a, b) => b.score - a.score).slice(0, 30);
+
+    const shuffled = seededShuffle(top, dailySeed);
+    let winners = shuffled.slice(0, Math.min(3, shuffled.length));
+    if (winners.length < 3) {
+      const extra = top.filter(x => !winners.some(w => w.track.id === x.track.id)).slice(0, 3 - winners.length);
+      winners = winners.concat(extra);
+    }
+
+    // Helper to ensure canonical web URL
+    const toWebUrl = (id: string, url?: string) => (url && url.startsWith('http')) ? url : `https://open.spotify.com/track/${id}`;
+
     const dateISO = new Date().toISOString().split("T")[0];
-    
-    const response: DailyPicksResponse = {
+
+    const responseBody = {
       date: dateISO,
       seed: dailySeed,
-      picks: selectedTracks.map(track => ({
-        id: track.id,
-        title: track.name,
-        artists: track.artists.map((a: { name: string }) => a.name).join(", "),
-        albumCoverUrl: coverMap[track.id] || "",
-        spotifyUrl: track.external_urls.spotify,
-        previewUrl: track.preview_url,
-        date: dateISO
+      window: windowUsed,
+      candidates: pool.length,
+      picks: winners.slice(0,3).map(w => ({
+        id: w.track.id,
+        title: w.track.name,
+        artists: w.track.artists.map(a => a.name).join(', '),
+        albumCoverUrl: coverMap[w.track.id] || null,
+        spotifyUrl: toWebUrl(w.track.id, w.track.external_urls?.spotify),
+        previewUrl: w.track.preview_url ?? null
       }))
     };
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(response)
+      body: JSON.stringify(responseBody)
     };
   } catch (error) {
     console.error("Daily song error:", error);
-
-    // Return fallback on error
-    const dailySeed = getDailySeed();
-    const shuffled = seededShuffle(FALLBACK_SONGS, dailySeed);
-    const fallbackPicks = shuffled.slice(0, 3);
-    
-    const response: DailyPicksResponse = {
-      date: new Date().toISOString().split("T")[0],
-      seed: dailySeed,
-      picks: fallbackPicks
-    };
-    
+    // Return error (do not fall back to static hits)
     return {
-      statusCode: 200,
+      statusCode: 500,
       headers,
-      body: JSON.stringify(response)
+      body: JSON.stringify({ error: 'Daily song error', details: String(error) })
     };
   }
 };
