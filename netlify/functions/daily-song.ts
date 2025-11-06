@@ -73,7 +73,46 @@ const DEMO_TRACKS: DailySongResponse[] = [
   }
 ];
 
-// Parse SEED_TRACKS from env
+// Parse SEED_TRACKS from env (comma-separated Spotify URLs or IDs)
+function parseSeedTracksEnv(env?: string): Array<{ id: string; url: string }> {
+  if (!env) return [];
+  
+  return env
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(url => {
+      // Extract ID from URL if it's a full URL
+      const match = url.match(/track\/([A-Za-z0-9]{22})/);
+      const id = match ? match[1] : (/^[A-Za-z0-9]{22}$/.test(url) ? url : null);
+      
+      if (!id) return null;
+      
+      // Normalize to full URL
+      const spotifyUrl = url.startsWith('http') ? url : `https://open.spotify.com/track/${id}`;
+      
+      return { id, url: spotifyUrl };
+    })
+    .filter((item): item is { id: string; url: string } => item !== null)
+    .slice(0, 100); // Max 100 seeds
+}
+
+// Deterministic shuffle based on UTC date
+function deterministicShuffle<T>(arr: T[], date = new Date()): T[] {
+  const seed = Number(
+    `${date.getUTCFullYear()}${(date.getUTCMonth() + 1).toString().padStart(2, '0')}${date.getUTCDate().toString().padStart(2, '0')}`
+  );
+  
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor((seed * (i + 1)) % (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  return shuffled;
+}
+
+// Parse SEED_TRACKS from env (legacy - for Spotify recommendations API)
 function parseSeeds(str?: string): string[] {
   if (!str) return [];
   return Array.from(new Set(
@@ -393,14 +432,13 @@ function getCacheHeaders(noCache: boolean) {
 }
 
 // Helper to return demo tracks with deterministic shuffle
-function getDemoResponse(qp: any): { statusCode: number; headers: any; body: string } {
-  const noCache = (process.env.DEBUG_NO_CACHE === 'true') || ('debug' in qp) || ('ts' in qp);
+function getDemoResponse(qp: any, source: string = 'demo'): { statusCode: number; headers: any; body: string } {
   const headers = {
+    "Content-Type": "application/json; charset=utf-8",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Content-Type": "application/json",
-    "Cache-Control": "no-store, max-age=0"
+    "Cache-Control": "no-store"
   };
   
   const dateISO = new Date().toISOString().split("T")[0];
@@ -413,7 +451,7 @@ function getDemoResponse(qp: any): { statusCode: number; headers: any; body: str
     body: JSON.stringify({
       date: dateISO,
       mode: 'demo' as const,
-      source: 'demo',
+      source,
       picks: shuffled.slice(0, 3)
     })
   };
@@ -424,13 +462,12 @@ export const handler: Handler = async (
   context: HandlerContext
 ) => {
   const qp = event?.queryStringParameters || {};
-  const noCache = (process.env.DEBUG_NO_CACHE === 'true') || ('debug' in qp) || ('ts' in qp);
   const headers = {
+    "Content-Type": "application/json; charset=utf-8",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Content-Type": "application/json",
-    "Cache-Control": "no-store, max-age=0"
+    "Cache-Control": "no-store"
   };
 
   // Handle OPTIONS preflight
@@ -439,13 +476,43 @@ export const handler: Handler = async (
   }
 
   try {
+    const dateISO = new Date().toISOString().split("T")[0];
+    
+    // PRIORITY 1: Check for SEED_TRACKS env (comma-separated URLs)
+    const seedTracksEnv = parseSeedTracksEnv(process.env.SEED_TRACKS);
+    
+    if (seedTracksEnv.length >= 3) {
+      console.log(`Using SEED_TRACKS env with ${seedTracksEnv.length} tracks`);
+      const shuffled = deterministicShuffle(seedTracksEnv);
+      const picks = shuffled.slice(0, 3);
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          date: dateISO,
+          mode: 'seed-env' as const,
+          source: 'seed-env',
+          picks: picks.map(p => ({
+            id: p.id,
+            title: p.id, // Will be enriched if we fetch from Spotify later
+            artists: 'Unknown',
+            albumCoverUrl: null,
+            spotifyUrl: p.url,
+            previewUrl: null
+          }))
+        })
+      };
+    }
+    
+    // PRIORITY 2: Check Spotify credentials
     const clientId = process.env.SPOTIFY_CLIENT_ID;
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
     const disallowExplicit = process.env.DISALLOW_EXPLICIT !== "false";
 
     if (!clientId || !clientSecret) {
-      console.warn("Spotify credentials not configured, using demo tracks");
-      return getDemoResponse(qp);
+      console.warn("No Spotify credentials and no SEED_TRACKS env, using demo tracks");
+      return getDemoResponse(qp, 'demo:no-creds');
     }
 
     // Parse seed tracks from env
@@ -456,7 +523,6 @@ export const handler: Handler = async (
                                     (ENV_SEEDS.length ? 'seed' : 'global');
 
     const token = await getSpotifyToken(clientId, clientSecret);
-    const dateISO = new Date().toISOString().split("T")[0];
     const dailySeed = getDailySeed();
 
     let pool: SpotifyTrack[] = [];
@@ -580,10 +646,37 @@ export const handler: Handler = async (
       } : {})
     };
 
-    // If we got no picks from Spotify, fallback to demo
+    // If we got no picks from Spotify, fallback to seed-env or demo
     if (body.picks.length === 0) {
-      console.warn("Spotify returned 0 picks, using demo tracks");
-      return getDemoResponse(qp);
+      console.warn("Spotify returned 0 picks, falling back...");
+      
+      // Try seed-env fallback first if available
+      if (seedTracksEnv.length >= 3) {
+        console.log("Using SEED_TRACKS env as fallback");
+        const shuffled = deterministicShuffle(seedTracksEnv);
+        const picks = shuffled.slice(0, 3);
+        
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            date: dateISO,
+            mode: 'seed-env' as const,
+            source: 'seed-env:fallback',
+            picks: picks.map(p => ({
+              id: p.id,
+              title: p.id,
+              artists: 'Unknown',
+              albumCoverUrl: null,
+              spotifyUrl: p.url,
+              previewUrl: null
+            }))
+          })
+        };
+      }
+      
+      // Otherwise use demo
+      return getDemoResponse(qp, 'demo:empty-picks');
     }
 
     return {
@@ -596,7 +689,7 @@ export const handler: Handler = async (
     };
   } catch (error) {
     console.error("Daily song error (falling back to demo):", error);
-    // Always return 200 with demo tracks - never fail
-    return getDemoResponse(qp);
+    // Always return 200 with demo tracks - never fail (500)
+    return getDemoResponse(qp, 'demo:catch');
   }
 };

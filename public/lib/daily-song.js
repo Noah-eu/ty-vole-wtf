@@ -85,47 +85,52 @@ if (window.__dailyTracksInit) {
       const dateISO = new Date().toISOString().split('T')[0];
       const url = apiUrlFor(dateISO);
       
+      const ac = new AbortController();
+      const t = setTimeout(() => ac.abort(), 6000); // 6s timeout
+      
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
-        
-        const response = await fetch(url, {
-          cache: 'no-store',
-          signal: controller.signal
+        const r = await fetch(url, { 
+          cache: 'no-store', 
+          signal: ac.signal 
         });
         
-        clearTimeout(timeoutId);
+        clearTimeout(t);
         
-        if (!response.ok) {
-          console.warn(`API returned ${response.status}, using demo tracks`);
+        if (!r.ok) {
+          console.warn(`API returned ${r.status}, using local demo tracks`);
           return {
             date: dateISO,
             mode: 'demo',
-            source: 'demo',
+            source: 'demo:client-error',
             picks: seededShuffle(DEMO_TRACKS, getDailySeed()).slice(0, 3)
           };
         }
 
-        const data = await response.json();
+        const data = await r.json().catch(() => ({}));
+        const picks = Array.isArray(data?.picks) ? data.picks : [];
         
-        // Validate response
-        if (!data.picks || !Array.isArray(data.picks) || data.picks.length === 0) {
-          console.warn('Empty picks from API, using demo tracks');
+        // Log source for debugging
+        console.info('📡 daily-song source:', data?.source || 'unknown', `(${picks.length} picks)`);
+        
+        // Validate response has picks
+        if (picks.length === 0) {
+          console.warn('Empty picks from API, using local demo tracks');
           return {
             date: dateISO,
             mode: 'demo',
-            source: 'demo',
+            source: 'demo:empty-api',
             picks: seededShuffle(DEMO_TRACKS, getDailySeed()).slice(0, 3)
           };
         }
         
         return data;
       } catch (error) {
-        console.warn('Failed to fetch daily tracks, using demo:', error.message);
+        clearTimeout(t);
+        console.warn('Failed to fetch daily tracks, using local demo:', error.message);
         return {
           date: dateISO,
           mode: 'demo',
-          source: 'demo',
+          source: 'demo:client-catch',
           picks: seededShuffle(DEMO_TRACKS, getDailySeed()).slice(0, 3)
         };
       }
@@ -155,9 +160,11 @@ if (window.__dailyTracksInit) {
         this.date = data.date;
         this.source = data.source || 'unknown';
         
-        if (this.source === 'demo') {
-          console.log('🎵 Using demo tracks (API unavailable or credentials missing)');
-        }
+        // Log source for visibility
+        const sourceEmoji = this.source.includes('seed-env') ? '🌱' : 
+                            this.source.includes('spotify') ? '🎧' : 
+                            this.source.includes('demo') ? '🎵' : '❓';
+        console.log(`${sourceEmoji} Daily tracks source: ${this.source} (${this.picks.length} tracks)`);
         
         this.render('loaded');
       }
