@@ -54,10 +54,10 @@ echo "🎵 Test 3: Source type"
 SOURCE=$(echo "$BODY" | jq -r '.source')
 echo "Source: $SOURCE"
 
-if [ "$SOURCE" = "spotify" ] || [ "$SOURCE" = "demo" ]; then
+if [ "$SOURCE" = "spotify" ] || [ "$SOURCE" = "demo" ] || [ "$SOURCE" = "seed-env" ] || [[ "$SOURCE" =~ ^demo: ]]; then
   echo "✅ Valid source type: $SOURCE"
 else
-  echo "❌ Invalid source type: $SOURCE (expected 'spotify' or 'demo')"
+  echo "❌ Invalid source type: $SOURCE (expected 'spotify', 'demo', 'seed-env', or 'demo:*')"
   exit 1
 fi
 
