@@ -82,11 +82,24 @@
   
   *{box-sizing:border-box}
   
+  /* iOS safe-area support */
+  :root{
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+  }
+  
   html, body{
     /* Jemně pohyblivý gradient pozadí */
     background: radial-gradient(120% 120% at 10% 0%, #0d0d0d 0%, #070707 45%, #0e0e0e 100%);
     background-size: 140% 140%;
     color: var(--text);
+    /* Fix iOS viewport height issues - enable scroll */
+    min-height: 100dvh;
+    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   
   @media (prefers-reduced-motion:no-preference){
@@ -102,14 +115,29 @@
   body{
     margin:0;
     font:16px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Inter,Arial;
-    min-height:100dvh; max-height:100dvh; display:grid; place-items:center; padding:28px;
-    position:fixed; width:100%; overflow:hidden;
+    min-height:100dvh;
+    padding:28px;
+    padding-top: calc(28px + var(--safe-top));
+    padding-bottom: calc(140px + var(--safe-bottom)); /* Space for fixed footer CTA */
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    /* CRITICAL: Remove fixed positioning to allow scroll */
+    position:relative;
+    width:100%;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
 
   /* === MEGA BACKGROUND WORDMARK (celá obrazovka) === */
   .bg-wordmark{
     position:fixed; inset:0; display:flex; flex-direction:column; justify-content:space-between;
-    pointer-events:none; z-index:0; overflow:hidden; padding:5vh 0;
+    /* CRITICAL: pointer-events none to not block clicks */
+    pointer-events:none; 
+    z-index:0; 
+    overflow:hidden; 
+    padding:5vh 0;
   }
   .bg-wordmark span{
     font-weight:900; white-space:nowrap;
@@ -129,7 +157,13 @@
     transform:translateX(8vw) rotate(3deg) scaleX(0.7) scaleY(2.5);
   }
 
-  .wrap{width:min(980px,100%); position:relative; z-index:1;}
+  .wrap{
+    width:min(980px,100%); 
+    position:relative; 
+    z-index:1;
+    /* Ensure content is accessible and not cut off */
+    margin-bottom: 2rem;
+  }
   header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
   .brand{display:flex;gap:10px;align-items:center;font-weight:900;letter-spacing:.02em}
   .brand .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(90deg,var(--accent),var(--cyan));box-shadow:0 0 16px rgba(157,255,0,.7)}
@@ -278,9 +312,13 @@
   .mode button.active{border-color:var(--accent);color:var(--ink)}
 
   .cta{
-    position:fixed;right:18px;bottom:18px;
+    position:fixed;
+    right:18px;
+    bottom: calc(18px + var(--safe-bottom));
     width:min(380px,calc(100% - 36px));
     z-index:2;
+    /* Ensure it doesn't block content with pointer-events */
+    pointer-events: auto;
   }
   
   .footer-cta{
@@ -327,6 +365,10 @@
     justify-content:center;
     align-items:center;
     flex-direction:column;
+    /* Ensure it's visible and accessible */
+    position: relative;
+    z-index: 1;
+    scroll-margin-top: 24px;
   }
   
   .daily-tracks-section .subtitle{
@@ -471,6 +513,12 @@
   }
   
   @media (max-width:480px){
+    body{
+      padding:16px;
+      padding-top: calc(16px + var(--safe-top));
+      padding-bottom: calc(160px + var(--safe-bottom));
+    }
+    
     .daily-tracks-grid{
       gap:.75rem;
       max-width:280px;
@@ -559,8 +607,27 @@
   }
   
   /* bottom sheet (translator) */
-  .sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none; z-index:10;}
-  .sheet{position:fixed;left:0;right:0;bottom:0;max-height:70dvh;background:#11121a;border-top:1px solid var(--line);border-radius:18px 18px 0 0;transform:translateY(100%);transition:.2s ease-out; z-index:11;}
+  .sheet-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    display:none; 
+    z-index:10;
+  }
+  .sheet{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    max-height:70dvh;
+    background:#11121a;
+    border-top:1px solid var(--line);
+    border-radius:18px 18px 0 0;
+    transform:translateY(100%);
+    transition:.2s ease-out; 
+    z-index:11;
+    padding-bottom: var(--safe-bottom);
+  }
   .sheet.open{transform:translateY(0)}
   .sheet-backdrop.show{display:block}
   .sheet .head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
@@ -1709,7 +1776,7 @@ if (document.readyState === 'loading') {
 
 <!-- PWA Diagnostic Logs (temporary) -->
 <!-- === PWA Update Chip === -->
-<div id="update-chip" style="display:none; position:fixed; right:16px; bottom:16px; z-index:9999;">
+<div id="update-chip" style="display:none; position:fixed; right:calc(16px + var(--safe-right)); bottom:calc(16px + var(--safe-bottom)); z-index:9999;">
   <button id="update-chip-btn" style="border-radius:999px; padding:8px 12px; font-size:12px; background:#000; color:#fff; box-shadow:0 6px 16px rgba(0,0,0,.2); border:none; cursor:pointer;">Nová verze · Aktualizovat</button>
 </div>
 
