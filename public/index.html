@@ -736,18 +736,57 @@ let translationInProgress = false;
 // ===== Lexikon =====
 const L = { openers:[], tones_pos:[], tones_mid:[], tones_neg:[], verbs:[], nouns:[], actions:[], emotes:[], templates:[], quotes:[] };
 
+// Lokální fallback hlášky (pokud API selže)
+const FALLBACK_VIBES = [
+  "no cap, tahle je spicy",
+  "lowkey good vibe fr fr",
+  "gyatt, tohle sedí",
+  "brb, dávám fresh rizz",
+  "mid af, ale respekt",
+  "slay moment ngl",
+  "bussin fr, no cap",
+  "delulu is the solulu",
+  "понавља го таков период, зачито слон слушаїл звук",
+  "this hits different",
+  "main character energy",
+  "it's giving iconic",
+  "sheesh, to je fire",
+  "straight facts",
+  "ate and left no crumbs",
+  "periodt, that's tea",
+  "living rent free v mé hlavě",
+  "we outside fr",
+  "caught in 4K",
+  "rizz god status unlocked"
+];
+
 const pick = arr => arr[Math.floor(Math.random()*arr.length)];
 const uniquePick = (arr) => { let tries=0; while(tries<10){ const v=pick(arr); if(!LAST.includes(v)) return v; tries++; } return pick(arr); };
 
+// Timeout utility
+const withTimeout = (promise, ms = 3000) => {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('timeout')), ms);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (error) => { clearTimeout(timer); reject(error); }
+    );
+  });
+};
+
 async function loadLexicon(){
   try{
-    const lex = await fetch('/config/lexicon.json?v=20251102').then(r=>{
-      if(!r.ok) throw new Error('lexicon fetch '+r.status);
-      return r.json();
-    });
+    const lex = await withTimeout(
+      fetch('/config/lexicon.json?v=20251102').then(r=>{
+        if(!r.ok) throw new Error('lexicon fetch '+r.status);
+        return r.json();
+      }),
+      3000
+    );
     Object.assign(L, lex);
   }catch(e){
-    Object.assign(L, { openers:["Hele"], templates:["No cap, další."], quotes:["No cap, další."] });
+    console.warn('[lexicon] Load failed, using fallbacks:', e);
+    Object.assign(L, { openers:["Hele"], templates:[], quotes: FALLBACK_VIBES });
   }
 }
 
@@ -769,6 +808,11 @@ function fillPlaceholders(template, dict = {}) {
 }
 
 function compose(){
+  // Pokud lexikon není načtený, použij fallback
+  if (!L.templates.length && !L.quotes.length) {
+    return uniquePick(FALLBACK_VIBES);
+  }
+  
   if (Math.random() < 0.8 && L.templates.length){
     const tpl = uniquePick(L.templates);
     
@@ -784,7 +828,7 @@ function compose(){
       emote: uniquePick(L.emotes || [''])
     });
   }
-  return uniquePick(L.quotes.length ? L.quotes : ["No cap, další."]);
+  return uniquePick(L.quotes.length ? L.quotes : FALLBACK_VIBES);
 }
 
 function setUrlState(text, push=true){
@@ -1766,11 +1810,43 @@ if (document.readyState === 'loading') {
     }
   };
   
-  // Download button
+  // Download button - NEW: Use unified vibe-share renderer
   document.getElementById('downloadCard').onclick = async () => {
     const quote = document.getElementById('quote').textContent;
-    window.shareSystem.currentQuote = quote;
-    await window.shareSystem.downloadCard();
+    
+    try {
+      // Use the same renderer as "Drop do chatu" (green gradient, fonts loaded)
+      if (window.vibeShare?.renderVibeCard) {
+        const blob = await window.vibeShare.renderVibeCard(quote, { subtitle: 'ty-vole.wtf' });
+        
+        // Download the image
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'tvl-vibe.jpg';
+        a.click();
+        
+        // Update button text temporarily
+        const btn = document.getElementById('downloadText');
+        if (btn) {
+          const prev = btn.textContent;
+          btn.textContent = 'Staženo ✅';
+          setTimeout(() => { btn.textContent = prev; }, 1500);
+        }
+      } else {
+        // Fallback to old system if module not loaded
+        if (window.shareSystem?.downloadCard) {
+          window.shareSystem.currentQuote = quote;
+          await window.shareSystem.downloadCard();
+        }
+      }
+    } catch (error) {
+      console.error('[download] Error:', error);
+      // Fallback to old system
+      if (window.shareSystem?.downloadCard) {
+        window.shareSystem.currentQuote = quote;
+        await window.shareSystem.downloadCard();
+      }
+    }
   };
   
   // Copy link button - keep original functionality but track

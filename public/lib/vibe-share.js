@@ -4,10 +4,12 @@
 /**
  * Render a vibe card as 1080x1080 JPEG
  * @param {string} vibe - Main text (quote/hláška)
- * @param {string} [subtitle] - Optional subtitle (e.g., "ty-vole.wtf")
+ * @param {object} [opts] - Options
+ * @param {string} [opts.subtitle] - Optional subtitle (e.g., "ty-vole.wtf")
+ * @param {string} [opts.logoSrc] - Optional logo image URL
  * @returns {Promise<Blob>} JPEG blob
  */
-export async function renderVibeCard(vibe, subtitle) {
+export async function renderVibeCard(vibe, opts = {}) {
   const size = 1080;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -18,28 +20,60 @@ export async function renderVibeCard(vibe, subtitle) {
     throw new Error('Canvas context not available');
   }
 
-  // Background gradient (dark)
-  const gradient = ctx.createLinearGradient(0, 0, 0, size);
-  gradient.addColorStop(0, '#0B0B0F');
-  gradient.addColorStop(1, '#1A1A22');
+  // Wait for fonts to load (critical for Safari)
+  if ('fonts' in document) {
+    try {
+      await document.fonts.ready;
+    } catch (e) {
+      console.warn('[vibe-card] Font loading skipped:', e);
+    }
+  }
+
+  // Background gradient - GREEN like "Bake it" (NOT transparent/dark!)
+  const gradient = ctx.createLinearGradient(0, 0, size, size);
+  gradient.addColorStop(0, '#9dff00'); // Lime green
+  gradient.addColorStop(1, '#00e5ff'); // Cyan
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, size, size);
 
-  // Logo "TVL" in top-left corner
-  ctx.fillStyle = '#B8FF4D'; // Lime green
-  ctx.font = 'bold 56px system-ui, -apple-system, sans-serif';
-  ctx.textBaseline = 'top';
-  ctx.fillText('TVL', 56, 56);
+  // Logo in top-left corner
+  if (opts.logoSrc) {
+    try {
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.crossOrigin = 'anonymous';
+        i.onload = () => resolve(i);
+        i.onerror = reject;
+        i.src = opts.logoSrc;
+      });
+      const w = 180;
+      const h = (img.height / img.width) * w;
+      ctx.drawImage(img, 48, 48, w, h);
+    } catch (e) {
+      console.warn('[vibe-card] Logo load failed, using text:', e);
+      // Fallback to text logo
+      ctx.fillStyle = '#000';
+      ctx.font = '700 48px system-ui, -apple-system, sans-serif';
+      ctx.textBaseline = 'top';
+      ctx.fillText('TY VOLE .wtf', 48, 48);
+    }
+  } else {
+    // Text logo
+    ctx.fillStyle = '#000';
+    ctx.font = '700 48px system-ui, -apple-system, sans-serif';
+    ctx.textBaseline = 'top';
+    ctx.fillText('TY VOLE .wtf', 48, 64);
+  }
 
   // Main vibe text - wrap lines
   const maxWidth = size - 128; // padding 64px each side
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '700 68px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = '#000'; // Black text on bright gradient
+  ctx.font = '700 64px system-ui, -apple-system, sans-serif';
   ctx.textBaseline = 'top';
 
   // Word wrapping
   const lines = [];
-  const words = vibe.split(/\s+/);
+  const words = vibe.trim().split(/\s+/);
   let line = '';
   
   for (const word of words) {
@@ -56,8 +90,8 @@ export async function renderVibeCard(vibe, subtitle) {
   if (line) lines.push(line);
 
   // Draw wrapped text (max 7 lines)
-  let y = 220;
-  const lineHeight = 88;
+  let y = 360;
+  const lineHeight = 84;
   
   for (const textLine of lines.slice(0, 7)) {
     ctx.fillText(textLine, 64, y);
@@ -65,21 +99,20 @@ export async function renderVibeCard(vibe, subtitle) {
   }
 
   // Subtitle at bottom
-  if (subtitle) {
-    ctx.font = '400 40px system-ui, -apple-system, sans-serif';
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText(subtitle, 64, size - 56);
-  }
+  const subtitle = opts.subtitle || 'ty-vole.wtf';
+  ctx.font = '500 32px system-ui, -apple-system, sans-serif';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(subtitle, 64, size - 64);
 
   // Convert to JPEG blob
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (blob) {
           resolve(blob);
         } else {
-          throw new Error('Failed to create blob');
+          reject(new Error('Failed to create blob'));
         }
       },
       'image/jpeg',
@@ -125,8 +158,8 @@ export async function dropToChat(vibeText, targetUrl) {
     // Create short link
     const shortUrl = await createShortLink(targetUrl);
     
-    // Render card image
-    const blob = await renderVibeCard(vibeText, 'ty-vole.wtf');
+    // Render card image with GREEN gradient (same as Bake it)
+    const blob = await renderVibeCard(vibeText, { subtitle: 'ty-vole.wtf' });
     const file = new File([blob], 'tvl-vibe.jpg', { type: 'image/jpeg' });
 
     // Try Web Share API with files
