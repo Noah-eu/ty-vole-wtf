@@ -8,6 +8,7 @@
     "gen:icons": "node scripts/gen-icons.js"
   },
   "devDependencies": {
+    "@netlify/blobs": "^10.3.3",
     "@netlify/functions": "^2.8.1",
     "@types/node": "^20.11.0",
     "sharp": "^0.32.0",

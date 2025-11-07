@@ -39,6 +39,15 @@
   [headers.values]
     Cache-Control = "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400"
 
+# === Redirects ===
+
+# Short links (clean URLs)
+[[redirects]]
+  from = "/s/:id"
+  to = "/.netlify/functions/s?id=:id"
+  status = 200
+  force = true
+
 # Pokud bys někdy používal SPA routing, povol fallback:
 # [[redirects]]
 #   from = "/*"

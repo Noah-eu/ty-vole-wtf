@@ -1675,6 +1675,11 @@ if (document.readyState === 'loading') {
 <script src="lib/analytics.js" defer></script>
 <script src="lib/ab-test.js" defer></script>
 <script src="lib/share.js" defer></script>
+<script type="module">
+  // Import vibe-share for new JPG + shortlink sharing
+  import { dropToChat } from './lib/vibe-share.js';
+  window.vibeShare = { dropToChat };
+</script>
 
 <!-- Update Chip Script -->
 <script src="lib/update-chip.js" defer></script>
@@ -1725,11 +1730,40 @@ if (document.readyState === 'loading') {
   // Update texts immediately with random variants (scripts have defer so they're loaded)
   updateCTATexts();
   
-  // Share button - main CTA
+  // Share button - NEW: Use vibe-share with JPG + shortlink
   shareMainBtn.onclick = async () => {
     const quote = document.getElementById('quote').textContent;
-    window.analytics.ctaClick(window.abTest.cta.getVariant());
-    await window.shareSystem.share(quote);
+    
+    // Track analytics
+    if (window.analytics) {
+      window.analytics.ctaClick(window.abTest?.cta?.getVariant?.() || 'default');
+    }
+    
+    // Build target URL with current quote
+    const baseUrl = window.location.origin + window.location.pathname;
+    const params = new URLSearchParams({
+      q: quote,
+      mode: MODE || 'genz'
+    });
+    const targetUrl = `${baseUrl}?${params.toString()}`;
+    
+    // Use new vibe-share system with JPG + shortlink
+    if (window.vibeShare?.dropToChat) {
+      try {
+        await window.vibeShare.dropToChat(quote, targetUrl);
+      } catch (error) {
+        console.error('[Share] dropToChat failed:', error);
+        // Fallback to old system
+        if (window.shareSystem?.share) {
+          await window.shareSystem.share(quote);
+        }
+      }
+    } else {
+      // Fallback if module not loaded yet
+      if (window.shareSystem?.share) {
+        await window.shareSystem.share(quote);
+      }
+    }
   };
   
   // Download button
