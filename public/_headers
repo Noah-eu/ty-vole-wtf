@@ -29,3 +29,6 @@
 # API endpoints - no cache
 /.netlify/functions/daily-song
   Cache-Control: no-store, max-age=0
+
+/.netlify/functions/get-tracks
+  Cache-Control: no-store, max-age=0

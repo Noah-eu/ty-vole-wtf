@@ -34,6 +34,16 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
+  // Bypass SW caching for track API endpoints (always network-first)
+  if (
+    url.pathname.startsWith('/.netlify/functions/get-tracks') ||
+    url.pathname.startsWith('/.netlify/functions/daily-song') ||
+    url.pathname.startsWith('/tracks/')
+  ) {
+    event.respondWith(fetch(req));
+    return;
+  }
+
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)

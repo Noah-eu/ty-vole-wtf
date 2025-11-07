@@ -11,7 +11,8 @@
   const isDev = location.hostname === 'localhost' || location.hostname.endsWith('.netlify.app');
   
   // Absolute API URL for iOS Safari compatibility
-  const API_DAILY_SONG = `${window.location.origin}/.netlify/functions/daily-song`;
+  // Prefer the new get-tracks endpoint (falls back to daily-song via server if needed)
+  const API_DAILY_SONG = `${window.location.origin}/.netlify/functions/get-tracks`;
   
   // Demo fallback tracks (always available)
   const DEMO_TRACKS = [
@@ -55,11 +56,16 @@
     return div.innerHTML;
   }
   
-  function isoForOffset(off) {
-    const d = new Date();
-    d.setUTCDate(d.getUTCDate() - off);
-    return d.toISOString().slice(0, 10);
+  // Return YYYY-MM-DD for Europe/Prague for given offset (0 = today in Prague)
+  function pragueIsoForOffset(off) {
+    const now = Date.now() - off * 24 * 60 * 60 * 1000;
+    const d = new Date(now);
+    const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Prague', year: 'numeric', month: '2-digit', day: '2-digit' });
+    return fmt.format(d); // en-CA => YYYY-MM-DD
   }
+
+  // Track current Prague day to detect midnight crossing when app is backgrounded
+  let currentPragueDay = pragueIsoForOffset(0);
   
   function fmtCZ(iso) {
     // YYYY-MM-DD → DD.MM.RRRR
@@ -277,7 +283,7 @@
     isLoading = true;
     
     try {
-      const date = isoForOffset(off);
+  const date = pragueIsoForOffset(off);
       
       // Update heading
       const subtitle = root.querySelector('.subtitle');
@@ -304,10 +310,10 @@
         return;
       }
       
-      // Fetch from API with iOS-safe timeout
-      const params = new URLSearchParams({ date });
-      if (isDev) params.set('ts', Date.now());
-      const url = `${API_DAILY_SONG}?${params.toString()}`;
+  // Fetch from API with iOS-safe timeout
+  const params = new URLSearchParams({ d: date, ts: String(Date.now()) });
+  if (isDev) params.set('dev', '1');
+  const url = `${API_DAILY_SONG}?${params.toString()}`;
       
       let picks = [];
       
@@ -318,15 +324,29 @@
         
         if (!response.ok) {
           console.warn('[daily-tracks] Fetch failed:', response.status);
-          // Fallback to demo for today
-          if (off === 0) {
+          // If get-tracks doesn't exist (404), try legacy daily-song as a fallback
+          if (response.status === 404) {
+            try {
+              const fallbackUrl = `${window.location.origin}/.netlify/functions/daily-song?${params.toString()}`;
+              const fb = await fetchWithTimeout(fallbackUrl, { headers: { 'Accept': 'application/json' } }, 7000);
+              if (fb && fb.ok) {
+                const data = await fb.json().catch(() => ({}));
+                picks = Array.isArray(data.picks) ? data.picks : [];
+              }
+            } catch (err) {
+              // ignore and fallback to demo below
+            }
+          }
+
+          // Fallback to demo for today if still empty
+          if (off === 0 && picks.length === 0) {
             picks = DEMO_TRACKS;
           }
         } else {
           const data = await response.json().catch(() => ({}));
           console.info('[daily-tracks] API source:', data?.source || 'unknown');
           picks = Array.isArray(data.picks) ? data.picks : [];
-          
+
           // Fallback to demo if empty
           if (picks.length === 0 && off === 0) {
             console.info('[daily-tracks] Using demo fallback');
@@ -347,9 +367,12 @@
       // Enrich with covers from oEmbed
       picks = await enrichTracks(picks);
       
-      // Replace cache (never append)
-      cache[date] = picks;
-      localStorage.setItem('dailyTracksCache', JSON.stringify(cache));
+  // Replace cache (never append)
+  cache[date] = picks;
+  localStorage.setItem('dailyTracksCache', JSON.stringify(cache));
+
+  // Remember current Prague day when we loaded today's picks
+  if (off === 0) currentPragueDay = date;
       
       if (!picks.length) {
         root.style.display = 'none';
@@ -415,4 +438,19 @@
   } else {
     init();
   }
+
+  // When returning to the app, if Prague day changed (past midnight in Europe/Prague), reload today's picks
+  function onVisibleCheck() {
+    if (document.visibilityState === 'visible') {
+      const now = pragueIsoForOffset(0);
+      if (now !== currentPragueDay) {
+        currentPragueDay = now;
+        loadDay(0);
+      }
+    }
+  }
+
+  document.addEventListener('visibilitychange', onVisibleCheck);
+  // Also handle focus for some browsers
+  window.addEventListener('focus', onVisibleCheck);
 })();
